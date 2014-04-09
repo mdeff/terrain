@@ -1,0 +1,14 @@
+
+# Vim swap files
+.*.swp
+
+# Latex generated files
+docs/reports/*.aux
+docs/reports/*.bbl
+docs/reports/*.blg
+docs/reports/*.dvi
+docs/reports/*.log
+docs/reports/*.out
+docs/reports/*.pdf
+docs/reports/*.synctex.gz
+
