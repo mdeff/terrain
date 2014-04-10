@@ -1,32 +1,113 @@
 
-------------------------------
+################################################################################
 
 Hello,
 
-In the first part of the project, we have to create a FBO to store the texture. In the tutorial you gave us, it is said that we have to "set the list of draw buffers". They're doing this like so:
-GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
-glDrawBuffers(1, DrawBuffers);
+In the first part of the project, we have to create a FBO to store the
+texture. In the tutorial you gave us, it is said that we have to "set the list
+of draw buffers". They're doing this like so: GLenum DrawBuffers[1] =
+{GL_COLOR_ATTACHMENT0}; glDrawBuffers(1, DrawBuffers);
 
-
-I don't understand the purpose of the glDrawBuffers. Isn't enough to attach our texture to the FBO with  glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, ourTexture, 0)? What does the glDrawBuffers function do?
+I don't understand the purpose of the glDrawBuffers. Isn't enough to attach
+our texture to the FBO with  glFramebufferTexture(GL_FRAMEBUFFER,
+GL_COLOR_ATTACHMENT0, ourTexture, 0)? What does the glDrawBuffers function do?
 
 Thank you in advance,
 
 Céline
 
-------------------------------
+--------------------------------------------------------------------------------
 
 Hi,
 
-In your case it is not necessary to use it. If you wanted to write to several texture's at once, you could simultaneously activate 2 or more different color attachments (e.g., for writing the depth to one for writing normals to another one). You don't have to change anything here since, by default, color attachment 0 is the only active draw buffer when a FBO is bound.
+In your case it is not necessary to use it. If you wanted to write to several
+texture's at once, you could simultaneously activate 2 or more different color
+attachments (e.g., for writing the depth to one for writing normals to another
+one). You don't have to change anything here since, by default, color
+attachment 0 is the only active draw buffer when a FBO is bound.
 
-Note that in pracitcal 6, draw buffer was set to GL_NONE. That means that we didn't want to write any color but only update the depth buffer (for the shadow map). In this case it's the opposite way, we want two write to color attachment 0 but we don't need any depth buffer.
+Note that in pracitcal 6, draw buffer was set to GL_NONE. That means that we
+didn't want to write any color but only update the depth buffer (for the
+shadow map). In this case it's the opposite way, we want two write to color
+attachment 0 but we don't need any depth buffer.
 
 Does this help?
 
-------------------------------
+--------------------------------------------------------------------------------
 
 Thank you for your answer! It is clearer now.
 
-------------------------------
+################################################################################
+
+Hello,
+
+I want to understand why no pseudo random generator had been impented on glsl.
+This is driving me crazy since nobody on the web has a clear answer and
+everybody want a pseudo random number generator in glsl...
+
+I wish there were the libc rand function that would only require one float per
+core... and here is an other question : how are all shaders processed by the
+GPU ? I thought that there were a set of physical core that process one
+vertex, fragment or geometry shader at a time, but I'm not sure it is that
+simple...
+
+--------------------------------------------------------------------------------
+
+Hey,
+
+I'll try to answer these questions as good as I can right now. Current
+high-end GPUs have 2000-3000 different cores, that means that the same number
+of vertex/fragment/etc shader programs can be run in parallel. (Ja, I think in
+reality it's not that simple, I think the available cores are divided into
+subgroups/blocks/warps, where warps is the smallest grouping unit, and all the
+threads that are run within on warp are launched simultaneously and execute
+exactly the same kernel. For more details I'd need to go look at a book ;-))
+
+With rand I see some problems. All threads in one warp/running in parallel
+would return exactly the same value upon calling rand(). You would need to
+have a different seed for every core. Those seeds would need to be stored in
+global GPU memory (which is rather slow to access). The other option is to
+make the random number dependant on the thread id (or on the pixel position on
+the height map in case if you plan to generate random numbers for every
+pixel). I'm sure that for CUDA something like this could be found online.
+
+For glsl this seems to work fine though:
+http://stackoverflow.com/questions/12964279/whats-the-origin-of-this-glsl-rand-one-liner
+
+Hope this helps, even if I might have gone a bit off topic.
+
+--------------------------------------------------------------------------------
+
+Thanks for the answer !  Where can I find some of those specifications ? And
+if we can declare a variable in a glsl, I suspect that there already is a "per
+core" memory... I would just want a sizeof(float) or sizeof(int) amount of
+memory reserved for my seed ... if those "core" really physically exist...
+
+for the stackoverflow link I've seen a few functions like that... I don't
+really like the fact that it depends on the input and that it is dependant on
+the application (what if I want to use more than one random number per
+vertex... I could use the libc random with the first number as a seed... kind
+of ugly...)
+
+If there is a place where I can find some specs on how the shaders are called
+in the GPU I would be very happy :¬D
+
+--------------------------------------------------------------------------------
+
+Ok, this definitely definitely getting out of the scope of the course.
+
+I think the local memory for each thread will get invalidated after a kernel
+is executed. With glsl you probably would have to store your seeds in a
+texture (but then you also have the problem of having to store the state again
+of the generator). glsl is really not made for that kind of thing, it's just a
+shading dsl after all. How exactly the kernels are executed depends on the
+driver, you could read the glsl spec to get a better idea or look at some CUDA
+tutorials for a better understanding on how GPUs work in general.
+
+Maybe compute shaders (which I don't really know) have some better control
+over memory access. And in CUDA it should also definitely be possible.
+
+But as I said, all out of the scope of the course. :-)
+
+################################################################################
 
