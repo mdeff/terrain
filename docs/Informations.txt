@@ -1,0 +1,27 @@
+
+################################################################################
+First Stage Grading
+-------------------
+
+Dear Students,
+
+a few of you asked me about how the first stage due to monday, 8pm, will be
+graded. Here is the official reply: Only the quality of the report will be
+part of the final grade. For the implementation we will give you feedback, and
+you can improve it during later stages. Only the implementation at the very
+end of the project will be part of the grade.
+
+Best, Mario
+
+################################################################################
+Office Hours, Monday 3-5pm, BC345-350
+-------------------------------------
+
+To give you some extra support during the project, we introduce an office
+time, each monday 3-5pm. Our offices are BC345-350. You can also send us
+question by email to icg14@groupes.epfl.ch. In both cases, we expect you to
+try to solve your problems first by reading up on exercises, practicals and
+tutorials.
+
+################################################################################
+
