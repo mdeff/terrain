@@ -12,3 +12,8 @@ docs/reports/*.out
 docs/reports/*.pdf
 docs/reports/*.synctex.gz
 
+# Qt Creator project file
+CMakeLists.txt.user
+
+# Build directory
+build
