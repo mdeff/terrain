@@ -11,21 +11,18 @@
 
 
 /// Shader program.
-GLuint programID = 0;
+GLuint renderingProgramID;
 
 /// NxN triangle grid.
 const int N = 16;
 const int nVertices = N*N;
 const int nIndices = (N-1)*(N-1)*6;
 
-vec3 vertices[nVertices];
-unsigned int indices[nIndices];
-
 
 GLuint FramebufferName;
 GLuint uvbuffer;
 
-	
+
 // The fullscreen quad for binding with texture
 static const GLfloat g_quad_vertex_buffer_data[] = { 
 		-1.0f, -1.0f, 0.0f,
@@ -66,7 +63,7 @@ void update_matrix_stack(const mat4& model) {
 
     /// Define projection matrix (camera intrinsics)
     static mat4 projection = Eigen::perspective(45.0f, 4.0f/3.0f, 0.1f, 10.0f);
-    GLuint projection_id = glGetUniformLocation(programID, "projection");
+    GLuint projection_id = glGetUniformLocation(renderingProgramID, "projection");
     glUniformMatrix4fv(projection_id, ONE, DONT_TRANSPOSE, projection.data());
 
     /// Define the view matrix (camera extrinsics)
@@ -82,20 +79,44 @@ void update_matrix_stack(const mat4& model) {
     /// Assemble the "Model View" matrix
     static mat4 model_view;
     model_view = view * model;
-    GLuint model_view_id = glGetUniformLocation(programID, "model_view");
+    GLuint model_view_id = glGetUniformLocation(renderingProgramID, "model_view");
     glUniformMatrix4fv(model_view_id, ONE, DONT_TRANSPOSE, model_view.data());
 
+}
+
+
+void height_map() {
+
+    /// Create an OpenGL texture.
+    /// "Bind" the newly created texture : all future texture functions will modify this texture
+    GLuint textureID;
+    glGenTextures(ONE, &textureID);
+    glBindTexture(GL_TEXTURE_2D, textureID);
+
+    /// The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
+    GLuint FramebufferName = 0;
+    glGenFramebuffers(1, &FramebufferName);
+    glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
+
+    /// Compile the heightmap shaders.
+    GLuint heightmapProgramID = compile_shaders(heightmap_vshader, heightmap_fshader);
+    if(!heightmapProgramID)
+        exit(EXIT_FAILURE);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
+    glViewport(0,0,1024,1024);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glUseProgram(heightmapProgramID);
 }
 
 
 void triangle_grid() {
 
     /// Generate the vertices (line by line) : 16^2 = 256 vertices.
-    //vec3 vertices[nVertices];
+    vec3 vertices[nVertices];
     for(int y=0; y<N; y++) {
         for(int x=0; x<N; x++) {
             vertices[y*N+x] = vec3(float(2*x)/(N-1)-1, float(2*y)/(N-1)-1, 0);
-            //cout << vertices[y*N+x] << endl;
         }
     }
 
@@ -105,16 +126,9 @@ void triangle_grid() {
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    /// Vertex Attribute ID for positions.
-    GLuint position = glGetAttribLocation(programID, "position");
-    const int NUM_ELS = 3; /// floats per each vertex "position"
-    glEnableVertexAttribArray(position);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-    glVertexAttribPointer(position, NUM_ELS, GL_FLOAT, DONT_NORMALIZE, ZERO_STRIDE, ZERO_BUFFER_OFFSET);
-
     /// Indices that form the triangles.
     /// Grid of 15x15 squares : 225 squares -> 450 triangles -> 1350 indices.
-    
+    unsigned int indices[nIndices];
     for(int y=0; y<N-1; y++) {
         for(int x=0; x<N-1; x++) {
             /// Upper left triangle of the square.
@@ -133,6 +147,12 @@ void triangle_grid() {
     glGenBuffers(ONE, &elementbuffer);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    /// Vertex attribute ID for positions.
+    GLuint position = glGetAttribLocation(renderingProgramID, "position");
+    glEnableVertexAttribArray(position);
+    /// vec3: 3 floats per vertex for the position attribute.
+    glVertexAttribPointer(position, 3, GL_FLOAT, DONT_NORMALIZE, ZERO_STRIDE, ZERO_BUFFER_OFFSET);
 
 }
 
@@ -207,12 +227,12 @@ void init() {
 
     /// Compile the rendering shaders.
     /// Triangle grid needs the programID to get the "position" attribute.
-    programID = compile_shaders(rendering_vshader, rendering_fshader);
-    if(!programID)
+    renderingProgramID = compile_shaders(rendering_vshader, rendering_fshader);
+    if(!renderingProgramID)
         exit(EXIT_FAILURE);
-    glUseProgram(programID);
+    glUseProgram(renderingProgramID);
 
-    ///// Generate a flat and regular triangle grid.
+    /// Generate a flat and regular triangle grid.
     triangle_grid();
 
     /// Initialize the matrix stack
@@ -222,20 +242,18 @@ void init() {
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_MULTISAMPLE);
-    
+
 }
 
 
 void display() {
-	
-	//To render only the boundary
-	//comment it if you want to render full triangles
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); 
+
+    //To render only the boundary
+    //comment it if you want to render full triangles
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
-    
-    glDrawElements(GL_TRIANGLES,nIndices, GL_UNSIGNED_INT, 0);
-	
+    glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, ZERO_BUFFER_OFFSET);
+
 }
 
 
