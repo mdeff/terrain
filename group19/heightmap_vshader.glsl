@@ -1,14 +1,14 @@
 #version 330 core
 
+// First input buffer. Defined here, retrieved in C++ by glGetAttribLocation.
+layout(location = 0) in vec3 position;
 
-in vec3 position;
+out vec3 position2;
 
- // Output data ; will be interpolated for each fragment.
-out vec2 UV;
 
 void main() {
-	gl_Position =  vec4(position,1.0);
-	UV = (position.xy+vec2(1,1))/2.0;
+
+    position2 = position;
+    gl_Position = vec4(position,1.0);
 
 }
-

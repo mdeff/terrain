@@ -1,10 +1,17 @@
 #version 330 core
 
-in vec2 UV;
+in vec3 position2;
 
-out vec3 color;
-uniform sampler2D heightMap;
+// First output buffer.
+// Which is DrawBuffers[1] = GL_COLOR_ATTACHMENT0
+// Which is attached to heightmapTexture.
+layout(location = 0) out float height;
 
-void main(){
-	color = vec3(1.0,1.0,0.0);
+
+void main() {
+
+    // gl_FragCoord.x
+    // position2.x
+    height = 0.5;
+
 }

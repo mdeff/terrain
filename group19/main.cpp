@@ -84,6 +84,95 @@ GLuint gen_test_height_map() {
 }
 
 
+/// Generate the height map texture.
+GLuint gen_height_map() {
+
+    /// Height map texture size.
+    const int texWidth(1024);
+    const int texHeight(1024);
+
+    /// Create a framebuffer (container for textures, and an optional depth buffer).
+    /// The height map will be rendered to this FBO instead of the screen.
+    GLuint heightmapFramebuffer;
+    glGenFramebuffers(1, &heightmapFramebuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, heightmapFramebuffer);
+    // Specify the transformation from normalized device coordinates to texture coordinates.
+    glViewport(0, 0, texWidth, texHeight);
+
+    /// Create the texture which will contain the color output
+    /// (the actuall height map) of our shader.
+    GLuint heightmapTexture;
+    glGenTextures(1, &heightmapTexture);
+    glBindTexture(GL_TEXTURE_2D, heightmapTexture);
+    // Empty image (no data), one color component, 32 bits floating point format.
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, texWidth, texHeight, 0, GL_RED, GL_FLOAT, 0);
+    // Simple filtering (it is needed).
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    // Filtering
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    // Nice trilinear filtering.
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+//    glGenerateMipmap(GL_TEXTURE_2D);
+
+    /// Configure the framebuffer : heightmapTexture become the
+    /// fragment shader first output buffer.
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, heightmapTexture, 0);
+    GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0};
+    glDrawBuffers(1, drawBuffers);
+
+    /// Check that our framebuffer is OK.
+    if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        std::cerr << "Heightmap framebuffer not complete." <<std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    /// Compile the heightmap shaders.
+    GLuint heightmapProgramID = compile_shaders(heightmap_vshader, heightmap_fshader);
+    if(!heightmapProgramID)
+        exit(EXIT_FAILURE);
+    glUseProgram(heightmapProgramID);
+
+    /// Fullscreen quad : fragment shader is executed on evey pixel of the texture.
+    const GLfloat vertices[] = {
+        -1.0f, -1.0f, 0.0f,
+         1.0f, -1.0f, 0.0f,
+        -1.0f,  1.0f, 0.0f,
+        -1.0f,  1.0f, 0.0f,
+         1.0f, -1.0f, 0.0f,
+         1.0f,  1.0f, 0.0f,
+    };
+    GLuint quad_vertexbuffer;
+    glGenBuffers(1, &quad_vertexbuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    /// Vertex attribute "position" points to the binded buffer.
+    GLuint positionID = glGetAttribLocation(heightmapProgramID, "position");
+    glEnableVertexAttribArray(positionID);
+    // vec3: 3 floats per vertex for the position attribute.
+    glVertexAttribPointer(positionID, 3, GL_FLOAT, DONT_NORMALIZE, ZERO_STRIDE, ZERO_BUFFER_OFFSET);
+
+    /// Render the 2 triangles (6 vertices).
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glDrawArrays(GL_TRIANGLES, 0, sizeof(vertices)/3);
+
+    /// Set the screen framebuffer back as the rendering target.
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    // Specify the transformation from normalized device coordinates to window coordinates.
+    glViewport(0,0,windowWidth,windowHeight);
+
+    /// Return the height map texture ID.
+    return heightmapTexture;
+}
+
+
 /// Generate the triangle grid vertices.
 void gen_triangle_grid() {
 
@@ -141,8 +230,8 @@ void init() {
 
     /// Generate the height map texture.
     /// Before shader compilation, as it uses its own shaders.
-    GLuint heightMap = gen_test_height_map();
-//    GLuint heightMap = gen_height_map();
+//    GLuint heightMap = gen_test_height_map();
+    GLuint heightMap = gen_height_map();
 
     /// Compile the rendering shaders.
     /// Triangle grid needs the programID to get the "position" attribute.
