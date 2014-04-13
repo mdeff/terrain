@@ -17,3 +17,6 @@ CMakeLists.txt.user
 
 # Build directory
 build
+
+# Test and temporary directory
+others
