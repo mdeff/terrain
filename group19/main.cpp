@@ -15,7 +15,7 @@ GLuint renderingProgramID;
 
 /// NxN triangle grid.
 /// const is better than #define : type checked, optimized out anyway
-const int N = 16;
+const int N = 64;
 const int nVertices = N*N;
 const int nIndices = (N-1)*(N-1)*6;
 
@@ -52,7 +52,7 @@ void update_matrix_stack(const mat4& model) {
 
 
 /// Generate a simple height map texture for test purpose.
-GLuint gen_test_height_map() {
+GLuint gen_test_heightmap() {
 
     /// Create and bind the texture.
     GLuint textureID;
@@ -84,8 +84,8 @@ GLuint gen_test_height_map() {
 }
 
 
-/// Generate the height map texture.
-GLuint gen_height_map() {
+/// Generate the heightmap texture.
+GLuint gen_heightmap() {
 
     /// Height map texture size.
     const int texWidth(1024);
@@ -130,8 +130,8 @@ GLuint gen_height_map() {
     /// Configure the framebuffer : heightmapTexture become the
     /// fragment shader first output buffer.
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, textureID, 0);
-    GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0};
-    glDrawBuffers(1, drawBuffers);
+//    GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0};
+//    glDrawBuffers(1, drawBuffers);
 
     /// Check that our framebuffer is complete.
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
@@ -228,6 +228,8 @@ void gen_triangle_grid() {
 
 
 void init() {
+//    perlin_noise();
+//    exit(EXIT_SUCCESS);
 
     /// Vertex array.
     GLuint vertexArrayID;
@@ -240,10 +242,10 @@ void init() {
     glEnable(GL_MULTISAMPLE);
     glEnable(GL_TEXTURE_2D);
 
-    /// Generate the height map texture.
+    /// Generate the heightmap texture.
     /// Before shader compilation, as it uses its own shaders.
-//    GLuint heightMapID = gen_test_height_map();
-    GLuint heightMapID = gen_height_map();
+    GLuint heightMapID = gen_test_heightmap();
+//    GLuint heightMapID = gen_heightmap();
 
     /// Compile and install the rendering shaders.
     /// Triangle grid needs the programID to get the "position" attribute ID.
@@ -262,6 +264,23 @@ void init() {
     /// Generate a flat and regular triangle grid.
     gen_triangle_grid();
 
+    /// Define light properties and pass them to the shaders.
+    vec3 light_pos(-1.0f, 1.0f, 2.0f);
+    vec3 Id(1.0f, 1.0f, 1.0f);
+    GLuint light_pos_id = glGetUniformLocation(renderingProgramID, "light_pos"); //Given in camera space
+    GLuint Id_id = glGetUniformLocation(renderingProgramID, "Id");
+    glUniform3fv(light_pos_id, ONE, light_pos.data());
+    glUniform3fv(Id_id, ONE, Id.data());
+
+    /// Define the material properties and pass them to the shaders.
+    vec3 kd(0.9f, 0.5f, 0.5f);
+    GLuint kd_id = glGetUniformLocation(renderingProgramID, "kd");
+    glUniform3fv(kd_id, ONE, kd.data());
+
+    /// Pass the size of the base grid to shader.
+    GLuint N_id = glGetUniformLocation(renderingProgramID, "N");
+    glUniform1f(N_id, N);
+
     /// Initialize the matrix stack.
     update_matrix_stack(mat4::Identity());
 
@@ -271,7 +290,7 @@ void init() {
 void display() {
     //To render only the boundary
     //comment it if you want to render full triangles
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+//    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, ZERO_BUFFER_OFFSET);
 }
