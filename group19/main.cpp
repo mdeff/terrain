@@ -14,10 +14,15 @@
 GLuint renderingProgramID;
 
 /// NxN triangle grid.
+/// const is better than #define : type checked, optimized out anyway
 const int N = 16;
 const int nVertices = N*N;
 const int nIndices = (N-1)*(N-1)*6;
 
+
+/// Screen size.
+const int screenWidth(1024);
+const int screenHeight(768);
 
 GLuint FramebufferName;
 GLuint uvbuffer;
@@ -85,32 +90,36 @@ void update_matrix_stack(const mat4& model) {
 }
 
 
-void height_map() {
+/// Generate a simple height map texture for test purpose.
+GLuint gen_test_height_map() {
 
-    /// Create an OpenGL texture.
-    /// "Bind" the newly created texture : all future texture functions will modify this texture
-    GLuint textureID;
-    glGenTextures(ONE, &textureID);
-    glBindTexture(GL_TEXTURE_2D, textureID);
+    /// Create and bind the texture.
+    GLuint heightmapTexture;
+    glGenTextures(ONE, &heightmapTexture);
+    glBindTexture(GL_TEXTURE_2D, heightmapTexture);
 
-    /// The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
-    GLuint FramebufferName = 0;
-    glGenFramebuffers(1, &FramebufferName);
-    glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
+    /// Black/white checkerboard.
+    float pixels[] = {
+        0.0f, 0.5f, 0.1f,
+        0.0f, 0.5f, 0.5f,
+        1.0f, 0.5f, 0.0f
+    };
+    glTexImage2D(GL_TEXTURE_2D, 0,  GL_DEPTH_COMPONENT, 3,3, 0, GL_DEPTH_COMPONENT, GL_FLOAT, pixels);
 
-    /// Compile the heightmap shaders.
-    GLuint heightmapProgramID = compile_shaders(heightmap_vshader, heightmap_fshader);
-    if(!heightmapProgramID)
-        exit(EXIT_FAILURE);
+    /// Nice trilinear filtering.
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glGenerateMipmap(GL_TEXTURE_2D);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
-    glViewport(0,0,1024,1024);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glUseProgram(heightmapProgramID);
+    /// Return the height map texture ID.
+    return heightmapTexture;
 }
 
 
-void triangle_grid() {
+/// Generate the triangle grid vertices.
+void gen_triangle_grid() {
 
     /// Generate the vertices (line by line) : 16^2 = 256 vertices.
     vec3 vertices[nVertices];
@@ -157,8 +166,6 @@ void triangle_grid() {
 }
 
 
-
-
 void init() {
 
     /// Vertex Array
@@ -166,64 +173,15 @@ void init() {
     glGenVertexArrays(ONE, &VertexArrayID);
     glBindVertexArray(VertexArrayID);
 
-	
+    /// Generate the height map texture.
+    /// Before shader compilation, as it uses its own shaders.
+    GLuint heightmapTexture = gen_test_height_map();
+//    GLuint heightmapTexture = gen_height_map();
 
-	////[Alex] Generating the frame buffer for containing height map
-	//
-	//// The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
- //   FramebufferName = 0;
- //   glGenFramebuffers(1, &FramebufferName);
- //   glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
-
-	////The height map
-	//GLuint heightMap = create_texture();
-	//// Set "renderedTexture" as our colour attachement #0
-	//glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, heightMap, 0);
- //
-	//// Set the list of draw buffers.
-	//GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
-	//glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
-
-	//// Always check that our framebuffer is ok
-	//if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-	//	std::cerr << "Framebuffer not complete." <<std::endl;
-
-	//// Render to our framebuffer
-	//glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
-	//glViewport(0,0,1024,768); // Render on the whole framebuffer, complete from the lower left corner to the upper right
-
-	//// Create and compile our GLSL program from the shaders
-	//GLuint quad_programID = compile_shaders(heightmap_vshader, heightmap_fshader);
-	//GLuint texID = glGetUniformLocation(quad_programID, "renderedTexture");
-	//glUseProgram(quad_programID);
-	////GLuint timeID = glGetUniformLocation(quad_programID, "time");
- //   // The fullscreen quad's FBO
-	//GLuint quad_VertexArrayID;
-	//glGenVertexArrays(1, &quad_VertexArrayID);
-	//glBindVertexArray(quad_VertexArrayID);
- //
-	//static const GLfloat g_quad_vertex_buffer_data[] = {
-	//	-1.0f, -1.0f, 0.0f,
-	//	1.0f, -1.0f, 0.0f,
-	//	-1.0f,  1.0f, 0.0f,
-	//	-1.0f,  1.0f, 0.0f,
-	//	1.0f, -1.0f, 0.0f,
-	//	1.0f,  1.0f, 0.0f,
-	//};
- //
-	//GLuint quad_vertexbuffer;
-	//glGenBuffers(1, &quad_vertexbuffer);
-	//glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
- //
-	//
- //   /// Vertex Attribute ID for positions.
- //   GLuint position = glGetAttribLocation(quad_programID, "position");
-
-	//// Render to the screen
-	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	//glViewport(0,0,1024,768); // Render on the whole framebuffer, complete from the lower left corner to the upper right
-	
+    /// Bind the heightmap texture.
+    glEnable(GL_TEXTURE_2D);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, heightmapTexture);
 
     /// Compile the rendering shaders.
     /// Triangle grid needs the programID to get the "position" attribute.
@@ -233,7 +191,7 @@ void init() {
     glUseProgram(renderingProgramID);
 
     /// Generate a flat and regular triangle grid.
-    triangle_grid();
+    gen_triangle_grid();
 
     /// Initialize the matrix stack
     update_matrix_stack(mat4::Identity());
@@ -258,7 +216,7 @@ void display() {
 
 
 int main(int, char**) {
-    glfwInitWindowSize(1024, 768);
+    glfwInitWindowSize(screenWidth, screenHeight);
     glfwCreateWindow("Project - Group 19");
     glfwDisplayFunc(display);
     init();
