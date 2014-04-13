@@ -33,19 +33,19 @@ We then render it as a triangle mesh by function \texttt{glDrawElements} to get 
 
 \begin{figure}[ht]
 	\centering
-	\subfloat[\textsf{GL\_LINE\_STRIP} with $N=8$]{
+	\subfloat[Lines with $N=8$]{
 		\label{triangle_grid_8}
 		\includegraphics[height=4cm]{{{img_stage1/triangle_grid_8}}}
 	} \quad
-	\subfloat[\textsf{GL\_LINE\_STRIP} with $N=16$]{
+	\subfloat[Lines with $N=16$]{
 		\label{triangle_grid_16}
 		\includegraphics[height=4cm]{{{img_stage1/triangle_grid_16}}}
 	} \quad
-	\subfloat[\textsf{GL\_LINE\_STRIP} with $N=64$]{
+	\subfloat[Lines with $N=64$]{
 		\label{triangle_grid_64}
 		\includegraphics[height=4cm]{{{img_stage1/triangle_grid_64}}}
 	} \quad
-	\subfloat[\textsf{GL\_TRIANGLES}]{
+	\subfloat[Triangles]{
 		\label{triangle_grid_full}
 		\includegraphics[height=4cm]{{{img_stage1/triangle_grid_full}}}
 	}
@@ -54,7 +54,26 @@ We then render it as a triangle mesh by function \texttt{glDrawElements} to get 
 \end{figure}
 
 
+\subsection{Height map}
 
+We did first construct an heightmap by hand (\texttt{gen\_test\_height\_map}) with a 3x3 pixels texture to test the displacement procedure of the rendering vertex shader and the height sensible coloring of the rendering fragment shader (fig.~\ref{test_heightmap}). We then implemented the texture rendering (\texttt{gen\_height\_map}). To test the framework, we rendered a simple texture of 1024x1024 pixels which all have the value of 0.5 (fig.~\ref{test_heightmap_gen}).
+
+\begin{figure}[ht]
+	\centering
+	\subfloat[Heightmap constructed by hand]{
+		\label{test_heightmap}
+		\includegraphics[height=4cm]{{{img_stage1/test_heightmap}}}
+	} \quad
+	\subfloat[Simple generated heightmap]{
+		\label{test_heightmap_gen}
+		\includegraphics[height=4cm]{{{img_stage1/test_heightmap_gen}}}
+	}
+	\caption{Heightmaps}
+\end{figure}
+
+\subsection{Perlin noise}
+
+We then implemented the Perlin noise in the heightmap fragment shader.
 
 
 \section{Results}
