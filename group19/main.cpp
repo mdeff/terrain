@@ -19,13 +19,9 @@ const int N = 16;
 const int nVertices = N*N;
 const int nIndices = (N-1)*(N-1)*6;
 
-
 /// Screen size.
 const int screenWidth(1024);
 const int screenHeight(768);
-
-GLuint FramebufferName;
-GLuint uvbuffer;
 
 
 void update_matrix_stack(const mat4& model) {
@@ -70,12 +66,9 @@ GLuint gen_test_height_map() {
     };
     glTexImage2D(GL_TEXTURE_2D, 0,  GL_DEPTH_COMPONENT, 3,3, 0, GL_DEPTH_COMPONENT, GL_FLOAT, pixels);
 
-    /// Nice trilinear filtering.
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    /// Simple filtering (it is needed).
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glGenerateMipmap(GL_TEXTURE_2D);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
     /// Return the height map texture ID.
     return heightmapTexture;
