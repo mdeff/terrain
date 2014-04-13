@@ -9,6 +9,6 @@ out vec3 position2;
 void main() {
 
     position2 = position;
-    gl_Position = vec4(position,1.0);
+    gl_Position = vec4(position, 1.0);
 
 }
