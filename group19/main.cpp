@@ -28,42 +28,6 @@ GLuint FramebufferName;
 GLuint uvbuffer;
 
 
-// The fullscreen quad for binding with texture
-static const GLfloat g_quad_vertex_buffer_data[] = { 
-		-1.0f, -1.0f, 0.0f,
-		 1.0f, -1.0f, 0.0f,
-		-1.0f,  1.0f, 0.0f,
-		-1.0f,  1.0f, 0.0f,
-		 1.0f, -1.0f, 0.0f,
-		 1.0f,  1.0f, 0.0f,
-};
-
-
-
-//[Alex] Generating the texture we need
-GLuint create_texture(){
-	 // Create one OpenGL texture
-    GLuint textureID;
-    glGenTextures(ONE, &textureID);
-
-    // "Bind" the newly created texture : all future texture functions will modify this texture
-    glBindTexture(GL_TEXTURE_2D, textureID);
-
-    //for now just create a simple texture image
-    glfwLoadTexture2D("C:/Users/Alex/Dropbox/MsSem2/ComputerGraphics/project1/icg-project-group19/build", 0);
-
-    // Nice trilinear filtering.
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    // Return the ID of the texture we just created
-    return textureID;
-}
-
-
 void update_matrix_stack(const mat4& model) {
 
     /// Define projection matrix (camera intrinsics)
