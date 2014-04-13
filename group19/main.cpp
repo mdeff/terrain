@@ -117,7 +117,7 @@ void init() {
     /// Generate the heightmap texture.
     /// Before shader compilation, as it uses its own shaders.
 //    GLuint heightMapID = gen_test_heightmap();
-    GLuint heightMapID = gen_heightmap();
+    GLuint heightMapTexID = gen_heightmap();
 
     /// Set the screen framebuffer back as the rendering target and specify
     /// the transformation from normalized device coordinates to window coordinates.
@@ -134,9 +134,9 @@ void init() {
     /// Bind the heightmap to texture 0.
     const GLuint heightMapTex = 0;
     glActiveTexture(GL_TEXTURE0+heightMapTex);
-    glBindTexture(GL_TEXTURE_2D, heightMapID);
-    GLuint heightMapTexID = glGetUniformLocation(renderingProgramID, "heightMapTex");
-    glUniform1i(heightMapTexID, heightMapTex);
+    glBindTexture(GL_TEXTURE_2D, heightMapTexID);
+    GLuint uniformID = glGetUniformLocation(renderingProgramID, "heightMapTex");
+    glUniform1i(uniformID, heightMapTex);
 
     /// Generate a flat and regular triangle grid.
     gen_triangle_grid();

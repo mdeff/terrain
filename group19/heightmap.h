@@ -40,6 +40,84 @@ GLuint gen_test_heightmap() {
 }
 
 
+GLuint gen_permutation_table(GLuint programID) {
+
+    /// Pseudo-randomly generate the permutation table.
+    const int size(256);
+    GLubyte permutationTable[size];
+    for(int k=0; k<size; ++k)
+        permutationTable[k] = k;
+
+    // Seed the pseudo-random generator for reproductability.
+    srand(10);
+
+    // Fisher-Yates / Knuth shuffle.
+    GLubyte tmp;
+    for(int k=size-1; k>0; --k) {
+        // Random number with 0 <= rnd <= k.
+        GLuint idx = int(float(k) * rand() / RAND_MAX);
+        tmp = permutationTable[k];
+        permutationTable[k] = permutationTable[idx];
+        permutationTable[idx] = tmp;
+    }
+
+    /// Bind the permutation table to texture 0.
+    const GLuint permTableTex = 0;
+    glActiveTexture(GL_TEXTURE0+permTableTex);
+    GLuint uniformID = glGetUniformLocation(programID, "permTableTex");
+    glUniform1i(uniformID, permTableTex);
+    GLuint permTableTexID;
+    glGenTextures(1, &permTableTexID);
+    glBindTexture(GL_TEXTURE_2D, permTableTexID);
+    glTexImage1D(GL_TEXTURE_1D, 0, GL_R8UI, size, 0, GL_RED, GL_UNSIGNED_BYTE, permutationTable);
+
+    /// Set the texture addressing to wrap (or repeat) mode, so we don't have to
+    /// worry about extending the table to avoid indexing past the end of the array.
+    /// Only in s direction, 1D texture.
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    /// Simple filtering (needed).
+//    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+//    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+    return permTableTexID;
+
+}
+
+
+GLuint gen_gradient_vectors(GLuint programID) {
+
+    /// Gradients for 2D noise.
+    const int nVectors(4);
+    const int dim(2);
+    static GLbyte gradients[nVectors*dim] = {
+         1, 1,
+        -1, 1,
+         1,-1,
+        -1,-1,
+    };
+
+    /// Bind the gradient vectors to texture 1.
+    const GLuint gradVectTex = 1;
+    glActiveTexture(GL_TEXTURE0+gradVectTex);
+    GLuint uniformID = glGetUniformLocation(programID, "gradVectTex");
+    glUniform1i(uniformID, gradVectTex);
+    GLuint gradVectTexID;
+    glGenTextures(1, &gradVectTexID);
+    glBindTexture(GL_TEXTURE_2D, gradVectTexID);
+    glTexImage1D(GL_TEXTURE_1D, 0, GL_RG8I, nVectors, 0, GL_RG, GL_BYTE, gradients);
+
+    /// Set the texture addressing to wrap (or repeat) mode, so we don't have to
+    /// worry about extending the table to avoid indexing past the end of the array.
+    /// Only in s direction, t direction is the 2 spatial components (x,y).
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    return gradVectTexID;
+}
+
+
 /// Generate the heightmap texture.
 GLuint gen_heightmap() {
 
@@ -61,11 +139,15 @@ GLuint gen_heightmap() {
     glBindFramebuffer(GL_FRAMEBUFFER, frameBufferID);
     glViewport(0, 0, texWidth, texHeight);
 
+    /// Create the two input textures.
+    GLuint permTableTexID = gen_permutation_table(programID);
+    GLuint gradVectTexID = gen_gradient_vectors(programID);
+
     /// Create the texture which will contain the color output
     /// (the actuall height map) of our shader.
-    GLuint textureID;
-    glGenTextures(1, &textureID);
-    glBindTexture(GL_TEXTURE_2D, textureID);
+    GLuint heightMapTexID;
+    glGenTextures(1, &heightMapTexID);
+    glBindTexture(GL_TEXTURE_2D, heightMapTexID);
     // Empty image (no data), one color component, 32 bits floating point format.
     glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, texWidth, texHeight, 0, GL_RED, GL_FLOAT, 0);
     // Simple filtering (needed).
@@ -85,7 +167,7 @@ GLuint gen_heightmap() {
 
     /// Configure the framebuffer : heightmapTexture become the
     /// fragment shader first output buffer.
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, textureID, 0);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, heightMapTexID, 0);
 //    GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0};
 //    glDrawBuffers(1, drawBuffers);
 
@@ -122,9 +204,11 @@ GLuint gen_heightmap() {
     /// Clean up the now useless objects.
     glDisableVertexAttribArray(positionID);
     glDeleteBuffers(1, &vertexBufferID);
+    glDeleteTextures(1, &gradVectTexID);
+    glDeleteTextures(1, &permTableTexID);
     glDeleteFramebuffers(1, &frameBufferID);
     glDeleteProgram(programID);
 
     /// Return the height map texture ID.
-    return textureID;
+    return heightMapTexID;
 }
