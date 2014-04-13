@@ -20,32 +20,33 @@ const int nVertices = N*N;
 const int nIndices = (N-1)*(N-1)*6;
 
 /// Screen size.
-const int screenWidth(1024);
-const int screenHeight(768);
+const int windowWidth(1024);
+const int windowHeight(768);
 
 
 void update_matrix_stack(const mat4& model) {
 
     /// Define projection matrix (camera intrinsics)
     static mat4 projection = Eigen::perspective(45.0f, 4.0f/3.0f, 0.1f, 10.0f);
-    GLuint projection_id = glGetUniformLocation(renderingProgramID, "projection");
-    glUniformMatrix4fv(projection_id, ONE, DONT_TRANSPOSE, projection.data());
+    GLuint projectionID = glGetUniformLocation(renderingProgramID, "projection");
+    glUniformMatrix4fv(projectionID, ONE, DONT_TRANSPOSE, projection.data());
 
     /// Define the view matrix (camera extrinsics)
     vec3 cam_look(0.0f, 0.0f, 0.0f);
     /// Camera is in the sky, looking down.
-    //vec3 cam_pos(0.0f, 0.0f, 2.5f);
-    //vec3 cam_up(0.0f, 1.0f, 0.0f);
+//    vec3 cam_pos(0.0f, 0.0f, 5.0f);
+//    vec3 cam_up(0.0f, 1.0f, 0.0f);
     /// Camera is in a corner, looking down to the terrain.
-    vec3 cam_pos(2.0f, -2.0f, 1.5f);
+    vec3 cam_pos(3.0f, -3.0f, 1.0f);
+//    vec3 cam_pos(2.0f, -2.0f, 1.5f);
     vec3 cam_up(0.0f, 0.0f, 1.0f);
     static mat4 view = Eigen::lookAt(cam_pos, cam_look, cam_up);
 
     /// Assemble the "Model View" matrix
-    static mat4 model_view;
-    model_view = view * model;
-    GLuint model_view_id = glGetUniformLocation(renderingProgramID, "model_view");
-    glUniformMatrix4fv(model_view_id, ONE, DONT_TRANSPOSE, model_view.data());
+    static mat4 modelview;
+    modelview = view * model;
+    GLuint modelviewID = glGetUniformLocation(renderingProgramID, "modelview");
+    glUniformMatrix4fv(modelviewID, ONE, DONT_TRANSPOSE, modelview.data());
 
 }
 
@@ -58,13 +59,21 @@ GLuint gen_test_height_map() {
     glGenTextures(ONE, &heightmapTexture);
     glBindTexture(GL_TEXTURE_2D, heightmapTexture);
 
-    /// Black/white checkerboard.
+    /// Flat terrain.
+    //float pixels[] = {1.0f};
+    //glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, 1, 1, 0, GL_RED, GL_FLOAT, pixels);
+
+    /// Sort of "pyramid".
+    // (0,0) corresponds to the lower left corner.
+    // (0, 0) (.5, 0) (1, 0)
+    // (0,.5) (.5,.5) (1,.5)
+    // (0, 1) (.5, 1) (1, 1)
     float pixels[] = {
-        0.0f, 0.5f, 0.1f,
-        0.0f, 0.5f, 0.5f,
-        1.0f, 0.5f, 0.0f
+        0.0f, 0.5f, 0.0f,
+        0.5f, 1.0f, 0.5f,
+        0.0f, 0.5f, 0.0f
     };
-    glTexImage2D(GL_TEXTURE_2D, 0,  GL_DEPTH_COMPONENT, 3,3, 0, GL_DEPTH_COMPONENT, GL_FLOAT, pixels);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, 3, 3, 0, GL_RED, GL_FLOAT, pixels);
 
     /// Simple filtering (it is needed).
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -88,7 +97,7 @@ void gen_triangle_grid() {
 
     /// Copy the vertices in a vertex buffer.
     GLuint vertexbuffer;
-    glGenBuffers(ONE, &vertexbuffer);
+    glGenBuffers(1, &vertexbuffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
@@ -108,37 +117,32 @@ void gen_triangle_grid() {
         }
     }
 
-    /// Copy the indices in an index array.
+    /// Copy the indices in an index buffer.
     GLuint elementbuffer;
-    glGenBuffers(ONE, &elementbuffer);
+    glGenBuffers(1, &elementbuffer);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    /// Vertex attribute ID for positions.
-    GLuint position = glGetAttribLocation(renderingProgramID, "position");
-    glEnableVertexAttribArray(position);
-    /// vec3: 3 floats per vertex for the position attribute.
-    glVertexAttribPointer(position, 3, GL_FLOAT, DONT_NORMALIZE, ZERO_STRIDE, ZERO_BUFFER_OFFSET);
+    /// Vertex attribute "position" points to the binded buffer.
+    GLuint positionID = glGetAttribLocation(renderingProgramID, "position");
+    glEnableVertexAttribArray(positionID);
+    // vec3: 3 floats per vertex for the position attribute.
+    glVertexAttribPointer(positionID, 3, GL_FLOAT, DONT_NORMALIZE, ZERO_STRIDE, ZERO_BUFFER_OFFSET);
 
 }
 
 
 void init() {
 
-    /// Vertex Array
+    /// Vertex array.
     GLuint VertexArrayID;
-    glGenVertexArrays(ONE, &VertexArrayID);
+    glGenVertexArrays(1, &VertexArrayID);
     glBindVertexArray(VertexArrayID);
 
     /// Generate the height map texture.
     /// Before shader compilation, as it uses its own shaders.
-    GLuint heightmapTexture = gen_test_height_map();
-//    GLuint heightmapTexture = gen_height_map();
-
-    /// Bind the heightmap texture.
-    glEnable(GL_TEXTURE_2D);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, heightmapTexture);
+    GLuint heightMap = gen_test_height_map();
+//    GLuint heightMap = gen_height_map();
 
     /// Compile the rendering shaders.
     /// Triangle grid needs the programID to get the "position" attribute.
@@ -147,13 +151,21 @@ void init() {
         exit(EXIT_FAILURE);
     glUseProgram(renderingProgramID);
 
+    /// Bind the heightmap to texture 0.
+    //glEnable(GL_TEXTURE_2D);
+    const GLuint heightMapTex = 0;
+    glActiveTexture(GL_TEXTURE0+heightMapTex);
+    glBindTexture(GL_TEXTURE_2D, heightMap);
+    GLuint heightMapTexID = glGetUniformLocation(renderingProgramID, "heightMapTex");
+    glUniform1i(heightMapTexID, heightMapTex);
+
     /// Generate a flat and regular triangle grid.
     gen_triangle_grid();
 
-    /// Initialize the matrix stack
+    /// Initialize the matrix stack.
     update_matrix_stack(mat4::Identity());
 
-    /// OpenGL parameters
+    /// OpenGL parameters.
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_MULTISAMPLE);
@@ -162,18 +174,16 @@ void init() {
 
 
 void display() {
-
     //To render only the boundary
     //comment it if you want to render full triangles
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, ZERO_BUFFER_OFFSET);
-
 }
 
 
 int main(int, char**) {
-    glfwInitWindowSize(screenWidth, screenHeight);
+    glfwInitWindowSize(windowWidth, windowHeight);
     glfwCreateWindow("Project - Group 19");
     glfwDisplayFunc(display);
     init();
