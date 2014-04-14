@@ -6,6 +6,7 @@ to get different sort of mountains. For large terrain we could have high and
 abrupt mountains and also a prairie / plane.
 
 Constrain a depth to zero to form an island.
+When it comes down to zero, it should not go up.
 
 Ocean waves around island or lakes.
 
@@ -13,6 +14,7 @@ Ocean waves around island or lakes.
 Tesselation
 -----------
 
+Video : moves from the sky down to the island --> LOD should be impressive.
 http://codeflow.org/entries/2010/nov/07/opengl-4-tessellation/
 
 
@@ -20,3 +22,6 @@ Terrain generator
 -----------------
 
 http://lithosphere.codeflow.org/
+http://en.wikipedia.org/wiki/Terragen
+
+Trees: http://en.wikipedia.org/wiki/SpeedTree

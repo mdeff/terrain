@@ -39,6 +39,7 @@ void update_matrix_stack(const mat4& model) {
     /// Camera is in a corner, looking down to the terrain.
     //vec3 cam_pos(3.0f, -3.0f, 1.0f);
     //vec3 cam_pos(2.0f, -2.0f, 1.5f);
+    //vec3 cam_pos(0.7f, -0.7f, 0.3f); // Close texture view.
     vec3 cam_pos(2.0f, -2.0f, 1.2f);
     vec3 cam_up(0.0f, 0.0f, 1.0f);
     static mat4 view = Eigen::lookAt(cam_pos, cam_look, cam_up);
