@@ -25,7 +25,7 @@ void main() {
     // World (triangle grid) coordinates are (-1,-1) x (1,1).
     // Texture (height map) coordinates are (0,0) x (1,1).
     vec2 UV = vec2((position.xy+1)/2);
-    float height = texture(heightMapTex, UV).r / 10.0f;
+    float height = texture(heightMapTex, UV).r;
 
     displaced = vec3(position.xy, height);
 

@@ -46,8 +46,12 @@ float lerp(in float a, in float b, in float t) {
 
 void main() {
 
+    // Amplitude and frequency of the noise function.
+    const float amplitude = 0.1f;
+    const float frequency = 0.05f;
+
     // World coordinates [-1,+1] to permutation table [0,255].
-    vec2 position3 = (position2.xy + 1.0f) * 128.0f;
+    vec2 position3 = (position2.xy + 1.0f) * 128.0f * frequency;
 
     // Find which square contains the pixel.
     ivec2 square = ivec2(floor(position3));
@@ -87,7 +91,7 @@ void main() {
     // Average over the four neighbor pixels.
     float avg1 = lerp(noise,   noise_x,  f.x);
     float avg2 = lerp(noise_y, noise_xy, f.x);
-    height = lerp(avg1, avg2, f.y);
+    height = lerp(avg1, avg2, f.y) * amplitude;
 
 }
 
