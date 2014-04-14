@@ -15,25 +15,25 @@ layout(location = 0) out float height;
 
 // Perlin's new interpolation function (Hermite polynomial of degree 5).
 // Results in a C2 continuous noise function.
-vec2 fade_new(in vec2 t) {
+vec2 fade_new(vec2 t) {
     return t * t * t * ( t * (t*6-15) + 10 );
 }
 
 // Original Perlin interpolation function.
 // Less expensive to evaluate but results in discontinuous second derivatives.
-vec2 fade_orig(in vec2 t) {
+vec2 fade_orig(vec2 t) {
     return t * t * (3 - 2 * t);
 }
 
 // Look-up in the permutation table at index idx [0,255].
-int perm(in int idx) {
+int perm(int idx) {
     //return texture(permTableTex, x/256.0).r;
     int idx_mod = int(mod(idx, 255));
     return int(texelFetch(permTableTex, idx_mod, 0).r);
 }
 
 // Look-up in the gradient vectors table at index idx [0,3].
-float grad(in int idx, in vec2 position) {
+float grad(int idx, vec2 position) {
     //int idx_mod = int(mod(idx, 4)); // Without zeros in gradients.
     int idx_mod = int(mod(idx, 8)); // With    zeros in gradients.
     vec2 gradient = texelFetch(gradVectTex, idx_mod, 0).rg;
@@ -46,7 +46,7 @@ float lerp(in float a, in float b, in float t) {
 }
 
 // Perlin noise function.
-float perlin_noise(in vec2 position) {
+float perlin_noise(vec2 position) {
 
     // Find which square contains the pixel.
     ivec2 square = ivec2(floor(position));
@@ -93,7 +93,22 @@ float fBm(vec2 position, float H, float lacunarity, int octaves) {
 
     // Loop will be unrolled by the compiler (GPU driver).
     for (int k=0; k<octaves; k++) {
-        height += perlin_noise(position) * pow(lacunarity, -H*k);
+        height   += perlin_noise(position) * pow(lacunarity, -H*k);
+        position *= lacunarity;
+    }
+
+    return height;
+
+}
+
+// Multifractal : fractal system which has a different fractal dimension in different regions.
+float multifractal(vec2 position, float H, float lacunarity, float octaves, float offset) {
+
+    float height = 1.0f;
+
+    // Loop will be unrolled by the compiler (GPU driver).
+    for (int k=0; k<octaves; k++) {
+        height   *= (perlin_noise(position) + offset) * pow(lacunarity, -H*k);
         position *= lacunarity;
     }
 
@@ -103,11 +118,14 @@ float fBm(vec2 position, float H, float lacunarity, int octaves) {
 
 void main() {
 
-    // Fractal Brownian motion.
-    height = fBm(position2.xy, 1.1f, 10.0f, 10) / 2.0f;
-
     // Perlin noise.
     //height = 0.2f * perlin_noise(2.0f * position2.xy);
+
+    // Fractal Brownian motion.
+    //height = fBm(position2.xy, 1.1f, 10.0f, 10) / 2.0f;
+
+    // Multifractal.
+    height = multifractal(position2.xy, 1.0f, 0.6f, 5, 0.05f) / 2.0f;
 
     // Ground floor (lake).
     if (height < 0.0f)
