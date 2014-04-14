@@ -106,24 +106,22 @@ float fBm(vec2 position, float H, float lacunarity, int octaves) {
 // Multifractal : fractal system which has a different fractal dimension in different regions.
 float multifractal(vec2 position, float H, float lacunarity, float octaves, float offset) {
 
-
     float weight = (perlin_noise(position) + offset) * pow(lacunarity, 0)/3.0f;
     float signal = 0.0f;
     float height =  weight;
 
     // Loop will be unrolled by the compiler (GPU driver).
     for (int k=0; k<octaves; k++) {
-        if ( weight > 1.0f ) weight = 1.0f;
-
+        if ( weight > 1.0f )
+            weight = 1.0f;
         signal = (perlin_noise(position) + offset) * pow(lacunarity, -H*k);
-
         height += weight * signal;
-
         weight *= signal;
-
         position *= lacunarity;
     }
+
     return height;
+
 }
 
 >>>>>>> fa50f0b56ae9fc0e9590b0eb3e50720296430873
@@ -242,7 +240,7 @@ void main() {
     //height = fBm(position2.xy, 1.1f, 10.0f, 10) / 2.0f;
 
     // Multifractal.
-
+    height = (multifractal(position2.xy, 0.25f, 4.0f, 5, 0.75f) / 4.0f)-0.15f;
     //height = multifractal(position2.xy, 1.0f, 0.6f, 5, 0.05f) / 2.0f;
 
 <<<<<<< HEAD
@@ -250,6 +248,7 @@ void main() {
 	//height =  0.25f*simplex_noise(2.5f*position2.xy);
 =======
     //Simplex noise
+<<<<<<< HEAD
     height =  0.25f*simplex_noise(2.5f*position2.xy);
 >>>>>>> fa50f0b56ae9fc0e9590b0eb3e50720296430873
 
@@ -257,6 +256,9 @@ void main() {
     //height = (multifractal(position2.xy, 0.25f, 4.0f, 5, 0.75f) / 4.0f)-0.15f;
 	height = (multifractalSimplex(position2.xy, 0.25f, 4.0f, 5, 0.75f) / 3.0f)-0.16f;
 	
+=======
+    //height =  0.25f*simplex_noise(2.5f*position2.xy);
+>>>>>>> 318cf949ce05e2d98e6244c74a60bfba1a34eb34
 
     // Ground floor (lake).
     if (height < 0.0f)
