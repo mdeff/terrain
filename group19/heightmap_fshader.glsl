@@ -104,16 +104,24 @@ float fBm(vec2 position, float H, float lacunarity, int octaves) {
 // Multifractal : fractal system which has a different fractal dimension in different regions.
 float multifractal(vec2 position, float H, float lacunarity, float octaves, float offset) {
 
-    float height = 1.0f;
+	
+	float weight = (perlin_noise(position) + offset) * pow(lacunarity, 0)/3.0f;
+	float signal = 0.0f;
+    float height =  weight;
 
     // Loop will be unrolled by the compiler (GPU driver).
     for (int k=0; k<octaves; k++) {
-        height   *= (perlin_noise(position) + offset) * pow(lacunarity, -H*k);
+		if ( weight > 1.0f ) weight = 1.0f;
+		
+		signal = (perlin_noise(position) + offset) * pow(lacunarity, -H*k);
+
+		height += weight * signal;
+
+		weight *= signal;
+
         position *= lacunarity;
     }
-
-    return height;
-
+	return height;
 }
 
 void main() {
@@ -125,7 +133,8 @@ void main() {
     //height = fBm(position2.xy, 1.1f, 10.0f, 10) / 2.0f;
 
     // Multifractal.
-    height = multifractal(position2.xy, 1.0f, 0.6f, 5, 0.05f) / 2.0f;
+	// Multifractal(vec2 position, float H, float lacunarity, float octaves, float offset) {
+    height = (multifractal(position2.xy, 0.25f, 4.0f, 5, 0.75f) / 4.0f)-0.15f;
 
     // Ground floor (lake).
     if (height < 0.0f)

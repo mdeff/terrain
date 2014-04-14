@@ -15,7 +15,7 @@ GLuint renderingProgramID;
 
 /// NxN triangle grid.
 /// const is better than #define : type checked, optimized out anyway
-const int N = 256;
+const int N = 128;
 const int nVertices = N*N;
 const int nIndices = (N-1)*(N-1)*6;
 
