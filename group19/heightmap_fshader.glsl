@@ -185,13 +185,13 @@ float simplex_noise(vec2 v)
 void main() {
 
     // Perlin noise.
-    //height = 0.2f * perlin_noise(2.0f * position2.xy);
+    height = 0.25f * perlin_noise(2.5f * position2.xy);
 
     // Fractal Brownian motion.
     //height = fBm(position2.xy, 1.1f, 10.0f, 10) / 2.0f;
 
     // Multifractal.
-    height = (multifractal(position2.xy, 0.25f, 4.0f, 5, 0.75f) / 4.0f)-0.15f;
+    //height = (multifractal(position2.xy, 0.25f, 4.0f, 5, 0.75f) / 4.0f)-0.15f;
     //height = multifractal(position2.xy, 1.0f, 0.6f, 5, 0.05f) / 2.0f;
 
     //Simplex noise
