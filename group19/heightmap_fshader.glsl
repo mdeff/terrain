@@ -34,8 +34,8 @@ int perm(in int idx) {
 
 // Look-up in the gradient vectors table at index idx [0,3].
 float grad(in int idx, in vec2 position) {
-    int idx_mod8 = int(mod(idx, 4));
-    vec2 gradient = texelFetch(gradVectTex, idx_mod8, 0).rg;
+    int idx_mod4 = int(mod(idx, 4));
+    vec2 gradient = texelFetch(gradVectTex, idx_mod4, 0).rg;
     return dot(gradient, position);
 }
 
@@ -44,24 +44,14 @@ float lerp(in float a, in float b, in float t) {
     return a + t*(b-a);
 }
 
-void main() {
-
-    // Amplitude and frequency of the noise function.
-    const float amplitude = 0.1f;
-    const float frequency = 0.05f;
-
-    // World coordinates [-1,+1] to permutation table [0,255].
-    vec2 position3 = (position2.xy + 1.0f) * 128.0f * frequency;
+// Perlin noise function.
+float perlin_noise(in vec2 position) {
 
     // Find which square contains the pixel.
-    ivec2 square = ivec2(floor(position3));
-
-    // Verify that squares are in [0,255].
-    //height = square.x / 255.0f;
-    //height = square.y / 255.0f;
+    ivec2 square = ivec2(floor(position));
 
     // Find relative position (displacement) in this square [0,1].
-    vec2 disp = position3 - vec2(square);
+    vec2 disp = position - vec2(square);
 
     // Observe the displacement [0,1].
     //height = disp.x;
@@ -75,7 +65,7 @@ void main() {
 
     // Noise at current position.
     float noise = grad(rnd, disp.xy);
-    //height = noise / 10.0f;
+    //height = noise;
 
     // Noise at the 3 neightboring positions.
     rnd = perm( perm(square.x+1) + square.y+0 );
@@ -91,10 +81,20 @@ void main() {
     // Average over the four neighbor pixels.
     float avg1 = lerp(noise,   noise_x,  f.x);
     float avg2 = lerp(noise_y, noise_xy, f.x);
-    height = lerp(avg1, avg2, f.y) * amplitude;
+    return lerp(avg1, avg2, f.y);
 
 }
 
+void main() {
+
+    // Amplitude and frequency of the noise function.
+    const float amplitude = 0.2f;
+    const float frequency = 4.0f;
+
+    // Perlin noise function.
+    height = amplitude * perlin_noise(position2.xy * frequency);
+
+}
 
 void test() {
 
