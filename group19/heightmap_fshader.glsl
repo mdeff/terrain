@@ -87,7 +87,7 @@ void main() {
     // Average over the four neighbor pixels.
     float avg1 = lerp(noise,   noise_x,  f.x);
     float avg2 = lerp(noise_y, noise_xy, f.x);
-    height = lerp(avg1, avg2, f.y) / 10.0f;
+    height = lerp(avg1, avg2, f.y);
 
 }
 

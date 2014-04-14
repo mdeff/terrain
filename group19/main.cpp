@@ -150,7 +150,7 @@ void init() {
     glUniform3fv(Id_id, ONE, Id.data());
 
     /// Define the material properties and pass them to the shaders.
-    vec3 kd(0.9f, 0.5f, 0.5f);
+    vec3 kd(0.5f, 0.5f, 0.5f);
     GLuint kd_id = glGetUniformLocation(renderingProgramID, "kd");
     glUniform3fv(kd_id, ONE, kd.data());
 

@@ -3,8 +3,11 @@
 uniform vec3 Id;
 uniform vec3 kd;
 
+// First texture. Defined by glActiveTexture and passed by glUniform1i.
+uniform sampler2D heightMapTex;
+
 // Position (world coordinates) after heightmap displacement.
-//in vec3 displaced;
+in vec3 displaced;
 
 //light direction
 in vec3 light_dir;
@@ -17,13 +20,18 @@ layout(location = 0) out vec3 color;
 
 void main() {
 
-    //re-normalize the input vector
+    // Color dependent on the elevation (similar to texture mapping).
+    float grey = displaced.z * 5.0f + 0.3f;
+    vec3 mapped = vec3(grey);
+
+    // Normalize the vectors.
     vec3 L = normalize(light_dir);
     vec3 N = normalize(normal_mv);
 
-    color = Id * kd * max(dot(N,L),0.0);
+    // Compute the diffuse color component.
+    vec3 diffuse = Id * kd * max(dot(N,L),0.0);
 
-//    float green = displaced.z;
-//    color = vec3(1.0, green, 0.0);
+    // Assemble the color.
+    color = mapped + diffuse;
 
 }
