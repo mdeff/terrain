@@ -73,8 +73,11 @@ We did first construct an heightmap by hand (\texttt{gen\_test\_height\_map}) wi
 
 \subsection{Perlin noise}
 
-We then implemented the Perlin noise in the heightmap fragment shader.
+We then implemented the Perlin noise in the heightmap fragment shader. As suggested by the tutorial linked in the hand-out, we used a permutation table to generate a pseudo-random number per square.
 
+indexed texture access instead of interpolation in normalize coordinates
+
+Show some screenshots with different frequencies and amplitudes of the noise function.
 
 \section{Results}
 
