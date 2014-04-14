@@ -15,7 +15,7 @@ GLuint renderingProgramID;
 
 /// NxN triangle grid.
 /// const is better than #define : type checked, optimized out anyway
-const int N = 256;
+const int N = 128;
 const int nVertices = N*N;
 const int nIndices = (N-1)*(N-1)*6;
 
@@ -103,7 +103,7 @@ void gen_triangle_grid() {
 void init() {
 //    perlin_noise();
 //    exit(EXIT_SUCCESS);
-
+	
     /// Vertex array.
     GLuint vertexArrayID;
     glGenVertexArrays(1, &vertexArrayID);
@@ -143,7 +143,7 @@ void init() {
     gen_triangle_grid();
 
     /// Define light properties and pass them to the shaders.
-    vec3 light_pos(-1.0f, 1.0f, 2.0f);
+    vec3 light_pos(-1.0f, 1.0f, 2.0f);	
     vec3 Id(1.0f, 1.0f, 1.0f);
     GLuint light_pos_id = glGetUniformLocation(renderingProgramID, "light_pos"); //Given in camera space
     GLuint Id_id = glGetUniformLocation(renderingProgramID, "Id");
