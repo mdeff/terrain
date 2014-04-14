@@ -123,22 +123,6 @@ float multifractal(vec2 position, float H, float lacunarity, float octaves, floa
     }
 	return height;
 }
-vec2 mod289(vec2 x) {
-  return x - floor(x * (1.0 / 289.0)) * 289.0;
-}
-vec3 mod289(vec3 x) {
-  return x - floor(x * (1.0 / 289.0)) * 289.0;
-}
-
-vec2 grad_vec(int idx)
-{
-	int idx_mod = int(mod(idx, 8)); 
-    vec2 gradient = texelFetch(gradVectTex, idx_mod, 0).rg;
-	return gradient;
-}
-vec3 permute(vec3 x) {
-  return mod289(((x*34.0)+1.0)*x);
-}
 
 float simplex_noise(vec2 v)
 {
@@ -210,15 +194,15 @@ void main() {
     //height = fBm(position2.xy, 1.1f, 10.0f, 10) / 2.0f;
 
     // Multifractal.
-<<<<<<< HEAD
+
     //height = multifractal(position2.xy, 1.0f, 0.6f, 5, 0.05f) / 2.0f;
 
 	//Simplex noise
 	height =  0.25f*simplex_noise(2.5f*position2.xy);
-=======
+
 	// Multifractal(vec2 position, float H, float lacunarity, float octaves, float offset) {
-    height = (multifractal(position2.xy, 0.25f, 4.0f, 5, 0.75f) / 4.0f)-0.15f;
->>>>>>> 08a7df0f3d0045b27498639dc13b5646e5559cda
+    //height = (multifractal(position2.xy, 0.25f, 4.0f, 5, 0.75f) / 4.0f)-0.15f;
+
 
     // Ground floor (lake).
     if (height < 0.0f)
