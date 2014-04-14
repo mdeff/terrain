@@ -85,14 +85,24 @@ float perlin_noise(in vec2 position) {
 
 }
 
+// Fractal Brownian motion.
+float fBm(vec2 position) {
+
+    float height = 0.0f;
+
+    const int N = 5;
+    for (int k=1; k<=N; k++) {
+        height += 0.2f/k * perlin_noise(1.0f * k * position + 1.0f);
+    }
+
+    return height;
+
+}
+
 void main() {
 
-    // Amplitude and frequency of the noise function.
-    const float amplitude = 0.2f;
-    const float frequency = 4.0f;
-
-    // Perlin noise function.
-    height = amplitude * perlin_noise(position2.xy * frequency);
+    // Fractal Brownian motion.
+    height = fBm(position2.xy);
 
 }
 
