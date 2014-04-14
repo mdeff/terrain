@@ -28,14 +28,15 @@ vec2 fade_orig(in vec2 t) {
 // Look-up in the permutation table at index idx [0,255].
 int perm(in int idx) {
     //return texture(permTableTex, x/256.0).r;
-    int idx_mod255 = int(mod(idx, 255));
-    return int(texelFetch(permTableTex, idx_mod255, 0).r);
+    int idx_mod = int(mod(idx, 255));
+    return int(texelFetch(permTableTex, idx_mod, 0).r);
 }
 
 // Look-up in the gradient vectors table at index idx [0,3].
 float grad(in int idx, in vec2 position) {
-    int idx_mod4 = int(mod(idx, 4));
-    vec2 gradient = texelFetch(gradVectTex, idx_mod4, 0).rg;
+    //int idx_mod = int(mod(idx, 4)); // Without zeros in gradients.
+    int idx_mod = int(mod(idx, 8)); // With    zeros in gradients.
+    vec2 gradient = texelFetch(gradVectTex, idx_mod, 0).rg;
     return dot(gradient, position);
 }
 
@@ -54,18 +55,18 @@ float perlin_noise(in vec2 position) {
     vec2 disp = position - vec2(square);
 
     // Observe the displacement [0,1].
-    //height = disp.x;
-    //height = disp.y;
+    //return disp.x;
+    //return disp.y;
 
     // Generate a pseudo-random value for current square using an hash function.
     int rnd = perm( perm(square.x) + square.y );
 
     // Verify that rnd is a random number in [0,255].
-    //height = rnd / 255.0f;
+    //return rnd / 255.0f;
 
     // Noise at current position.
     float noise = grad(rnd, disp.xy);
-    //height = noise;
+    //return noise;
 
     // Noise at the 3 neightboring positions.
     rnd = perm( perm(square.x+1) + square.y+0 );
@@ -91,9 +92,14 @@ float fBm(vec2 position) {
     float height = 0.0f;
 
     const int N = 5;
+    // Loop will be unrolled by the compiler (GPU driver).
     for (int k=1; k<=N; k++) {
         height += 0.2f/k * perlin_noise(1.0f * k * position + 1.0f);
     }
+
+    // Ground floor (lake).
+    if (height < 0.0f)
+        height = 0.0f;
 
     return height;
 
@@ -103,6 +109,9 @@ void main() {
 
     // Fractal Brownian motion.
     height = fBm(position2.xy);
+
+    // Perlin noise.
+    //height = 0.2f * perlin_noise(2.0f * position2.xy);
 
 }
 

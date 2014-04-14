@@ -21,8 +21,18 @@ layout(location = 0) out vec3 color;
 void main() {
 
     // Color dependent on the elevation (similar to texture mapping).
-    float grey = displaced.z * 5.0f + 0.3f;
-    vec3 mapped = vec3(grey);
+    vec3 mapped;
+
+    // Mountain tops : grey, there is no vegetation.
+    if(displaced.z > 0.08f)
+        mapped = vec3(displaced.z * 5.0f + 0.1f);
+
+    if(displaced.z > 0.0f && displaced.z <= 0.08f)
+        mapped = vec3(0.0f, 0.2f, 0.0f);
+
+    // Lakes (altitude zero) : blue.
+    if(displaced.z<=0.0f)
+        mapped = vec3(0.0, 0.0, 1.0);
 
     // Normalize the vectors.
     vec3 L = normalize(light_dir);

@@ -63,8 +63,9 @@ GLuint gen_permutation_table(GLuint programID) {
         permutationTable[idx] = tmp;
     }
 
-    for(int k=0; k<size; ++k)
-        cout << permutationTable[k] << " ";
+    // Print the permutation table.
+    //for(int k=0; k<size; ++k)
+    //    cout << permutationTable[k] << " ";
 
     /// Bind the permutation table to texture 0.
     const GLuint permTableTex = 0;
@@ -100,10 +101,14 @@ GLuint gen_gradient_vectors(GLuint programID) {
     /// Gradients for 2D noise.
     //static GLbyte gradients[nVectors*dim] = {
     static GLfloat gradients[] = {
-         1.0f,  1.0f,
-        -1.0f,  1.0f,
-         1.0f, -1.0f,
-        -1.0f, -1.0f,
+        1.0f,  1.0f,
+       -1.0f,  1.0f,
+        1.0f, -1.0f,
+       -1.0f, -1.0f,
+        0.0f,  1.0f,
+        0.0f, -1.0f,
+        1.0f,  0.0f,
+       -1.0f,  0.0f,
     };
 
     /// Bind the gradient vectors to texture 1.
@@ -117,7 +122,7 @@ GLuint gen_gradient_vectors(GLuint programID) {
     // Filled image, two color components, unclamped 32 bits float.
     // GL_RG8I does not work on my machine.
     //glTexImage1D(GL_TEXTURE_1D, 0, GL_RG8I, nVectors, 0, GL_RG, GL_BYTE, gradients);
-    glTexImage1D(GL_TEXTURE_1D, 0, GL_RG32F, 4, 0, GL_RG, GL_FLOAT, gradients);
+    glTexImage1D(GL_TEXTURE_1D, 0, GL_RG32F, 8, 0, GL_RG, GL_FLOAT, gradients);
 
     /// Set the texture addressing to wrap (or repeat) mode, so we don't have to
     /// worry about extending the table to avoid indexing past the end of the array.
