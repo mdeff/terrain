@@ -1,3 +1,15 @@
+Height map
+----------
+
+Put together some terrain generation techniques (interpolation between them)
+to get different sort of mountains. For large terrain we could have high and
+abrupt mountains and also a prairie / plane.
+
+Constrain a depth to zero to form an island.
+
+Ocean waves around island or lakes.
+
+
 Tesselation
 -----------
 
