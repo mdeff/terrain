@@ -104,16 +104,85 @@ float fBm(vec2 position, float H, float lacunarity, int octaves) {
 // Multifractal : fractal system which has a different fractal dimension in different regions.
 float multifractal(vec2 position, float H, float lacunarity, float octaves, float offset) {
 
-    float height = 1.0f;
+	
+	float weight = (perlin_noise(position) + offset) * pow(lacunarity, 0)/3.0f;
+	float signal = 0.0f;
+    float height =  weight;
 
     // Loop will be unrolled by the compiler (GPU driver).
     for (int k=0; k<octaves; k++) {
-        height   *= (perlin_noise(position) + offset) * pow(lacunarity, -H*k);
+		if ( weight > 1.0f ) weight = 1.0f;
+		
+		signal = (perlin_noise(position) + offset) * pow(lacunarity, -H*k);
+
+		height += weight * signal;
+
+		weight *= signal;
+
         position *= lacunarity;
     }
+	return height;
+}
 
-    return height;
+float simplex_noise(vec2 v)
+{
+	float n0,n1,n2;
+	const vec2 C = vec2(0.366025403, // 0.5*(sqrt(3.0)-1.0)
+					 0.211324865);   //(3.0-Math.sqrt(3.0))/6.0
+   		                                       
+	
+    //first determine which is the current simplex cell
+	//Skew the triangle grid
+	float s = (v.x+v.y)*C.x;
+	vec2 xy = v+s;
+	ivec2 xy0 = ivec2(floor(xy));
 
+	//Unskew 
+	float t = (xy0.x+xy0.y)*C.y;
+	vec2 XY0 = vec2(xy0)-t;
+	vec2 xy_dist = v-XY0;  
+
+	//determine which equalateral triangle we are in
+	vec2 i = (xy_dist.x > xy_dist.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+
+	// A step of (1,0) in i means a step of (1-c,-c) in v, and
+    // a step of (0,1) in i means a step of (-c,1-c) in v where
+    // c = (3-sqrt(3))/6
+
+	//Middle corner
+	vec2 xy1 = xy_dist - i + vec2(C.y,C.y);
+	//Last corner
+	vec2 xy2 = xy_dist - vec2(1.0f - 2.0f*C.y,1.0f - 2.0f*C.y);
+
+	//float a = fmod(100,356);
+	//Calculate the contribution from the three corners
+	float t0 = 0.5f - xy_dist.x*xy_dist.x -xy_dist.y*xy_dist.y;
+	if (t0<0.0f) 
+		n0 = 0.0f;
+	else {
+		t0 *= t0;
+		n0 = t0*t0*grad(perm(int(xy0.x+perm(int(xy0.y)))),xy_dist);
+	}
+
+	float t1 = 0.5f - xy1.x*xy1.x - xy1.y*xy1.y;
+	if(t1 < 0.0f) 
+		n1 = 0.0f;
+    else {
+      t1 *= t1;
+      n1 = t1 * t1 * grad(perm(int(xy0.x+i.x+perm(int(xy0.y+i.y)))), xy1);
+    }
+
+	float t2 = 0.5f - xy2.x*xy2.x-xy2.y*xy2.y;
+    if(t2 < 0.0f) 
+		n2 = 0.0f;
+    else {
+		 t2 *= t2;
+		 n2 = t2 * t2 * grad(perm(int(xy0.x+1+perm(int(xy0.y+1)))), xy2);
+    }
+
+	//return 0.5;
+	return (80.0*(n0+n1+n2)); 
+  
 }
 
 void main() {
@@ -125,7 +194,15 @@ void main() {
     //height = fBm(position2.xy, 1.1f, 10.0f, 10) / 2.0f;
 
     // Multifractal.
-    height = multifractal(position2.xy, 1.0f, 0.6f, 5, 0.05f) / 2.0f;
+
+    //height = multifractal(position2.xy, 1.0f, 0.6f, 5, 0.05f) / 2.0f;
+
+	//Simplex noise
+	height =  0.25f*simplex_noise(2.5f*position2.xy);
+
+	// Multifractal(vec2 position, float H, float lacunarity, float octaves, float offset) {
+    //height = (multifractal(position2.xy, 0.25f, 4.0f, 5, 0.75f) / 4.0f)-0.15f;
+
 
     // Ground floor (lake).
     if (height < 0.0f)
