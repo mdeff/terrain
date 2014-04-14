@@ -154,6 +154,32 @@ texelFetch instead of interpolation
 \end{figure}
 
 \subsection{Advanced topic : Simplex noise}
+For Perlin noise, we leverage on a square grid (4 corners), which is sometimes unnecessary. Simplex noise, in contrary bases on a \textbf{simplex} grid, which in our 2D case is an equilateral triangles (see figure~\ref{simplexgrid}). 
+
+Since it would be very computationally expensive to find the position of three surrounding neighbors (colorfully encircled), we can skew the grid so that it can have the shape of square grid (Figure~\ref{skewdsimplexgrid}). Once we skew the grid, it would be every easy to find the triangle we are in by simple test of $x$ and $y$ coordinate (figure~\ref{findequilateral}).
+\begin{figure}[H]
+	\centering
+	\subfloat[Simplex grid]{
+		\label{simplexgrid}
+		\includegraphics[height=4cm]{{{img_stage1/simplexgrid}}}
+	} \quad
+	\subfloat[Skewed simplex grid]{
+		\label{skewdsimplexgrid}
+		\includegraphics[height=4cm]{{{img_stage1/simplexgridskewed}}}
+	} \quad
+		\subfloat[Determine current equilateral]{
+			\label{findequilateral}
+			\includegraphics[height=4cm]{{{img_stage1/xandy}}}
+		}
+	\caption{The simplex grid and its skewed version used for constructing Simplex noise.}
+	\label{simplex_grid}
+\end{figure}
+
+After retrieving the coordinates of three surrounding corners, we use the same pseudo-random process as used in Perlin noise to look up for gradient of each corner. Then we find the contribution of each corner, which is proportional to the cube of the distance $(0.5 - x_d^2 - y_d^2)$. Here $x_d$ and $y_d$ is the difference in $x$ and $y$ axis from the corner to the position we are considering. Also, the proportional ratio is the dot product of the random gradient and the position vector.
+
+Finally, we just sum up the contribution of each corner and scale it by some scalar (in our case is \textbf{80}).
+
+
 
 \section{Results}
 
