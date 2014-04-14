@@ -61,6 +61,12 @@ We then render it as a triangle mesh by function \texttt{glDrawElements} to get 
 	\label{triangle_grid}
 \end{figure}
 
+\subsection{Diffuse shading}
+The terrain generated from displacing each vertex in base triangle grid according to height map will be applied the diffuse shading for better visualization. In short, each vertex will be colored by the result value of following equation: $I_dk_d(N\cdot L)$ where $I_d$ and $k_d$ is the diffuse color of the light source and material, respectively. $N$ is the normal vector at that vertex and $L$ is the normalized light direction vector.
+
+We define te diffuse color of light source and material as well as the light position so except $N$, other values are very easy to compute. For calculating normal vector $N$, we use finite difference to approximate a gradient vectors $\nabla x$ and $\nabla y$ along \textit{x} and \textit{y} directions. Note that to compute theses gradients, we need the elevation at four neighboring vertices as well, which can be done again by looking up on the height map that we generated.
+
+Then, the normal vector will be cross product of $\nabla x$ and $\nabla y$. 
 
 \subsection{Height map}
 
