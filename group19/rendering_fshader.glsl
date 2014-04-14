@@ -1,7 +1,7 @@
 #version 330 core
 
-// First output buffer is pixel color.
-layout(location = 0) out vec3 color;
+uniform vec3 Id;
+uniform vec3 kd;
 
 // Position (world coordinates) after heightmap displacement.
 //in vec3 displaced;
@@ -11,8 +11,8 @@ in vec3 light_dir;
 //normal vector
 in vec3 normal_mv;
 
-uniform vec3 Id;
-uniform vec3 kd;
+// First output buffer is pixel color.
+layout(location = 0) out vec3 color;
 
 
 void main() {

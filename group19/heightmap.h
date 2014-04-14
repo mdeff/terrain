@@ -16,7 +16,7 @@ GLuint gen_test_heightmap() {
     glBindTexture(GL_TEXTURE_2D, textureID);
 
     /// Flat terrain.
-    //float pixels[] = {1.0f};
+    //GLfloat pixels[] = {1.0f};
     //glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, 1, 1, 0, GL_RED, GL_FLOAT, pixels);
 
     /// Sort of "pyramid".
@@ -24,7 +24,7 @@ GLuint gen_test_heightmap() {
     // (0, 0) (.5, 0) (1, 0)
     // (0,.5) (.5,.5) (1,.5)
     // (0, 1) (.5, 1) (1, 1)
-    float pixels[] = {
+    GLfloat pixels[] = {
         0.0f, 0.5f, 0.0f,
         0.5f, 1.0f, 0.5f,
         0.0f, 0.5f, 0.0f,
@@ -44,7 +44,8 @@ GLuint gen_permutation_table(GLuint programID) {
 
     /// Pseudo-randomly generate the permutation table.
     const int size(256);
-    GLubyte permutationTable[size];
+//    GLubyte permutationTable[size];
+    GLfloat permutationTable[size];
     for(int k=0; k<size; ++k)
         permutationTable[k] = k;
 
@@ -52,7 +53,8 @@ GLuint gen_permutation_table(GLuint programID) {
     srand(10);
 
     // Fisher-Yates / Knuth shuffle.
-    GLubyte tmp;
+//    GLubyte tmp;
+    GLfloat tmp;
     for(int k=size-1; k>0; --k) {
         // Random number with 0 <= rnd <= k.
         GLuint idx = int(float(k) * rand() / RAND_MAX);
@@ -61,6 +63,9 @@ GLuint gen_permutation_table(GLuint programID) {
         permutationTable[idx] = tmp;
     }
 
+    for(int k=0; k<size; ++k)
+        cout << permutationTable[k] << " ";
+
     /// Bind the permutation table to texture 0.
     const GLuint permTableTex = 0;
     glActiveTexture(GL_TEXTURE0+permTableTex);
@@ -68,18 +73,22 @@ GLuint gen_permutation_table(GLuint programID) {
     glUniform1i(uniformID, permTableTex);
     GLuint permTableTexID;
     glGenTextures(1, &permTableTexID);
-    glBindTexture(GL_TEXTURE_2D, permTableTexID);
-    glTexImage1D(GL_TEXTURE_1D, 0, GL_R8UI, size, 0, GL_RED, GL_UNSIGNED_BYTE, permutationTable);
+    glBindTexture(GL_TEXTURE_1D, permTableTexID);
+    //glBindSampler(0, linearFiltering);
+    // Filled image, one color component, unclamped 32 bits float.
+    // GL_R8UI or GL_R32I does not work on my machine.
+    //glTexImage1D(GL_TEXTURE_1D, 0, GL_R8UI, size, 0, GL_RED, GL_UNSIGNED_BYTE, permutationTable);
+    glTexImage1D(GL_TEXTURE_1D, 0, GL_R32F, size, 0, GL_RED, GL_FLOAT, permutationTable);
 
     /// Set the texture addressing to wrap (or repeat) mode, so we don't have to
     /// worry about extending the table to avoid indexing past the end of the array.
     /// Only in s direction, 1D texture.
-    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    /// No wraping for integer indexing (works however on normalized coordinates).
+    //glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 
-    /// Simple filtering (needed).
-//    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-//    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    /// We do not want any interpolation of our random integers.
+    //glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
     return permTableTexID;
 
@@ -89,13 +98,12 @@ GLuint gen_permutation_table(GLuint programID) {
 GLuint gen_gradient_vectors(GLuint programID) {
 
     /// Gradients for 2D noise.
-    const int nVectors(4);
-    const int dim(2);
-    static GLbyte gradients[nVectors*dim] = {
-         1, 1,
-        -1, 1,
-         1,-1,
-        -1,-1,
+    //static GLbyte gradients[nVectors*dim] = {
+    static GLfloat gradients[] = {
+         1.0f,  1.0f,
+        -1.0f,  1.0f,
+         1.0f, -1.0f,
+        -1.0f, -1.0f,
     };
 
     /// Bind the gradient vectors to texture 1.
@@ -105,14 +113,21 @@ GLuint gen_gradient_vectors(GLuint programID) {
     glUniform1i(uniformID, gradVectTex);
     GLuint gradVectTexID;
     glGenTextures(1, &gradVectTexID);
-    glBindTexture(GL_TEXTURE_2D, gradVectTexID);
-    glTexImage1D(GL_TEXTURE_1D, 0, GL_RG8I, nVectors, 0, GL_RG, GL_BYTE, gradients);
+    glBindTexture(GL_TEXTURE_1D, gradVectTexID);
+    // Filled image, two color components, unclamped 32 bits float.
+    // GL_RG8I does not work on my machine.
+    //glTexImage1D(GL_TEXTURE_1D, 0, GL_RG8I, nVectors, 0, GL_RG, GL_BYTE, gradients);
+    glTexImage1D(GL_TEXTURE_1D, 0, GL_RG32F, 4, 0, GL_RG, GL_FLOAT, gradients);
 
     /// Set the texture addressing to wrap (or repeat) mode, so we don't have to
     /// worry about extending the table to avoid indexing past the end of the array.
-    /// Only in s direction, t direction is the 2 spatial components (x,y).
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    /// Only in s direction, 1D texture.
+    /// No wraping for integer indexing (works however on normalized coordinates).
+    //glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+
+    /// We do not want any interpolation of our vectors.
+    //glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
     return gradVectTexID;
 }
@@ -148,7 +163,7 @@ GLuint gen_heightmap() {
     GLuint heightMapTexID;
     glGenTextures(1, &heightMapTexID);
     glBindTexture(GL_TEXTURE_2D, heightMapTexID);
-    // Empty image (no data), one color component, 32 bits floating point format.
+    // Empty image (no data), one color component, unclamped 32 bits float.
     glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, texWidth, texHeight, 0, GL_RED, GL_FLOAT, 0);
     // Simple filtering (needed).
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
