@@ -15,7 +15,7 @@ GLuint renderingProgramID;
 
 /// NxN triangle grid.
 /// const is better than #define : type checked, optimized out anyway
-const int N = 128;
+const int N = 256;
 const int nVertices = N*N;
 const int nIndices = (N-1)*(N-1)*6;
 
@@ -37,8 +37,9 @@ void update_matrix_stack(const mat4& model) {
 //    vec3 cam_pos(0.0f, 0.0f, 5.0f);
 //    vec3 cam_up(0.0f, 1.0f, 0.0f);
     /// Camera is in a corner, looking down to the terrain.
-    vec3 cam_pos(3.0f, -3.0f, 1.0f);
-//    vec3 cam_pos(2.0f, -2.0f, 1.5f);
+    //vec3 cam_pos(3.0f, -3.0f, 1.0f);
+    //vec3 cam_pos(2.0f, -2.0f, 1.5f);
+    vec3 cam_pos(2.0f, -2.0f, 1.2f);
     vec3 cam_up(0.0f, 0.0f, 1.0f);
     static mat4 view = Eigen::lookAt(cam_pos, cam_look, cam_up);
 

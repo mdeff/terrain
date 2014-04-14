@@ -86,20 +86,16 @@ float perlin_noise(in vec2 position) {
 
 }
 
-// Fractal Brownian motion.
-float fBm(vec2 position) {
+// Fractal Brownian motion : sum_k l^(-k*H) * f(l^k * x).
+float fBm(vec2 position, float H, float lacunarity, int octaves) {
 
     float height = 0.0f;
 
-    const int N = 5;
     // Loop will be unrolled by the compiler (GPU driver).
-    for (int k=1; k<=N; k++) {
-        height += 0.2f/k * perlin_noise(1.0f * k * position + 1.0f);
+    for (int k=0; k<octaves; k++) {
+        height += perlin_noise(position) * pow(lacunarity, -H*k);
+        position *= lacunarity;
     }
-
-    // Ground floor (lake).
-    if (height < 0.0f)
-        height = 0.0f;
 
     return height;
 
@@ -108,10 +104,14 @@ float fBm(vec2 position) {
 void main() {
 
     // Fractal Brownian motion.
-    height = fBm(position2.xy);
+    height = fBm(position2.xy, 1.1f, 10.0f, 10) / 2.0f;
 
     // Perlin noise.
     //height = 0.2f * perlin_noise(2.0f * position2.xy);
+
+    // Ground floor (lake).
+    if (height < 0.0f)
+        height = 0.0f;
 
 }
 
