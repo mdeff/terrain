@@ -111,3 +111,33 @@ But as I said, all out of the scope of the course. :-)
 
 ################################################################################
 
+Hello,
+
+The framework supplie use GLFW version 2. Could we use in our project a newer
+version (acually the 3.0) ?
+
+More generally, should we use the same version of the API as given to us or
+could we use an another version ?
+
+################################################################################
+
+Dear Fabien,
+
+Yes, we don't use the latest glfw3. If you want to know, we made this decision
+because glfw2 is more similar to glut (used in the class textbook). Using a
+different library would give you nothing in terms of learning computer
+graphics, i.e. don't reinvent the wheel!!!
+
+Nonetheless, if you have any strong reason that makes you think that GLFW3
+would be a better choice, I invite you to message me directly. We might
+consider it for when the course will be offered in the coming years.
+
+This said, we had discussed the use of external libraries with the teaching
+team. The rule is that you could use a library of your choice. The consequence
+would be that you would obtain no support from the TAs and that if the
+application (for any reason) will not compile/run while we are grading, then
+your grade will suffer the consequences.
+
+Overall, IMHO, it's not worth the risk!!  With my best regards --Andrea
+
+################################################################################
