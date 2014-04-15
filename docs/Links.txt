@@ -1,0 +1,26 @@
+Framebuffer object (FBO) :
+http://www.opengl.org/wiki/Framebuffer_Object
+
+Sampler (texture sampling) :
+https://www.opengl.org/wiki/Sampler_(GLSL)
+
+Random shuffle algorithm :
+https://en.wikipedia.org/wiki/Fisher-Yates
+
+Perlin noise and turbulence :
+http://paulbourke.net/texture_colour/perlin/
+
+Render to texture :
+http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-14-render-to-texture/
+
+Multi-texturing :
+http://antongerdelan.net/opengl/multitextures.html
+
+Random number in glsl :
+http://stackoverflow.com/questions/12964279/whats-the-origin-of-this-glsl-rand-one-liner
+
+Improved Perlin noise on the GPU :
+http://http.developer.nvidia.com/GPUGems2/gpugems2_chapter26.html
+
+Improved Perlin noise reference implementation (CPU) :
+http://cs.nyu.edu/~perlin/noise/
