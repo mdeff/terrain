@@ -1,0 +1,8 @@
+Stage 1
+-------
+
+Good.
+
+The report is very nice to read, except some typo. What you have implemented
+is very good. However, you need to find better parameters to obtain more
+fascinating terrains.
