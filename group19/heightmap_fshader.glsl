@@ -230,13 +230,13 @@ void main() {
     //height = (multifractal(position2.xy, 0.25f, 4.0f, 5, 0.75f) / 4.0f)-0.15f;
     //height = multifractal(position2.xy, 1.0f, 0.6f, 5, 0.05f) / 2.0f;
     //height = (multifractal(position2.xy, 0.25f, 4.0f, 5, 0.75f) / 4.0f)-0.15f;
-    //height = (multifractalSimplex(position2.xy, 0.25f, 4.0f, 5, 0.75f) / 3.0f)-0.16f;
+    height = (multifractalSimplex(position2.xy, 0.25f, 4.0f, 5, 0.75f) / 3.0f)-0.14f;
 
     //Simplex noise
     //height =  0.25f*simplex_noise(2.5f*position2.xy);
 
     //Turbulence
-    height = turbulence(position2.xy, 1.1f, 10.0f, 10) / 2.0f;
+    //height = turbulence(position2.xy, 1.1f, 10.0f, 10) / 2.0f;
     
     // Ground floor (lake).
     if (height < 0.0f)

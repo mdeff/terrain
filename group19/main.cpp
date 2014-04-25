@@ -23,6 +23,32 @@ const int nIndices = (N-1)*(N-1)*6;
 const int windowWidth(1024);
 const int windowHeight(768);
 
+GLuint loadTexture(const char * imagepath, const int slotNum){
+    // Create one OpenGL texture
+    GLuint textureID;
+    glGenTextures(ONE, &textureID);
+
+	glActiveTexture(GL_TEXTURE0 + slotNum);
+    // "Bind" the newly created texture : all future texture functions will modify this texture
+    glBindTexture(GL_TEXTURE_2D, textureID);
+
+    // Read the file, call glTexImage2D with the right parameters
+    if (glfwLoadTexture2D(imagepath, 0)){
+		// Nice trilinear filtering.
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glGenerateMipmap(GL_TEXTURE_2D); 
+	} else {
+		std::cout << "Cannot load texture file!" << endl;
+		return -1;
+	}
+
+    // Return the ID of the texture we just created
+    return textureID;
+}
+
 
 void update_matrix_stack(const mat4& model) {
 
@@ -131,8 +157,9 @@ void init() {
     renderingProgramID = compile_shaders(rendering_vshader, rendering_fshader);
     if(!renderingProgramID)
         exit(EXIT_FAILURE);
-    glUseProgram(renderingProgramID);
+    glUseProgram(renderingProgramID);	
 
+	
     /// Bind the heightmap to texture 0.
     const GLuint heightMapTex = 0;
     glActiveTexture(GL_TEXTURE0+heightMapTex);
@@ -140,11 +167,43 @@ void init() {
     GLuint uniformID = glGetUniformLocation(renderingProgramID, "heightMapTex");
     glUniform1i(uniformID, heightMapTex);
 
+	//[Alex]
+	// Load and use multi textures 
+	const GLuint sandTex = 1;
+	GLuint sandID = loadTexture("../../texture/sand.tga", sandTex);
+	GLuint sandTextId = glGetUniformLocation(renderingProgramID, "sandTex");
+    glUniform1i(sandTextId, sandTex);
+
+	const GLuint iceMoutainTex = 2;
+	GLuint iceMoutainID = loadTexture("../../texture/DordonaRange.tga", iceMoutainTex);
+	GLuint iceMoutainTexId  = glGetUniformLocation(renderingProgramID, "iceMoutainTex");
+    glUniform1i(iceMoutainTexId, iceMoutainTex);
+
+	const GLuint treeTex = 3;
+	GLuint treeID = loadTexture("../../texture/forest.tga", treeTex);
+	GLuint treeTexId  = glGetUniformLocation(renderingProgramID, "treeTex");
+    glUniform1i(treeTexId, treeTex);
+
+	const GLuint stoneTex = 4;
+	GLuint stoneID = loadTexture("../../texture/stone.tga", stoneTex);
+	GLuint stoneTexId  = glGetUniformLocation(renderingProgramID, "stoneTex");
+    glUniform1i(stoneTexId, stoneTex);
+
+
+	const GLuint waterTex = 5;
+	GLuint waterID = loadTexture("../../texture/water.tga", waterTex);
+	GLuint waterTexId  = glGetUniformLocation(renderingProgramID, "waterTex");
+    glUniform1i(waterTexId, waterTex);
+
+	const GLuint snowTex = 6;
+	GLuint snowID = loadTexture("../../texture/snow.tga", snowTex);
+	GLuint snowTexId  = glGetUniformLocation(renderingProgramID, "snowTex");
+    glUniform1i(snowTexId, snowTex);
     /// Generate a flat and regular triangle grid.
     gen_triangle_grid();
 
     /// Define light properties and pass them to the shaders.
-    vec3 light_pos(-1.0f, 1.0f, 2.0f);	
+    vec3 light_pos(5.0f, 2.0f, 7.0f);	
     vec3 Id(1.0f, 1.0f, 1.0f);
     GLuint light_pos_id = glGetUniformLocation(renderingProgramID, "light_pos"); //Given in camera space
     GLuint Id_id = glGetUniformLocation(renderingProgramID, "Id");
@@ -152,7 +211,7 @@ void init() {
     glUniform3fv(Id_id, ONE, Id.data());
 
     /// Define the material properties and pass them to the shaders.
-    vec3 kd(0.5f, 0.5f, 0.5f);
+    vec3 kd(0.35f, 0.35f, 0.35f);
     GLuint kd_id = glGetUniformLocation(renderingProgramID, "kd");
     glUniform3fv(kd_id, ONE, kd.data());
 
