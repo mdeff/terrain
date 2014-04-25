@@ -1,0 +1,9 @@
+1. We are free too choose texture files. I chose some and manually convert from .gtx file to .tga file before using. This is to avoid the need of using external library for reading .gtx file.
+
+2. I lower kd parameter (used for diffusion) for better contrast.
+
+3. I changed the light position to have a farther light source, which is better for our terrain IMO.
+
+4. I am not sure about blending function I use. Check the function mapped_function and tell me your idea.
+
+5. Our blending is not good enough. Especially the part I blend between stone and tree. I think the reason is partially our mountain is not "random" enough so that it contains both steep and not steep regions. 
