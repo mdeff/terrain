@@ -10,9 +10,10 @@ uniform sampler2D heightMapTex;
 
 // First input buffer. Defined here, retrieved in C++ by glGetAttribLocation.
 layout(location = 0) in vec3 position;
-layout(location = 1) in vec3 normal;
+//layout(location = 1) in vec3 normal;
 
 // Position (world coordinates) after heightmap displacement.
+// Add suffix for coordinate system.
 out vec3 displaced;
 //light direction
 out vec3 light_dir;
@@ -46,10 +47,13 @@ void main() {
     vec3 y_next = vec3(position.x, position.y, 0.0);
 
     //Update location and truncate it
+    // We could maybe use a repetitive heightmap and avoid clamping.
     x_prev.x = min(-1.0,x_prev.x - grid_step); x_next.x = max(1.0, x_next.x+grid_step);
     y_prev.y = min(-1.0,y_prev.y - grid_step); y_next.y = max(1.0, y_next.y+grid_step);
 
     //find the evalation at surrounding positions
+    // TODO : three points are too much for a first order derivative.
+    // Use only two (current and prev / next) or three (current, prev and next)
     x_prev.z = texture2D(heightMapTex, x_prev.xy).r;
     x_next.z = texture2D(heightMapTex, x_next.xy).r;
     y_prev.z = texture2D(heightMapTex, y_prev.xy).r;
