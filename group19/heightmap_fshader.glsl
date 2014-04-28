@@ -192,7 +192,7 @@ float simplex_noise(vec2 v)
     }
 
     //return 0.5;
-    return (80.0*(n0+n1+n2));
+    return (100.0*(n0+n1+n2));
 
 }
 
@@ -221,7 +221,7 @@ float multifractalSimplex(vec2 position, float H, float lacunarity, float octave
 void main() {
 
     // Perlin noise.
-    //height = 0.25f * perlin_noise(2.5f * position2.xy);
+    //height = 0.5f * perlin_noise(6.5f * position2.xy);
 
     // Fractal Brownian motion.
     //height = fBm(position2.xy, 1.1f, 10.0f, 10) / 2.0f;
@@ -230,10 +230,10 @@ void main() {
     //height = (multifractal(position2.xy, 0.25f, 4.0f, 5, 0.75f) / 4.0f)-0.15f;
     //height = multifractal(position2.xy, 1.0f, 0.6f, 5, 0.05f) / 2.0f;
     //height = (multifractal(position2.xy, 0.25f, 4.0f, 5, 0.75f) / 4.0f)-0.15f;
-    height = (multifractalSimplex(position2.xy, 0.25f, 4.0f, 5, 0.75f) / 3.0f)-0.14f;
+	height = (multifractalSimplex(position2.xy, 0.25f, 4.0f, 5, 0.75f) / 3.0f)-0.14f;
 
     //Simplex noise
-    //height =  0.25f*simplex_noise(2.5f*position2.xy);
+    //height =  0.25f*simplex_noise(2.0f*position2.xy);
 
     //Turbulence
     //height = turbulence(position2.xy, 1.1f, 10.0f, 10) / 2.0f;

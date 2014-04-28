@@ -5,11 +5,13 @@
 
 #include "common.h"
 #include "heightmap.h"
+#include "skybox.h"
 
 #include "rendering_vshader.h"
 #include "rendering_fshader.h"
 
-
+//Generate skybox
+	Skybox test;
 /// Shader program.
 GLuint renderingProgramID;
 
@@ -22,38 +24,13 @@ const int nIndices = (N-1)*(N-1)*6;
 /// Screen size.
 const int windowWidth(1024);
 const int windowHeight(768);
-
-GLuint loadTexture(const char * imagepath, const int slotNum){
-    // Create one OpenGL texture
-    GLuint textureID;
-    glGenTextures(ONE, &textureID);
-
-	glActiveTexture(GL_TEXTURE0 + slotNum);
-    // "Bind" the newly created texture : all future texture functions will modify this texture
-    glBindTexture(GL_TEXTURE_2D, textureID);
-
-    // Read the file, call glTexImage2D with the right parameters
-    if (glfwLoadTexture2D(imagepath, 0)){
-		// Nice trilinear filtering.
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glGenerateMipmap(GL_TEXTURE_2D); 
-	} else {
-		std::cout << "Cannot load texture file!" << endl;
-		return -1;
-	}
-
-    // Return the ID of the texture we just created
-    return textureID;
-}
-
-
+static mat4 projection;
+static mat4 modelview;
 void update_matrix_stack(const mat4& model) {
 
     /// Define projection matrix (camera intrinsics)
-    static mat4 projection = Eigen::perspective(45.0f, 4.0f/3.0f, 0.1f, 10.0f);
+    //static mat4 
+	projection = Eigen::perspective(45.0f, 4.0f/3.0f, 0.1f, 10.0f);
     GLuint projectionID = glGetUniformLocation(renderingProgramID, "projection");
     glUniformMatrix4fv(projectionID, ONE, DONT_TRANSPOSE, projection.data());
 
@@ -71,7 +48,7 @@ void update_matrix_stack(const mat4& model) {
     static mat4 view = Eigen::lookAt(cam_pos, cam_look, cam_up);
 
     /// Assemble the "Model View" matrix
-    static mat4 modelview;
+    //static mat4 modelview;
     modelview = view * model;
     GLuint modelviewID = glGetUniformLocation(renderingProgramID, "modelview");
     glUniformMatrix4fv(modelviewID, ONE, DONT_TRANSPOSE, modelview.data());
@@ -203,24 +180,40 @@ void init() {
     gen_triangle_grid();
 
     /// Define light properties and pass them to the shaders.
-    vec3 light_pos(5.0f, 2.0f, 7.0f);	
+   /// Define light properties and pass them to the shaders
+    vec3 light_pos(2.0f, 3.0f, 4.0f);
+    vec3 Ia(1.0f, 1.0f, 1.0f);
     vec3 Id(1.0f, 1.0f, 1.0f);
+    vec3 Is(1.0f, 1.0f, 1.0f);
     GLuint light_pos_id = glGetUniformLocation(renderingProgramID, "light_pos"); //Given in camera space
+    GLuint Ia_id = glGetUniformLocation(renderingProgramID, "Ia");
     GLuint Id_id = glGetUniformLocation(renderingProgramID, "Id");
+    GLuint Is_id = glGetUniformLocation(renderingProgramID, "Is");
     glUniform3fv(light_pos_id, ONE, light_pos.data());
+    glUniform3fv(Ia_id, ONE, Ia.data());
     glUniform3fv(Id_id, ONE, Id.data());
+    glUniform3fv(Is_id, ONE, Is.data());
 
-    /// Define the material properties and pass them to the shaders.
-    vec3 kd(0.35f, 0.35f, 0.35f);
+
+    /// Define the material properties and pass them to the shaders
+    vec3 ka(0.8f, 0.8f, 0.8f);
+    vec3 kd(0.5f, 0.45f, 0.5f);
+    vec3 ks(0.8f, 0.8f, 0.8f);
+    float p = 30.0f;
+    GLuint ka_id = glGetUniformLocation(renderingProgramID, "ka");
     GLuint kd_id = glGetUniformLocation(renderingProgramID, "kd");
+    GLuint ks_id = glGetUniformLocation(renderingProgramID, "ks");
+    GLuint p_id = glGetUniformLocation(renderingProgramID, "p");
+    glUniform3fv(ka_id, ONE, ka.data());
     glUniform3fv(kd_id, ONE, kd.data());
-
-    /// Pass the size of the base grid to shader.
-    GLuint N_id = glGetUniformLocation(renderingProgramID, "N");
-    glUniform1f(N_id, N);
+    glUniform3fv(ks_id, ONE, ks.data());
+    glUniform1f(p_id, p);
 
     /// Initialize the matrix stack.
     update_matrix_stack(mat4::Identity());
+	//test.init();
+	
+	
 
 }
 
@@ -228,15 +221,18 @@ void init() {
 void display() {
     //To render only the boundary
     //comment it if you want to render full triangles
-//    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, ZERO_BUFFER_OFFSET);
+	
+	//test.draw(projection, modelview);
+	
 }
 
 
 int main(int, char**) {
     glfwInitWindowSize(windowWidth, windowHeight);
-    glfwCreateWindow("Project - Group 19");
+    glfwCreateWindow("Project - Group 19");	
     glfwDisplayFunc(display);
     init();
     glfwTrackball(update_matrix_stack);
