@@ -239,7 +239,7 @@ void main() {
     //height = turbulence(position2.xy, 1.1f, 10.0f, 10) / 2.0f;
 
 
-	int choice = 2;
+	int choice = 3;
 
 	if(choice ==1){ //additive combination
 		float heightFBM = (fBm(position2.xy, 1.1f, 10.0f, 10) / 2.0f) ;
@@ -281,8 +281,8 @@ void main() {
 		float heightMultifractal = (multifractal(position2.xy, 0.25f, 4.0f, 5, 0.75f) / 4.0f)-0.15f;
 		float heightSimplex = 0.25f*simplex_noise(2.5f*position2.xy);
 	
-		float coef1 = position2.x;
-		float coef2 = 1-position2.x;
+		float coef1 = 2*position2.x;
+		float coef2 = 1-2*position2.x;
 		float coef3 = position2.y;
 		float coef4 = 1-position2.y;
 		float coef5 = 0.0;

@@ -63,7 +63,7 @@ void gen_triangle_grid() {
     vec3 vertices[nVertices];
     for(int y=0; y<N; y++) {
         for(int x=0; x<N; x++) {
-            vertices[y*N+x] = vec3(float(2*x)/(N-1)-1, float(2*y)/(N-1)-1, 0);
+            vertices[y*N+x] = vec3(float(2.0*x)/(N-1)-1, float(2.0*y)/(N-1)-1, 0);
         }
     }
 
@@ -162,7 +162,7 @@ void init() {
     glUniform1i(treeTexId, treeTex);
 
 	const GLuint stoneTex = 4;
-	GLuint stoneID = loadTexture("../../texture/stone.tga", stoneTex);
+	GLuint stoneID = loadTexture("../../texture/stone_2.tga", stoneTex);
 	GLuint stoneTexId  = glGetUniformLocation(renderingProgramID, "stoneTex");
     glUniform1i(stoneTexId, stoneTex);
 
@@ -181,15 +181,15 @@ void init() {
 
     /// Define light properties and pass them to the shaders.
    /// Define light properties and pass them to the shaders
-    vec3 light_pos(2.0f, 3.0f, 4.0f);
+    vec3 light_dir_tmp(1.0f,1.0f,1.0f);
     vec3 Ia(1.0f, 1.0f, 1.0f);
     vec3 Id(1.0f, 1.0f, 1.0f);
     vec3 Is(1.0f, 1.0f, 1.0f);
-    GLuint light_pos_id = glGetUniformLocation(renderingProgramID, "light_pos"); //Given in camera space
+    GLuint light_pos_id = glGetUniformLocation(renderingProgramID, "light_dir_tmp"); //Given in camera space
     GLuint Ia_id = glGetUniformLocation(renderingProgramID, "Ia");
     GLuint Id_id = glGetUniformLocation(renderingProgramID, "Id");
     GLuint Is_id = glGetUniformLocation(renderingProgramID, "Is");
-    glUniform3fv(light_pos_id, ONE, light_pos.data());
+    glUniform3fv(light_pos_id, ONE, light_dir_tmp.data());
     glUniform3fv(Ia_id, ONE, Ia.data());
     glUniform3fv(Id_id, ONE, Id.data());
     glUniform3fv(Is_id, ONE, Is.data());
@@ -197,7 +197,7 @@ void init() {
 
     /// Define the material properties and pass them to the shaders
     vec3 ka(0.8f, 0.8f, 0.8f);
-    vec3 kd(0.5f, 0.45f, 0.5f);
+    vec3 kd(0.35f, 0.25f, 0.35f);
     vec3 ks(0.8f, 0.8f, 0.8f);
     float p = 30.0f;
     GLuint ka_id = glGetUniformLocation(renderingProgramID, "ka");
@@ -209,6 +209,8 @@ void init() {
     glUniform3fv(ks_id, ONE, ks.data());
     glUniform1f(p_id, p);
 
+	GLuint N_id = glGetUniformLocation(renderingProgramID, "N");
+	glUniform1d(N_id,N);
     /// Initialize the matrix stack.
     update_matrix_stack(mat4::Identity());
 	//test.init();
