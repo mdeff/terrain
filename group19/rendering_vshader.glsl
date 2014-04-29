@@ -44,6 +44,6 @@ void main() {
 
     //compute the light direction
     light_dir = light_pos - vec3(position_mv);
-
+	view_dir = vec3(position_mv);
 
 }

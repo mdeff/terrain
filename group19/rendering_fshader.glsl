@@ -1,10 +1,12 @@
 #version 330 core
 
-uniform vec3 Ia, Id, Is;
-uniform vec3 ka, kd, ks;
+uniform vec3 Ia;
+uniform vec3 Id;
+uniform vec3 Is;
+uniform vec3 ka;
+uniform vec3 kd;
+uniform vec3 ks;
 uniform float p;
-
-
 
 // First texture. Defined by glActiveTexture and passed by glUniform1i.
 uniform sampler2D heightMapTex;
