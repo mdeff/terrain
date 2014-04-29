@@ -116,7 +116,7 @@ void main() {
 	//Ambient color component
 	vec3 ambient = Ia * ka * mapped;
     // Assemble the colors.
-    color = ambient + diffuse;
+    color = ambient + diffuse + specular;
 	
 
 }

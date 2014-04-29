@@ -196,10 +196,10 @@ void init() {
 
 
     /// Define the material properties and pass them to the shaders
-    vec3 ka(0.8f, 0.8f, 0.8f);
+    vec3 ka(0.65f, 0.7f, 0.65f);
     vec3 kd(0.35f, 0.25f, 0.35f);
-    vec3 ks(0.8f, 0.8f, 0.8f);
-    float p = 30.0f;
+    vec3 ks(0.35f, 0.25f, 0.35f);
+    float p = 60.0f;
     GLuint ka_id = glGetUniformLocation(renderingProgramID, "ka");
     GLuint kd_id = glGetUniformLocation(renderingProgramID, "kd");
     GLuint ks_id = glGetUniformLocation(renderingProgramID, "ks");
