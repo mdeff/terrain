@@ -7,6 +7,7 @@ uniform vec3 ka;
 uniform vec3 kd;
 uniform vec3 ks;
 uniform float p;
+uniform float timer;
 
 uniform int N; //size of the grid
 
@@ -31,14 +32,12 @@ in vec3 light_dir;
 //view direction
 in vec3 view_dir;
 
-
-
 // First output buffer is pixel color.
 layout(location = 0) out vec3 color;
 
-
 void main() {
 
+	float offset = timer/50000; 
 	//
 	float grid_size = 2.0/float(N);
 	float tex_size = grid_size/2.0;
@@ -86,7 +85,7 @@ void main() {
 	float slope = smoothstep(0.35, 0.65 , normal.z);
 	
 	if(displaced.z < ground) {
-		mapped = texture2D(waterTex, displaced.xy).rgb;
+		mapped = texture2D(waterTex, vec2(displaced.x+offset,displaced.y)).rgb;
 	} else if (displaced.z < sandMax) {
 		mapped = texture2D(sandTex, displaced.xy).rgb;
 	} else if (displaced.z < forestMin) {  //mix between sand, rock
