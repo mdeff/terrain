@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <time.h>
 
 #include "common.h"
 #include "heightmap.h"
@@ -9,6 +10,8 @@
 
 #include "rendering_vshader.h"
 #include "rendering_fshader.h"
+
+const float time0 = time(NULL);
 
 //Generate skybox
 	Skybox test;
@@ -166,7 +169,6 @@ void init() {
 	GLuint stoneTexId  = glGetUniformLocation(renderingProgramID, "stoneTex");
     glUniform1i(stoneTexId, stoneTex);
 
-
 	const GLuint waterTex = 5;
 	GLuint waterID = loadTexture("../../texture/water.tga", waterTex);
 	GLuint waterTexId  = glGetUniformLocation(renderingProgramID, "waterTex");
@@ -193,8 +195,7 @@ void init() {
     glUniform3fv(Ia_id, ONE, Ia.data());
     glUniform3fv(Id_id, ONE, Id.data());
     glUniform3fv(Is_id, ONE, Is.data());
-
-
+    
     /// Define the material properties and pass them to the shaders
     vec3 ka(0.65f, 0.7f, 0.65f);
     vec3 kd(0.35f, 0.25f, 0.35f);
@@ -229,6 +230,12 @@ void display() {
 	
 	//test.draw(projection, modelview);
 	
+	//send time valu to animate water
+	float timer = clock() ;//%500 
+	GLuint timer_Id = glGetUniformLocation(renderingProgramID, "timer");
+    glUniform1f(timer_Id, timer);
+
+	cout<<timer<<endl;
 }
 
 
