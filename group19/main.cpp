@@ -43,11 +43,11 @@ void update_matrix_stack(const mat4& model) {
 //    vec3 cam_pos(0.0f, 0.0f, 5.0f);
 //    vec3 cam_up(0.0f, 1.0f, 0.0f);
     /// Camera is in a corner, looking down to the terrain.
-    //vec3 cam_pos(3.0f, -3.0f, 1.0f);
+    vec3 cam_pos(2.5f, -2.0f, 1.8f);
     //vec3 cam_pos(2.0f, -2.0f, 1.5f);
     //vec3 cam_pos(0.7f, -0.7f, 0.3f); // Close texture view.
-    vec3 cam_pos(0.0f, 0.0f, 1.0f);
-    vec3 cam_up(0.0f, 0.0f, 2.0f);
+    //vec3 cam_pos(0.8f, 1.2f, 2.0f);
+    vec3 cam_up(0.0f, 0.0f, 1.0f);
     static mat4 view = Eigen::lookAt(cam_pos, cam_look, cam_up);
 
     /// Assemble the "Model View" matrix
@@ -183,7 +183,7 @@ void init() {
 
     /// Define light properties and pass them to the shaders.
    /// Define light properties and pass them to the shaders
-    vec3 light_dir_tmp(1.0f,1.0f,1.0f);
+    vec3 light_dir_tmp(1.0f,0.5f,1.0f);
     vec3 Ia(1.0f, 1.0f, 1.0f);
     vec3 Id(1.0f, 1.0f, 1.0f);
     vec3 Is(1.0f, 1.0f, 1.0f);
@@ -227,11 +227,11 @@ void display() {
 	//test.draw(projection, modelview);
 	
 	//send time valu to animate water
-	float timer = clock() ;//%500 
+	float timer = clock()%5000 ;//%500 
 	GLuint timer_Id = glGetUniformLocation(renderingProgramID, "timer");
     glUniform1f(timer_Id, timer);
 
-	cout<<timer<<endl;
+	//cout<<timer<<endl;
 }
 
 
