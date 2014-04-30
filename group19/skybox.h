@@ -43,14 +43,44 @@ public:
 	void init(){
 
 		static const unsigned int nVertices = 8;
-		static const vec3 skybox_vertices[] = {vec3(0.0,0.0,0.0),
-                                    vec3(0.0,0.1,0.0),
-                                    vec3(0.1,0.0,0.0),
-                                    vec3(0.1,0.1,0.0),
-                                    vec3(0.0,0.0,0.1),
-                                    vec3(0.0,0.1,0.1),
-                                    vec3(0.1,0.0,0.1),
-                                    vec3(0.1,0.1,0.1) };
+		static const GLfloat skybox_vertices[] ={
+			-1.0f,-1.0f,-1.0f, // triangle 1 : begin
+			-1.0f,-1.0f, 1.0f,
+			-1.0f, 1.0f, 1.0f, // triangle 1 : end
+			1.0f, 1.0f,-1.0f, // triangle 2 : begin
+			-1.0f,-1.0f,-1.0f,
+			-1.0f, 1.0f,-1.0f, // triangle 2 : end
+			1.0f,-1.0f, 1.0f,
+			-1.0f,-1.0f,-1.0f,
+			1.0f,-1.0f,-1.0f,
+			1.0f, 1.0f,-1.0f,
+			1.0f,-1.0f,-1.0f,
+			-1.0f,-1.0f,-1.0f,
+			-1.0f,-1.0f,-1.0f,
+			-1.0f, 1.0f, 1.0f,
+			-1.0f, 1.0f,-1.0f,
+			1.0f,-1.0f, 1.0f,
+			-1.0f,-1.0f, 1.0f,
+			-1.0f,-1.0f,-1.0f,
+			-1.0f, 1.0f, 1.0f,
+			-1.0f,-1.0f, 1.0f,
+			1.0f,-1.0f, 1.0f,
+			1.0f, 1.0f, 1.0f,
+			1.0f,-1.0f,-1.0f,
+			1.0f, 1.0f,-1.0f,
+			1.0f,-1.0f,-1.0f,
+			1.0f, 1.0f, 1.0f,
+			1.0f,-1.0f, 1.0f,
+			1.0f, 1.0f, 1.0f,
+			1.0f, 1.0f,-1.0f,
+			-1.0f, 1.0f,-1.0f,
+			1.0f, 1.0f, 1.0f,
+			-1.0f, 1.0f,-1.0f,
+			-1.0f, 1.0f, 1.0f,
+			1.0f, 1.0f, 1.0f,
+			-1.0f, 1.0f, 1.0f,
+			1.0f,-1.0f, 1.0f
+		};
 		
 		glGenVertexArrays(1, &skybox_vao);
 		glBindVertexArray(skybox_vao);
@@ -59,7 +89,7 @@ public:
 		GLuint vertexbuffer;
 		glGenBuffers(ONE, &vertexbuffer);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-		glBufferData(GL_ARRAY_BUFFER, nVertices*sizeof(vec3), &skybox_vertices, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(skybox_vertices), &skybox_vertices, GL_STATIC_DRAW);
 
 		/*char *CubeMapTextureFiles[6] = {"../../skybox/right.jpg", "../../skybox/left.jpg", "../../skybox/top.jpg", 
 													"../../skybox/bottom.jpg", "../../skybox/front.jpg", "../../skybox/back.jpg"};
@@ -73,7 +103,7 @@ public:
 		glEnableVertexAttribArray(positionID);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 		// vec3: 3 floats per vertex for the position attribute.
-		glVertexAttribPointer(positionID, 3, GL_FLOAT, DONT_NORMALIZE, ZERO_STRIDE, ZERO_BUFFER_OFFSET);
+		glVertexAttribPointer(positionID, 3, GL_FLOAT, DONT_NORMALIZE, 0, (void*)0);
 
 
 		// OpenGL parameters.
@@ -97,8 +127,8 @@ public:
 		glBindVertexArray(skybox_vao);
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glDrawArrays(GL_TRIANGLES, 1, 8);
+		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glDrawArrays(GL_TRIANGLES, 0, 12*3);
 
 		glBindVertexArray(0);
 	}

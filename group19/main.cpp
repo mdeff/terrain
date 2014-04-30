@@ -11,7 +11,7 @@
 #include "rendering_fshader.h"
 
 //Generate skybox
-	Skybox test;
+Skybox test;
 /// Shader program.
 GLuint renderingProgramID;
 
@@ -35,7 +35,7 @@ void update_matrix_stack(const mat4& model) {
     glUniformMatrix4fv(projectionID, ONE, DONT_TRANSPOSE, projection.data());
 
     /// Define the view matrix (camera extrinsics)
-    vec3 cam_look(0.0f, 0.0f, 0.0f);
+    vec3 cam_look(0.1f, 0.1f, 0.5f);
     /// Camera is in the sky, looking down.
 //    vec3 cam_pos(0.0f, 0.0f, 5.0f);
 //    vec3 cam_up(0.0f, 1.0f, 0.0f);
@@ -43,8 +43,8 @@ void update_matrix_stack(const mat4& model) {
     //vec3 cam_pos(3.0f, -3.0f, 1.0f);
     //vec3 cam_pos(2.0f, -2.0f, 1.5f);
     //vec3 cam_pos(0.7f, -0.7f, 0.3f); // Close texture view.
-    vec3 cam_pos(2.0f, -2.0f, 1.2f);
-    vec3 cam_up(0.0f, 0.0f, 1.0f);
+    vec3 cam_pos(0.0f, 0.0f, 1.0f);
+    vec3 cam_up(0.0f, 0.0f, 2.0f);
     static mat4 view = Eigen::lookAt(cam_pos, cam_look, cam_up);
 
     /// Assemble the "Model View" matrix
@@ -213,10 +213,6 @@ void init() {
 	glUniform1d(N_id,N);
     /// Initialize the matrix stack.
     update_matrix_stack(mat4::Identity());
-	//test.init();
-	
-	
-
 }
 
 
@@ -226,7 +222,7 @@ void display() {
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, ZERO_BUFFER_OFFSET);
-	
+	//test.init();
 	//test.draw(projection, modelview);
 	
 }
