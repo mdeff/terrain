@@ -276,7 +276,7 @@ void main() {
     //height = turbulence(position2.xy, 1.1f, 10.0f, 10) / 2.0f;
 
 
-	int choice = 10;
+	int choice = 3;
 
 	if(choice ==1){ //additive combination
 		float heightFBM = (fBm(position2.xy, 1.1f, 10.0f, 10) / 2.0f) ;
@@ -320,10 +320,10 @@ void main() {
 		float heightHybrid =  (hybridMultifractal(position2.xy, 0.4f, 5.0f, 5, -0.25f)-0.1f);
 		
 		float coef1 = 2*position2.x;
-		float coef2 = 0.0f;
+		float coef2 = 1 - 2*position2.x; //0.0f;
 		float coef3 = position2.y;
 		float coef4 = 1-position2.y;
-		float coef5 = 1-2*position2.x;
+		float coef5 = 0.0; //1-2*position2.x;
 
 		height = (heightFBM*coef1 + heightMultifractalSimplex*coef2 + heightPerlinNoise*coef3 + heightMultifractal*coef4 + heightHybrid*coef5)/2;
 		

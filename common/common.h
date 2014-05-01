@@ -2,8 +2,10 @@
 // Copyright (C) 2014 - Andrea Tagliasacchi
 
 ///--- LOAD THE OPENGL LIBRARIES HERE (IN CROSS PLATFORM)
+
 #include <GL/glew.h> ///< must be before glfw
 #include <GL/glfw.h>
+
 
 /// We use a modified (to support OpenGL3) version of the Eigen OpenGL module 
 /// @see http://eigen.tuxfamily.org/dox/unsupported/group__OpenGLSUpport__Module.html

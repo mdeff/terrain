@@ -33,34 +33,66 @@ GLuint loadTexture(const char * imagepath, const int slotNum){
 };
 
 
+
+
+
 class Skybox {
-private:
+public:
 	GLuint skybox_vao;
 	GLuint skybox_program_id;
 	GLuint skybox_tex;
+	//mat4 projection, modelview;
 
 public:
-	void init(){
+	
+	void init_skybox(){
 
-		static const unsigned int nVertices = 8;
-		static const vec3 skybox_vertices[] = {vec3(0.0,0.0,0.0),
-                                    vec3(0.0,0.1,0.0),
-                                    vec3(0.1,0.0,0.0),
-                                    vec3(0.1,0.1,0.0),
-                                    vec3(0.0,0.0,0.1),
-                                    vec3(0.0,0.1,0.1),
-                                    vec3(0.1,0.0,0.1),
-                                    vec3(0.1,0.1,0.1) };
+		static const unsigned int nVertices = 36;
+		static const float size = 5.0f;
+		static const GLfloat skybox_vertices[] ={
+			-size,-size,-size, // triangle 1 : begin
+			-size,-size, size,
+			-size, size, size, // triangle 1 : end
+			size, size,-size, // triangle 2 : begin
+			-size,-size,-size,
+			-size, size,-size, // triangle 2 : end
+			size,-size, size,
+			-size,-size,-size,
+			size,-size,-size,
+			size, size,-size,
+			size,-size,-size,
+			-size,-size,-size,
+			-size,-size,-size,
+			-size, size, size,
+			-size, size,-size,
+			size,-size, size,
+			-size,-size, size,
+			-size,-size,-size,
+			-size, size, size,
+			-size,-size, size,
+			size,-size, size,
+			size, size, size,
+			size,-size,-size,
+			size, size,-size,
+			size,-size,-size,
+			size, size, size,
+			size,-size, size,
+			size, size, size,
+			size, size,-size,
+			-size, size,-size,
+			size, size, size,
+			-size, size,-size,
+			-size, size, size,
+			size, size, size,
+			-size, size, size,
+			size,-size, size
+		};
+		
 		
 		glGenVertexArrays(1, &skybox_vao);
 		glBindVertexArray(skybox_vao);
 
-		/// Vertex Buffer
-		GLuint vertexbuffer;
-		glGenBuffers(ONE, &vertexbuffer);
-		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-		glBufferData(GL_ARRAY_BUFFER, nVertices*sizeof(vec3), &skybox_vertices, GL_STATIC_DRAW);
-
+	
 		/*char *CubeMapTextureFiles[6] = {"../../skybox/right.jpg", "../../skybox/left.jpg", "../../skybox/top.jpg", 
 													"../../skybox/bottom.jpg", "../../skybox/front.jpg", "../../skybox/back.jpg"};
 */
@@ -69,20 +101,24 @@ public:
 		skybox_program_id = compile_shaders(skybox_vshader, skybox_fshader);
 		if (!skybox_program_id) exit(EXIT_FAILURE);
 		
+	    /// Vertex Buffer
+		GLuint vertexbuffer;
+		glGenBuffers(ONE, &vertexbuffer);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(skybox_vertices), &skybox_vertices, GL_STATIC_DRAW);
+
+
 		GLuint positionID = glGetAttribLocation(skybox_program_id, "position");
 		glEnableVertexAttribArray(positionID);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 		// vec3: 3 floats per vertex for the position attribute.
-		glVertexAttribPointer(positionID, 3, GL_FLOAT, DONT_NORMALIZE, ZERO_STRIDE, ZERO_BUFFER_OFFSET);
+		glVertexAttribPointer(positionID, 3, GL_FLOAT, DONT_NORMALIZE, 0, (void*)0);
 
+		//update_matrix_stack(mat4::Identity());
+	};
 
-		// OpenGL parameters.
-		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-		glEnable(GL_DEPTH_TEST);
-		glEnable(GL_MULTISAMPLE);
-		glEnable(GL_TEXTURE_2D);
-	}
 	
+
 
 	void draw(mat4& projection, mat4& modelview){
 		
@@ -96,11 +132,12 @@ public:
 
 		glBindVertexArray(skybox_vao);
 
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glDrawArrays(GL_TRIANGLES, 1, 8);
+		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		 glDrawArrays(GL_TRIANGLES,0, 36);
 
-		glBindVertexArray(0);
+		//make sure the VAO is not changed from the outside
+		//glBindVertexArray(0);
 	}
 
 };
