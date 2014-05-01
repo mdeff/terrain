@@ -14,7 +14,9 @@
 const float time0 = time(NULL);
 
 //Generate skybox
-Skybox test;
+Skybox sky;
+GLuint skybox_vao;
+GLuint vertexArrayID;
 /// Shader program.
 GLuint renderingProgramID;
 
@@ -106,16 +108,17 @@ void gen_triangle_grid() {
 
 }
 
-
 void init() {
 //    perlin_noise();
 //    exit(EXIT_SUCCESS);
 	
     /// Vertex array.
-    GLuint vertexArrayID;
+    
     glGenVertexArrays(1, &vertexArrayID);
     glBindVertexArray(vertexArrayID);
 
+
+	
     /// OpenGL parameters.
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glEnable(GL_DEPTH_TEST);
@@ -132,12 +135,13 @@ void init() {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, windowWidth, windowHeight);
 
+
     /// Compile and install the rendering shaders.
     /// Triangle grid needs the programID to get the "position" attribute ID.
     renderingProgramID = compile_shaders(rendering_vshader, rendering_fshader);
     if(!renderingProgramID)
         exit(EXIT_FAILURE);
-    glUseProgram(renderingProgramID);	
+    glUseProgram(renderingProgramID);
 
 	
     /// Bind the heightmap to texture 0.
@@ -212,26 +216,57 @@ void init() {
 
 	GLuint N_id = glGetUniformLocation(renderingProgramID, "N");
 	glUniform1d(N_id,N);
-    /// Initialize the matrix stack.
-    update_matrix_stack(mat4::Identity());
+
+	//Initialization of the skybox
+	sky.init_skybox();
+
+    /// Initialize the matrix stack.  	
+	update_matrix_stack(mat4::Identity());
 }
 
+
+void draw_terrain(mat4 &_projection, mat4& _modelview)
+{
+	glUseProgram(renderingProgramID);
+
+	
+	GLuint modelviewID = glGetUniformLocation(renderingProgramID, "modelview");
+	glUniformMatrix4fv(modelviewID, ONE, DONT_TRANSPOSE, _modelview.data());
+
+	GLuint projectionID = glGetUniformLocation(renderingProgramID, "projection");
+	glUniformMatrix4fv(projectionID, ONE, DONT_TRANSPOSE, projection.data());
+	
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glBindVertexArray(vertexArrayID);
+    glDrawElements(GL_TRIANGLES,nIndices, GL_UNSIGNED_INT, ZERO_BUFFER_OFFSET);
+	//glBindVertexArray(0);
+
+	//send time value to animate water
+	float timer = clock()%5000 ;//%500 
+	GLuint timer_Id = glGetUniformLocation(renderingProgramID, "timer");
+    glUniform1f(timer_Id, timer);
+}
 
 void display() {
     //To render only the boundary
     //comment it if you want to render full triangles
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, ZERO_BUFFER_OFFSET);
-	//test.init();
-	//test.draw(projection, modelview);
-	
-	//send time valu to animate water
-	float timer = clock()%5000 ;//%500 
-	GLuint timer_Id = glGetUniformLocation(renderingProgramID, "timer");
-    glUniform1f(timer_Id, timer);
 
-	//cout<<timer<<endl;
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+
+	
+	//Draw terrain
+	glUseProgram(renderingProgramID);
+	glBindVertexArray(vertexArrayID);
+	draw_terrain(projection, modelview);
+
+
+	//Draw skybox
+	glUseProgram(sky.skybox_program_id);
+	glBindVertexArray(sky.skybox_vao);	
+	sky.draw(projection, modelview);
 }
 
 
@@ -240,6 +275,9 @@ int main(int, char**) {
     glfwCreateWindow("Project - Group 19");	
     glfwDisplayFunc(display);
     init();
+	//test.init_skybox();
+	//glfwDisplayFunc(display_skybox);
+	//test.init_skybox();
     glfwTrackball(update_matrix_stack);
     glfwMainLoop();
     return EXIT_SUCCESS;    
