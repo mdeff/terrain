@@ -35,7 +35,7 @@ void update_matrix_stack(const mat4& model) {
 
     /// Define projection matrix (camera intrinsics)
     //static mat4 
-	projection = Eigen::perspective(45.0f, 4.0f/3.0f, 0.1f, 10.0f);
+	projection = Eigen::perspective(45.0f, 4.0f/3.0f, 0.1f, 100.0f);
     GLuint projectionID = glGetUniformLocation(renderingProgramID, "projection");
     glUniformMatrix4fv(projectionID, ONE, DONT_TRANSPOSE, projection.data());
 
@@ -253,9 +253,9 @@ void display() {
     //comment it if you want to render full triangles
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
-
+	//glEnable(GL_DEPTH_TEST);
+	//glEnable(GL_CULL_FACE);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
 	//Draw terrain
 	glUseProgram(renderingProgramID);

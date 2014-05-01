@@ -48,7 +48,7 @@ public:
 	void init_skybox(){
 
 		static const unsigned int nVertices = 36;
-		static const float size = 1.0f;
+		static const float size = 5.0f;
 		static const GLfloat skybox_vertices[] ={
 			-size,-size,-size, // triangle 1 : begin
 			-size,-size, size,
