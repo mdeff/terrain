@@ -3,6 +3,14 @@
 // Multiple definition of functions like compile_shader() prevent this.
 // No header guards !!
 
+//#include "common.h"
+
+#include <cstdlib>
+#include <iostream>
+
+#include <GL/glew.h>
+#include "opengp.h"
+
 #include "heightmap_vshader.h"
 #include "heightmap_fshader.h"
 
@@ -50,14 +58,14 @@ GLuint gen_permutation_table(GLuint programID) {
         permutationTable[k] = k;
 
     // Seed the pseudo-random generator for reproductability.
-    srand(10);
+    std::srand(10);
 
     // Fisher-Yates / Knuth shuffle.
 //    GLubyte tmp;
     GLfloat tmp;
     for(int k=size-1; k>0; --k) {
         // Random number with 0 <= rnd <= k.
-        GLuint idx = int(float(k) * rand() / RAND_MAX);
+        GLuint idx = int(float(k) * std::rand() / RAND_MAX);
         tmp = permutationTable[k];
         permutationTable[k] = permutationTable[idx];
         permutationTable[idx] = tmp;
@@ -146,7 +154,7 @@ GLuint gen_heightmap() {
     const int texHeight(1024);
 
     /// Compile and install the heightmap shaders.
-    GLuint programID = compile_shaders(heightmap_vshader, heightmap_fshader);
+    GLuint programID = opengp::compile_shaders(heightmap_vshader, heightmap_fshader);
     if(!programID)
         exit(EXIT_FAILURE);
     glUseProgram(programID);
@@ -193,7 +201,7 @@ GLuint gen_heightmap() {
 
     /// Check that our framebuffer is complete.
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        std::cerr << "Heightmap framebuffer not complete." <<std::endl;
+        std::cerr << "Heightmap framebuffer not complete." << std::endl;
         exit(EXIT_FAILURE);
     }
 
@@ -215,7 +223,7 @@ GLuint gen_heightmap() {
     GLuint positionID = glGetAttribLocation(programID, "position");
     glEnableVertexAttribArray(positionID);
     // vec3: 3 floats per vertex for the position attribute.
-    glVertexAttribPointer(positionID, 3, GL_FLOAT, DONT_NORMALIZE, ZERO_STRIDE, ZERO_BUFFER_OFFSET);
+    glVertexAttribPointer(positionID, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
     /// Render the 2 triangles (6 vertices).
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

@@ -5,11 +5,12 @@
 #include <time.h>
 
 #include "common.h"
-#include "heightmap.h"
 #include "skybox.h"
 
 #include "rendering_vshader.h"
 #include "rendering_fshader.h"
+
+extern GLuint gen_heightmap();
 
 const float time0 = time(NULL);
 
@@ -31,13 +32,14 @@ const int windowWidth(1024);
 const int windowHeight(768);
 static mat4 projection;
 static mat4 modelview;
+
 void update_matrix_stack(const mat4& model) {
 
     /// Define projection matrix (camera intrinsics)
     //static mat4 
 	projection = Eigen::perspective(45.0f, 4.0f/3.0f, 0.1f, 100.0f);
     GLuint projectionID = glGetUniformLocation(renderingProgramID, "projection");
-    glUniformMatrix4fv(projectionID, ONE, DONT_TRANSPOSE, projection.data());
+    glUniformMatrix4fv(projectionID, 1, GL_FALSE, projection.data());
 
     /// Define the view matrix (camera extrinsics)
     vec3 cam_look(0.1f, 0.1f, 0.5f);
@@ -56,7 +58,7 @@ void update_matrix_stack(const mat4& model) {
     //static mat4 modelview;
     modelview = view * model;
     GLuint modelviewID = glGetUniformLocation(renderingProgramID, "modelview");
-    glUniformMatrix4fv(modelviewID, ONE, DONT_TRANSPOSE, modelview.data());
+    glUniformMatrix4fv(modelviewID, 1, GL_FALSE, modelview.data());
 
 }
 
