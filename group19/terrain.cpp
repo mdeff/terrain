@@ -91,7 +91,7 @@ GLuint Terrain::loadTexture(const char * imagepath) {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glGenerateMipmap(GL_TEXTURE_2D);
     } else {
-        std::cout << "Cannot load texture file!" << std::endl;
+        std::cout << "Cannot load texture file : " << imagepath << std::endl;
         return -1;
     }
 
