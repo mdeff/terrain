@@ -57,6 +57,7 @@ void init() {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_MULTISAMPLE);
     glEnable(GL_TEXTURE_2D);
+	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
     //glEnable(GL_DEPTH_TEST);
     //glEnable(GL_CULL_FACE);
 
@@ -95,6 +96,7 @@ void display() {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, windowWidth, windowHeight);
 
+	//clear the buffer
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Draw terrain and skybox.

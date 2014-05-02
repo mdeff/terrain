@@ -1,9 +1,15 @@
 #version 330 core
+//texture
+uniform samplerCube skybox_tex;
+
+//3d texture coordinate
+in vec3 texCoords;
 
 out vec3 color;
 
 
 void main()
 {
-	color = vec3(0.0,0.0,1.0);
+	vec3 T = normalize(texCoords);
+	color =  texture(skybox_tex, T).rgb;
 }
