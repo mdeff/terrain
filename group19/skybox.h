@@ -17,6 +17,9 @@ public:
     void draw(mat4& projection, mat4& modelview) const;
     void clean();  ///< Or in the destructor
 
+	//Destructor
+	~Skybox();
+
 private:
 	int loadBMPtex(const char * imagepath, unsigned char* data);  //load BMP image
 	GLuint load_skybox_texture(int slotNum);   //load cube texture
@@ -26,6 +29,10 @@ private:
     GLuint _modelviewID;
     GLuint _projectionID;
     GLuint skybox_tex;
+
+	/* Buffer for storing texture data of each face */
+	unsigned char *back, *front, *bottom, *top, *left, *right;
+
 
 };
 

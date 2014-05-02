@@ -165,10 +165,7 @@ int Skybox::loadBMPtex(const char* imagepath, unsigned char* data){
 }
 
 GLuint Skybox::load_skybox_texture(int slotNum){
-
-		/* Buffer for storing texture data of each face */
-		unsigned char *back, *front, *bottom, *top, *left, *right;
-
+		
 		// hardcode the size of image for now 
 		int width = 256, height = 256, channel = 3;
 		int imgSize = width*height*channel;
@@ -217,4 +214,13 @@ GLuint Skybox::load_skybox_texture(int slotNum){
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, bottom); 
 
 		return tex_cub;
+}
+
+Skybox::~Skybox(){
+	delete[] back;
+	delete[] front;
+	delete[] top;
+	delete[] bottom;
+	delete[] left;
+	delete[] right;
 }
