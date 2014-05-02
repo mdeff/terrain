@@ -111,23 +111,23 @@ void Terrain::init(GLuint heightMapTexID) {
 
     // Load textures and bind them to textures 1 - 6.
     int slotNum = loadTexture("../../textures/sand.tga");
-    GLuint sandTextID = glGetUniformLocation(_programID, "sandTex");
-    glUniform1i(sandTextID, slotNum);
+    uniformID = glGetUniformLocation(_programID, "sandTex");
+    glUniform1i(uniformID, slotNum);
     slotNum = loadTexture("../../textures/dordona_range.tga");
-    GLuint iceMoutainTexID  = glGetUniformLocation(_programID, "iceMoutainTex");
-    glUniform1i(iceMoutainTexID, slotNum);
+    uniformID = glGetUniformLocation(_programID, "iceMoutainTex");
+    glUniform1i(uniformID, slotNum);
     slotNum = loadTexture("../../textures/forest.tga");
-    GLuint treeTexID  = glGetUniformLocation(_programID, "treeTex");
-    glUniform1i(treeTexID, slotNum);
+    uniformID = glGetUniformLocation(_programID, "treeTex");
+    glUniform1i(uniformID, slotNum);
     slotNum = loadTexture("../../textures/stone_2.tga");
-    GLuint stoneTexID  = glGetUniformLocation(_programID, "stoneTex");
-    glUniform1i(stoneTexID, slotNum);
+    uniformID = glGetUniformLocation(_programID, "stoneTex");
+    glUniform1i(uniformID, slotNum);
     slotNum = loadTexture("../../textures/water.tga");
-    GLuint waterTexID  = glGetUniformLocation(_programID, "waterTex");
-    glUniform1i(waterTexID, slotNum);
+    uniformID = glGetUniformLocation(_programID, "waterTex");
+    glUniform1i(uniformID, slotNum);
     slotNum = loadTexture("../../textures/snow.tga");
-    GLuint snowTexID  = glGetUniformLocation(_programID, "snowTex");
-    glUniform1i(snowTexID, slotNum);
+    uniformID = glGetUniformLocation(_programID, "snowTex");
+    glUniform1i(uniformID, slotNum);
 
     /// Generate a flat and regular triangle grid.
     gen_triangle_grid();
