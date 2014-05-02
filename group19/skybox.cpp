@@ -56,12 +56,12 @@ void Skybox::init() {
     /// Common initialization.
     RenderingContext::init(skybox_vshader, skybox_fshader);
 
-    /// Bind the skybox to texture 8 (make sure not coincide with previous texture slot).
+    /// Bind the Skybox to texture 8 (make sure not coincide with previous texture slot).
     const int skyboxTex = 8;
     GLuint uniformID = glGetUniformLocation(_programID, "skyboxTex");
     glUniform1i(uniformID, skyboxTex);
 
-    /// Load the Skybox cube texture.
+    /// Load and bind the Skybox cube texture.
     loadCubeTexture(skyboxTex);
 
     /// Copy the vertices in a vertex buffer.
@@ -175,8 +175,8 @@ GLuint Skybox::loadCubeTexture(int slotNum) const {
     int width = 1024, height = 1024, channel = 3;
     int imgSize = width*height*channel;
 
-    // Allocate data for each buffer.
-    // Too much data to be allocated on the stack --> allocate on the heap.
+    /// Allocate data for each pixel buffer.
+    /// Too much data to be allocated on the stack --> allocate on the heap.
     unsigned char* left   = new unsigned char[imgSize];
     unsigned char* right  = new unsigned char[imgSize];
     unsigned char* back   = new unsigned char[imgSize];
@@ -184,7 +184,7 @@ GLuint Skybox::loadCubeTexture(int slotNum) const {
     unsigned char* top    = new unsigned char[imgSize];
     unsigned char* bottom = new unsigned char[imgSize];
 
-    // Load each face image.
+    /// Load each an image for each face of the cube.
     if (!loadBMP("../../skybox/left.bmp", left))
         exit(EXIT_FAILURE);
     if (!loadBMP("../../skybox/right.bmp", right))
@@ -198,7 +198,7 @@ GLuint Skybox::loadCubeTexture(int slotNum) const {
     if (!loadBMP("../../skybox/bottom.bmp", bottom))
         exit(EXIT_FAILURE);
 
-    // Bind the cube map.
+    /// Bind the cube map.
     GLuint texID;
     glGenTextures(1, &texID);
     glActiveTexture(GL_TEXTURE0 + slotNum);
@@ -209,7 +209,7 @@ GLuint Skybox::loadCubeTexture(int slotNum) const {
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-    // Enable textures.
+    /// Enable textures.
     glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, left);
     glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, right);
     glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, back);
@@ -217,7 +217,7 @@ GLuint Skybox::loadCubeTexture(int slotNum) const {
     glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, top);
     glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, bottom);
 
-    // Deallocate heap data.
+    /// Deallocate heap data.
     delete left, right, back, front, top, bottom;
 
     return texID;
