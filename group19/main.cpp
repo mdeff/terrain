@@ -17,7 +17,7 @@ Skybox skybox;
 const int windowWidth(1024);
 const int windowHeight(768);
 
-/// Matrices that have to be shared between objects.
+/// Matrices that have to be shared between rendering contexts.
 static mat4 projection;
 static mat4 modelview;
 
@@ -25,10 +25,7 @@ static mat4 modelview;
 void update_matrix_stack(const mat4& model) {
 
     /// Define projection matrix (camera intrinsics)
-    //static mat4 
-	projection = Eigen::perspective(45.0f, 4.0f/3.0f, 0.1f, 100.0f);
-    //GLuint projectionID = glGetUniformLocation(renderingProgramID, "projection");
-    //glUniformMatrix4fv(projectionID, 1, GL_FALSE, projection.data());
+    projection = Eigen::perspective(45.0f, 4.0f/3.0f, 0.1f, 100.0f);
 
     /// Define the view matrix (camera extrinsics)
     vec3 cam_look(0.1f, 0.1f, 0.5f);
@@ -44,10 +41,7 @@ void update_matrix_stack(const mat4& model) {
     static mat4 view = Eigen::lookAt(cam_pos, cam_look, cam_up);
 
     /// Assemble the "Model View" matrix
-    //static mat4 modelview;
     modelview = view * model;
-    //GLuint modelviewID = glGetUniformLocation(renderingProgramID, "modelview");
-    //glUniformMatrix4fv(modelviewID, 1, GL_FALSE, modelview.data());
 
 }
 

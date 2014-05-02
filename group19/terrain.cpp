@@ -92,7 +92,7 @@ GLuint Terrain::loadTexture(const char * imagepath) {
         glGenerateMipmap(GL_TEXTURE_2D);
     } else {
         std::cout << "Cannot load texture file : " << imagepath << std::endl;
-        return -1;
+        exit(EXIT_FAILURE);
     }
 
     // Return the ID of the texture we just created
@@ -113,22 +113,22 @@ void Terrain::init(GLuint heightMapTexID) {
     glUniform1i(uniformID, heightMapTex);
 
     // Load textures and bind them to textures 1 - 6.
-    int slotNum = loadTexture("../../texture/sand.tga");
+    int slotNum = loadTexture("../../textures/sand.tga");
     GLuint sandTextID = glGetUniformLocation(_programID, "sandTex");
     glUniform1i(sandTextID, slotNum);
-    slotNum = loadTexture("../../texture/DordonaRange.tga");
+    slotNum = loadTexture("../../textures/dordona_range.tga");
     GLuint iceMoutainTexID  = glGetUniformLocation(_programID, "iceMoutainTex");
     glUniform1i(iceMoutainTexID, slotNum);
-    slotNum = loadTexture("../../texture/forest.tga");
+    slotNum = loadTexture("../../textures/forest.tga");
     GLuint treeTexID  = glGetUniformLocation(_programID, "treeTex");
     glUniform1i(treeTexID, slotNum);
-    slotNum = loadTexture("../../texture/stone_2.tga");
+    slotNum = loadTexture("../../textures/stone_2.tga");
     GLuint stoneTexID  = glGetUniformLocation(_programID, "stoneTex");
     glUniform1i(stoneTexID, slotNum);
-    slotNum = loadTexture("../../texture/water.tga");
+    slotNum = loadTexture("../../textures/water.tga");
     GLuint waterTexID  = glGetUniformLocation(_programID, "waterTex");
     glUniform1i(waterTexID, slotNum);
-    slotNum = loadTexture("../../texture/snow.tga");
+    slotNum = loadTexture("../../textures/snow.tga");
     GLuint snowTexID  = glGetUniformLocation(_programID, "snowTex");
     glUniform1i(snowTexID, slotNum);
 
