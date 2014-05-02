@@ -1,10 +1,4 @@
 
-// FIXME : should be a separated compilation unit, not a header.
-// Multiple definition of functions like compile_shader() prevent this.
-// No header guards !!
-
-//#include "common.h"
-
 #include <cstdlib>
 #include <iostream>
 
@@ -153,8 +147,13 @@ GLuint gen_heightmap() {
     const int texWidth(1024);
     const int texHeight(1024);
 
+    /// Vertex array.
+    GLuint vertexArrayID;
+    glGenVertexArrays(1, &vertexArrayID);
+    glBindVertexArray(vertexArrayID);
+
     /// Compile and install the heightmap shaders.
-    GLuint programID = opengp::compile_shaders(heightmap_vshader, heightmap_fshader);
+    GLuint programID = opengp::compile_shaders(heightmap_vshader, heightmap_fshader, 0, 0, 0);
     if(!programID)
         exit(EXIT_FAILURE);
     glUseProgram(programID);
@@ -229,13 +228,14 @@ GLuint gen_heightmap() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glDrawArrays(GL_TRIANGLES, 0, sizeof(vertices)/3);
 
-    /// Clean up the now useless objects.
+    /// Clean up the now useless objects to free GPU memory.
     glDisableVertexAttribArray(positionID);
     glDeleteBuffers(1, &vertexBufferID);
     glDeleteTextures(1, &gradVectTexID);
     glDeleteTextures(1, &permTableTexID);
     glDeleteFramebuffers(1, &frameBufferID);
     glDeleteProgram(programID);
+    glDeleteVertexArrays(1, &vertexArrayID);
 
     /// Return the height map texture ID.
     return heightMapTexID;

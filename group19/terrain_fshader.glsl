@@ -33,6 +33,7 @@ in vec3 light_dir;
 in vec3 view_dir;
 
 // First output buffer is pixel color.
+// gl_FragColor
 layout(location = 0) out vec3 color;
 
 void main() {

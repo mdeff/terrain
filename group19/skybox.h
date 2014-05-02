@@ -6,32 +6,6 @@
 
 
 
-GLuint loadTexture(const char * imagepath, const int slotNum){
-    // Create one OpenGL texture
-    GLuint textureID;
-    glGenTextures(ONE, &textureID);
-
-	glActiveTexture(GL_TEXTURE0 + slotNum);
-    // "Bind" the newly created texture : all future texture functions will modify this texture
-    glBindTexture(GL_TEXTURE_2D, textureID);
-
-    // Read the file, call glTexImage2D with the right parameters
-    if (glfwLoadTexture2D(imagepath, 0)){
-		// Nice trilinear filtering.
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glGenerateMipmap(GL_TEXTURE_2D); 
-	} else {
-		std::cout << "Cannot load texture file!" << endl;
-		return -1;
-	}
-
-    // Return the ID of the texture we just created
-    return textureID;
-};
-
 
 
 

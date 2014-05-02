@@ -12,13 +12,23 @@
 #ifndef __opengp_h__
 #define __opengp_h__
 
+// We use Eigen for linear algebra
+#include <OpenGP/GL/EigenOpenGLSupport3.h>
+
+// Useful to have a correspondance of types between C++ and GLSL.
+typedef Eigen::Matrix<float, 2, 1> vec2;
+typedef Eigen::Vector3f vec3;
+typedef Eigen::Vector4f vec4;
+typedef Eigen::Matrix4f mat4;
+typedef Eigen::Matrix3f mat3;
+
 // Implemented in external/opengp/include/OpenGP/GL/shader_helpers.h.
 namespace opengp {
 extern GLuint compile_shaders(const char * vshader,
                        const char* fshader,
-                       const char* gshader = NULL,
-                       const char* tcshader = NULL,
-                       const char* teshader = NULL);
+                       const char* gshader,
+                       const char* tcshader,
+                       const char* teshader);
 }
 
 /*
