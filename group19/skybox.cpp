@@ -11,6 +11,11 @@
 const unsigned int nVertices = 36;
 
 
+Skybox::Skybox(unsigned int width, unsigned int height) :
+    RenderingContext(width, height) {
+}
+
+
 void Skybox::init() {
 
     const float size = 5.0f;
@@ -56,6 +61,9 @@ void Skybox::init() {
     /// Common initialization.
     RenderingContext::init(skybox_vshader, skybox_fshader);
 
+    /// Render to the screen : FBO 0;
+    _frameBufferID = 0;
+
     /// Bind the Skybox to texture 8 (make sure not coincide with previous texture slot).
     const int skyboxTex = 8;
     GLuint uniformID = glGetUniformLocation(_programID, "skyboxTex");
@@ -91,6 +99,9 @@ void Skybox::draw(mat4& projection, mat4& modelview) const {
     /// Update the content of the uniforms.
     glUniformMatrix4fv(_modelviewID, 1, GL_FALSE, modelview.data());
     glUniformMatrix4fv(_projectionID, 1, GL_FALSE, projection.data());
+
+    /// Do not clear the screen framebuffer : done by Terrain.
+    /// Otherwise we'll see only the Skybox.
 
     /// Render the Skybox.
     glDrawArrays(GL_TRIANGLES, 0, nVertices);

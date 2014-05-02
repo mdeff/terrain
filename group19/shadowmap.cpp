@@ -11,9 +11,9 @@
 #include "shadowmap_fshader.h"
 
 
-/// Shadow map texture size.
-const int texWidth(1024);
-const int texHeight(1024);
+Shadowmap::Shadowmap(unsigned int width, unsigned int height) :
+    RenderingContext(width, height) {
+}
 
 
 void Shadowmap::init(GLuint heightMapTexID) {
@@ -23,10 +23,8 @@ void Shadowmap::init(GLuint heightMapTexID) {
 
     /// Create a framebuffer (container for textures, and an optional depth buffer).
     /// The shadow map will be rendered to this FBO instead of the screen.
-    /// Specify the transformation from normalized device coordinates to texture coordinates.
     glGenFramebuffers(1, &_frameBufferID);
     glBindFramebuffer(GL_FRAMEBUFFER, _frameBufferID);
-    glViewport(0, 0, texWidth, texHeight);
 
     /// Bind the heightmap to texture 0.
     const GLuint heightMapTex = 0;
@@ -40,7 +38,7 @@ void Shadowmap::init(GLuint heightMapTexID) {
     // Depth texture. Slower than a depth buffer, but you can sample it later in your shader
     glGenTextures(1, &_shadowMapTexID);
     glBindTexture(GL_TEXTURE_2D, _shadowMapTexID);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, texWidth, texWidth, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, _width, _height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -68,12 +66,6 @@ void Shadowmap::draw(mat4& projection, mat4& modelview) const {
 
     // Common drawing.
     RenderingContext::draw();
-
-    /// The shadow map will be rendered to this FBO instead of the screen.
-    /// Specify the transformation from normalized device coordinates to texture coordinates.
-    glBindFramebuffer(GL_FRAMEBUFFER, _frameBufferID);
-    glViewport(0, 0, texWidth, texHeight);
-
 
     //--- Bind the necessary textures
 

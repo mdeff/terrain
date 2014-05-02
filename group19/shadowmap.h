@@ -10,13 +10,13 @@ class Shadowmap : public RenderingContext {
 
 public:
     // Common methods of all renderers.
+    Shadowmap(unsigned int width, unsigned int height);
     void init(GLuint heightMapTexID);  ///< Or in the constructor
     void draw(mat4& projection, mat4& model_view) const;
     void clean();  ///< Or in the destructor
 
 private:
     // Specialized to this object.
-    GLuint _frameBufferID;
     GLuint _shadowMapTexID;
 
     GLuint _modelviewID;

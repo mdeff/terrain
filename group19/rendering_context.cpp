@@ -2,6 +2,10 @@
 #include "rendering_context.h"
 #include "opengp.h"
 
+RenderingContext::RenderingContext(unsigned int width, unsigned int height) :
+    _width(width), _height(height) {
+}
+
 void RenderingContext::init(const char* vshader, const char* fshader) {
 
     // Vertex array.
@@ -18,7 +22,14 @@ void RenderingContext::init(const char* vshader, const char* fshader) {
 
 void RenderingContext::draw() const {
 
-    //--- Tell which shader we want to use
+    /// Set the object FBO as the rendering target.
+    glBindFramebuffer(GL_FRAMEBUFFER, _frameBufferID);
+
+    /// Specify the transformation from normalized device coordinates
+    /// to texture/window coordinates.
+    glViewport(0, 0, _width, _height);
+
+    /// Select the shader program.
     glUseProgram(_programID);
 
     /*

@@ -17,6 +17,11 @@ const int nVertices = N*N;
 const int nIndices = (N-1)*(N-1)*6;
 
 
+Terrain::Terrain(unsigned int width, unsigned int height) :
+    RenderingContext(width, height) {
+}
+
+
 /// Generate the triangle grid vertices.
 void Terrain::gen_triangle_grid() {
 
@@ -102,6 +107,9 @@ void Terrain::init(GLuint heightMapTexID) {
     // Common initialization.
     RenderingContext::init(terrain_vshader, terrain_fshader);
 
+    /// Render to the screen : FBO 0;
+    _frameBufferID = 0;
+
     /// Bind the heightmap to texture 0.
     const GLuint heightMapTex = 0;
     glActiveTexture(GL_TEXTURE0+heightMapTex);
@@ -175,25 +183,25 @@ void Terrain::init(GLuint heightMapTexID) {
 
 void Terrain::draw(mat4& projection, mat4& modelview) const {
 
-    // Common drawing.
+    /// Common drawing.
     RenderingContext::draw();
 
-    //--- Bind the necessary textures
-
-    //--- Update the content of the uniforms (texture IDs, matrices, ...)
+    /// Update the content of the uniforms.
     glUniformMatrix4fv(_modelviewID, 1, GL_FALSE, modelview.data());
     glUniformMatrix4fv(_projectionID, 1, GL_FALSE, projection.data());
 
-    // Time value which animates water.
+    /// Time value which animates water.
     static float time = 0;
     glUniform1f(_timeID, time++);
 
-    //--- Render
+    /// Clear the screen framebuffer.
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    /// Render the terrain.
     glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, 0);
 
-    //glBindVertexArray(0);
-
 }
+
 
 void Terrain::clean() {
     RenderingContext::clean();
