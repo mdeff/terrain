@@ -1,10 +1,11 @@
 get_filename_component(DIR ${CMAKE_CURRENT_LIST_DIR} NAME)
 project(${DIR})
 add_executable(${DIR} main.cpp rendering_context.cpp
-                      heightmap.cpp terrain.cpp skybox.cpp
+                      heightmap.cpp terrain.cpp skybox.cpp shadowmap.cpp
                       heightmap_vshader.glsl heightmap_fshader.glsl
                       terrain_vshader.glsl   terrain_fshader.glsl
-                      skybox_vshader.glsl    skybox_fshader.glsl)
+                      skybox_vshader.glsl    skybox_fshader.glsl
+                      shadowmap_vshader.glsl shadowmap_fshader.glsl)
 target_link_libraries(${DIR} ${COMMON_LIBS})
 target_stringify_shader(${DIR} heightmap_vshader)
 target_stringify_shader(${DIR} heightmap_fshader)
@@ -12,3 +13,5 @@ target_stringify_shader(${DIR} terrain_vshader)
 target_stringify_shader(${DIR} terrain_fshader)
 target_stringify_shader(${DIR} skybox_vshader)
 target_stringify_shader(${DIR} skybox_fshader)
+target_stringify_shader(${DIR} shadowmap_vshader)
+target_stringify_shader(${DIR} shadowmap_fshader)

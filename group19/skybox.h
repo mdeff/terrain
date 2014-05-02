@@ -10,7 +10,7 @@ class Skybox : public RenderingContext {
 public:
     // Common methods of all renderers.
     void init();  ///< Or in the constructor
-    void draw(mat4& projection, mat4& model_view) const;
+    void draw(mat4& projection, mat4& modelview) const;
     void clean();  ///< Or in the destructor
 
 private:

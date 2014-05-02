@@ -171,7 +171,7 @@ GLuint gen_heightmap() {
     GLuint gradVectTexID = gen_gradient_vectors(programID);
 
     /// Create the texture which will contain the color output
-    /// (the actuall height map) of our shader.
+    /// (the actual height map) of our shader.
     GLuint heightMapTexID;
     glGenTextures(1, &heightMapTexID);
     glBindTexture(GL_TEXTURE_2D, heightMapTexID);

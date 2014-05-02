@@ -1,28 +1,30 @@
 
-#ifndef __terrain_h__
-#define __terrain_h__
+#ifndef __shadowmap_h__
+#define __shadowmap_h__
 
 #include "rendering_context.h"
 #include <GL/glew.h>
 #include "opengp.h"
 
-class Terrain : public RenderingContext {
+class Shadowmap : public RenderingContext {
 
 public:
     // Common methods of all renderers.
     void init(GLuint heightMapTexID);  ///< Or in the constructor
-    void draw(mat4& projection, mat4& modelview) const;
+    void draw(mat4& projection, mat4& model_view) const;
     void clean();  ///< Or in the destructor
 
 private:
     // Specialized to this object.
+    GLuint _frameBufferID;
+    GLuint _shadowMapTexID;
+
     GLuint _modelviewID;
     GLuint _projectionID;
-    GLuint _timeID;
 
     void gen_triangle_grid();
     GLuint loadTexture(const char * imagepath);
 
 };
 
-#endif /* __terrain_h__ */
+#endif /* __shadowmap_h__ */

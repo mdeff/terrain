@@ -6,12 +6,14 @@
 #include "common.h"
 #include "terrain.h"
 #include "skybox.h"
+#include "shadowmap.h"
 
 extern GLuint gen_heightmap();
 
 // Rendering contexts.
 Terrain terrain;
 Skybox skybox;
+Shadowmap shadowmap;
 
 /// Screen size.
 const int windowWidth(1024);
@@ -70,6 +72,7 @@ void init() {
     glViewport(0, 0, windowWidth, windowHeight);
 
     // Initialize the rendering contexts.
+    shadowmap.init(heightMapTexID);
     terrain.init(heightMapTexID);
     skybox.init();
 
@@ -85,8 +88,15 @@ void display() {
     //comment it if you want to render full triangles
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
+    shadowmap.draw(projection, modelview);
+
+    /// Set the screen framebuffer back as the rendering target and specify
+    /// the transformation from normalized device coordinates to window coordinates.
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glViewport(0, 0, windowWidth, windowHeight);
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     // Draw terrain and skybox.
     terrain.draw(projection, modelview);
     skybox.draw(projection, modelview);

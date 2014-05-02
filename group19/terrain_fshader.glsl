@@ -81,7 +81,7 @@ void main() {
     float slope = smoothstep(0.35, 0.65 , normal.z);
 
     if(displaced.z < ground) {
-        float offset = time/50000;
+        float offset = time/1000;
         mapped = texture2D(waterTex, 10*vec2(displaced.x+cos(offset),displaced.y+sin(offset))).rgb;
     } else if (displaced.z < sandMax) {
         mapped = texture2D(sandTex, displaced.xy).rgb;

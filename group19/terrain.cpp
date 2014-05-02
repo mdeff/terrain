@@ -186,8 +186,7 @@ void Terrain::draw(mat4& projection, mat4& modelview) const {
 
     // Time value which animates water.
     static float time = 0;
-    time += 0.1;
-    glUniform1f(_timeID, time);
+    glUniform1f(_timeID, time++);
 
     //--- Render
     glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, 0);
