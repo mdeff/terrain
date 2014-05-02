@@ -68,7 +68,12 @@ void Terrain::gen_triangle_grid() {
 }
 
 
-GLuint Terrain::loadTexture(const char * imagepath, const int slotNum) {
+GLuint Terrain::loadTexture(const char * imagepath) {
+
+    // Start at 1.
+    static int slotNum = 0;
+    slotNum++;
+
     // Create one OpenGL texture
     GLuint textureID;
     glGenTextures(1, &textureID);
@@ -91,23 +96,14 @@ GLuint Terrain::loadTexture(const char * imagepath, const int slotNum) {
     }
 
     // Return the ID of the texture we just created
-    return textureID;
+    return slotNum;
 }
 
 
 void Terrain::init(GLuint heightMapTexID) {
 
-    /// Vertex array.
-    glGenVertexArrays(1, &_vertexArrayID);
-    glBindVertexArray(_vertexArrayID);
-
-
-    /// Compile and install the rendering shaders.
-    /// Triangle grid needs the programID to get the "position" attribute ID.
-    _programID = opengp::compile_shaders(terrain_vshader, terrain_fshader, 0, 0, 0);
-    if(!_programID)
-        exit(EXIT_FAILURE);
-    glUseProgram(_programID);
+    // Common initialization.
+    RenderingContext::init(terrain_vshader, terrain_fshader);
 
     /// Bind the heightmap to texture 0.
     const GLuint heightMapTex = 0;
@@ -116,41 +112,30 @@ void Terrain::init(GLuint heightMapTexID) {
     GLuint uniformID = glGetUniformLocation(_programID, "heightMapTex");
     glUniform1i(uniformID, heightMapTex);
 
-    // Load and use multi textures
-    const GLuint sandTex = 1;
-    GLuint sandID = loadTexture("../../texture/sand.tga", sandTex);
-    GLuint sandTextId = glGetUniformLocation(_programID, "sandTex");
-    glUniform1i(sandTextId, sandTex);
+    // Load textures and bind them to textures 1 - 6.
+    int slotNum = loadTexture("../../texture/sand.tga");
+    GLuint sandTextID = glGetUniformLocation(_programID, "sandTex");
+    glUniform1i(sandTextID, slotNum);
+    slotNum = loadTexture("../../texture/DordonaRange.tga");
+    GLuint iceMoutainTexID  = glGetUniformLocation(_programID, "iceMoutainTex");
+    glUniform1i(iceMoutainTexID, slotNum);
+    slotNum = loadTexture("../../texture/forest.tga");
+    GLuint treeTexID  = glGetUniformLocation(_programID, "treeTex");
+    glUniform1i(treeTexID, slotNum);
+    slotNum = loadTexture("../../texture/stone_2.tga");
+    GLuint stoneTexID  = glGetUniformLocation(_programID, "stoneTex");
+    glUniform1i(stoneTexID, slotNum);
+    slotNum = loadTexture("../../texture/water.tga");
+    GLuint waterTexID  = glGetUniformLocation(_programID, "waterTex");
+    glUniform1i(waterTexID, slotNum);
+    slotNum = loadTexture("../../texture/snow.tga");
+    GLuint snowTexID  = glGetUniformLocation(_programID, "snowTex");
+    glUniform1i(snowTexID, slotNum);
 
-    const GLuint iceMoutainTex = 2;
-    GLuint iceMoutainID = loadTexture("../../texture/DordonaRange.tga", iceMoutainTex);
-    GLuint iceMoutainTexId  = glGetUniformLocation(_programID, "iceMoutainTex");
-    glUniform1i(iceMoutainTexId, iceMoutainTex);
-
-    const GLuint treeTex = 3;
-    GLuint treeID = loadTexture("../../texture/forest.tga", treeTex);
-    GLuint treeTexId  = glGetUniformLocation(_programID, "treeTex");
-    glUniform1i(treeTexId, treeTex);
-
-    const GLuint stoneTex = 4;
-    GLuint stoneID = loadTexture("../../texture/stone_2.tga", stoneTex);
-    GLuint stoneTexId  = glGetUniformLocation(_programID, "stoneTex");
-    glUniform1i(stoneTexId, stoneTex);
-
-    const GLuint waterTex = 5;
-    GLuint waterID = loadTexture("../../texture/water.tga", waterTex);
-    GLuint waterTexId  = glGetUniformLocation(_programID, "waterTex");
-    glUniform1i(waterTexId, waterTex);
-
-    const GLuint snowTex = 6;
-    GLuint snowID = ("../../texture/snow.tga", snowTex);
-    GLuint snowTexId  = glGetUniformLocation(_programID, "snowTex");
-    glUniform1i(snowTexId, snowTex);
     /// Generate a flat and regular triangle grid.
     gen_triangle_grid();
 
     /// Define light properties and pass them to the shaders.
-   /// Define light properties and pass them to the shaders
     vec3 light_dir_tmp(1.0f,0.5f,1.0f);
     vec3 Ia(1.0f, 1.0f, 1.0f);
     vec3 Id(1.0f, 1.0f, 1.0f);
@@ -191,12 +176,10 @@ void Terrain::init(GLuint heightMapTexID) {
 }
 
 
-void Terrain::draw(mat4& projection, mat4& modelview) {
+void Terrain::draw(mat4& projection, mat4& modelview) const {
 
-    //--- Tell which shader we want to use
-    glUseProgram(_programID);
-
-//    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    // Common drawing.
+    RenderingContext::draw();
 
     //--- Bind the necessary textures
 
@@ -208,14 +191,13 @@ void Terrain::draw(mat4& projection, mat4& modelview) {
     float timer = std::clock()%5000; //%500
     glUniform1f(_timerID, timer);
 
-    //--- Load vertex array & render
-    /* A vertex array object holds references to the vertex buffers, the index
-     * buffer and the layout specification of the vertex itself. At runtime,
-     * you can just glBindVertexArray to recall all of these information.
-     */
-    glBindVertexArray(_vertexArrayID);
+    //--- Render
     glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, 0);
 
     //glBindVertexArray(0);
 
+}
+
+void Terrain::clean() {
+    RenderingContext::clean();
 }
