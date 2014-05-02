@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <sstream>
-#include <time.h>
 
 #include "common.h"
 #include "terrain.h"
@@ -10,18 +9,13 @@
 
 extern GLuint gen_heightmap();
 
-//Generate skybox
-Skybox sky;
-GLuint skybox_vao;
-GLuint vertexArrayID;
-/// Shader program.
-GLuint renderingProgramID;
+// Rendering contexts.
+Terrain terrain;
+Skybox skybox;
 
 /// Screen size.
 const int windowWidth(1024);
 const int windowHeight(768);
-
-Terrain terrain;
 
 /// Matrices that have to be shared between objects.
 static mat4 projection;
@@ -81,10 +75,9 @@ void init() {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, windowWidth, windowHeight);
 
+    // Initialize the rendering contexts.
     terrain.init(heightMapTexID);
-
-	//Initialization of the skybox
-	sky.init_skybox();
+    skybox.init();
 
     /// Initialize the matrix stack.  	
 	update_matrix_stack(mat4::Identity());
@@ -93,19 +86,17 @@ void init() {
 
 
 void display() {
+
     //To render only the boundary
     //comment it if you want to render full triangles
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
-    //Draw terrain
+    // Draw terrain and skybox.
     terrain.draw(projection, modelview);
+    skybox.draw(projection, modelview);
 
-	//Draw skybox
-	glUseProgram(sky.skybox_program_id);
-	glBindVertexArray(sky.skybox_vao);	
-	sky.draw(projection, modelview);
 }
 
 
@@ -114,9 +105,6 @@ int main(int, char**) {
     glfwCreateWindow("Project - Group 19");	
     glfwDisplayFunc(display);
     init();
-	//test.init_skybox();
-	//glfwDisplayFunc(display_skybox);
-	//test.init_skybox();
     glfwTrackball(update_matrix_stack);
     glfwMainLoop();
     return EXIT_SUCCESS;    

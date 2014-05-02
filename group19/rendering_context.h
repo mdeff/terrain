@@ -1,5 +1,8 @@
+
+#ifndef __rendering_context_h__
+#define __rendering_context_h__
+
 #include <GL/glew.h>
-#include "opengp.h"
 
 /// @brief OpenGL wrapper class template
 class RenderingContext {
@@ -16,3 +19,5 @@ protected:
     GLuint _programID;
 
 };
+
+#endif /* __rendering_context_h__ */

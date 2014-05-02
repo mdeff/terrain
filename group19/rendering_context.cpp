@@ -1,5 +1,6 @@
 
 #include "rendering_context.h"
+#include "opengp.h"
 
 void RenderingContext::init(const char* vshader, const char* fshader) {
 

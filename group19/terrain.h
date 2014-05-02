@@ -1,10 +1,11 @@
 
-#include "rendering_context.h"
+#ifndef __terrain_h__
+#define __terrain_h__
 
+#include "rendering_context.h"
 #include <GL/glew.h>
 #include "opengp.h"
 
-/// @brief OpenGL wrapper class template
 class Terrain : public RenderingContext {
 
 public:
@@ -23,3 +24,5 @@ private:
     GLuint loadTexture(const char * imagepath);
 
 };
+
+#endif /* __terrain_h__ */
