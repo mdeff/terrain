@@ -167,7 +167,7 @@ int Skybox::loadBMPtex(const char* imagepath, unsigned char* data){
 GLuint Skybox::load_skybox_texture(int slotNum){
 		
 		// hardcode the size of image for now 
-		int width = 256, height = 256, channel = 3;
+		int width = 1024, height = 1024, channel = 3;
 		int imgSize = width*height*channel;
 
 		/* Allocate data for each buffer */
@@ -217,10 +217,11 @@ GLuint Skybox::load_skybox_texture(int slotNum){
 }
 
 Skybox::~Skybox(){
-	delete[] back;
+	/*delete[] back;
 	delete[] front;
 	delete[] top;
 	delete[] bottom;
 	delete[] left;
+	delete[] right;*/
 
 }
