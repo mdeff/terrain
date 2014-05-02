@@ -26,8 +26,7 @@ out vec3 displaced_mv;
 
 
 void main() {
-	
-	
+
     // World (triangle grid) coordinates are (-1,-1) x (1,1).
     // Texture (height map) coordinates are (0,0) x (1,1).
     vec2 UV = vec2((position.xy+1.0)/2.0);
@@ -39,11 +38,11 @@ void main() {
     vec4 position_mv = modelview * vec4(displaced.xyz,  1.0);
     gl_Position = projection * position_mv;
 
-	//vertex position in camera coordinate
-	displaced_mv = vec3(gl_Position);
+    //vertex position in camera coordinate
+    displaced_mv = vec3(gl_Position);
 
     //compute the light direction
     light_dir = light_dir_tmp;
-	view_dir = vec3(position_mv);
+    view_dir = vec3(position_mv);
 
 }

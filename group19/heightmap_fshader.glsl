@@ -19,11 +19,13 @@ vec2 fade_new(vec2 t) {
     return t * t * t * ( t * (t*6-15) + 10 );
 }
 
+
 // Original Perlin interpolation function.
 // Less expensive to evaluate but results in discontinuous second derivatives.
 vec2 fade_orig(vec2 t) {
     return t * t * (3 - 2 * t);
 }
+
 
 // Look-up in the permutation table at index idx [0,255].
 int perm(int idx) {
@@ -31,6 +33,7 @@ int perm(int idx) {
     int idx_mod = int(mod(idx, 255));
     return int(texelFetch(permTableTex, idx_mod, 0).r);
 }
+
 
 // Look-up in the gradient vectors table at index idx [0,3].
 float grad(int idx, vec2 position) {
@@ -40,10 +43,12 @@ float grad(int idx, vec2 position) {
     return dot(gradient, position);
 }
 
+
 // Linear interpolation.
 float lerp(in float a, in float b, in float t) {
     return a + t*(b-a);
 }
+
 
 // Perlin noise function.
 float perlin_noise(vec2 position) {
@@ -86,6 +91,7 @@ float perlin_noise(vec2 position) {
 
 }
 
+
 // Fractal Brownian motion : sum_k l^(-k*H) * f(l^k * x).
 float fBm(vec2 position, float H, float lacunarity, int octaves) {
 
@@ -98,6 +104,7 @@ float fBm(vec2 position, float H, float lacunarity, int octaves) {
     }
     return height;
 }
+
 
 float turbulence(vec2 position, float H, float lacunarity, int octaves) {
 
@@ -112,6 +119,7 @@ float turbulence(vec2 position, float H, float lacunarity, int octaves) {
     return height;
 
 }
+
 
 // Multifractal : fractal system which has a different fractal dimension in different regions.
 float multifractal(vec2 position, float H, float lacunarity, float octaves, float offset) {
@@ -133,6 +141,8 @@ float multifractal(vec2 position, float H, float lacunarity, float octaves, floa
     return height;
 
 }
+
+
 // Multifractal : fractal system which has a different fractal dimension in different regions.
 float hybridMultifractal(vec2 position, float H, float lacunarity, float octaves, float offset) {
 
@@ -154,8 +164,8 @@ float hybridMultifractal(vec2 position, float H, float lacunarity, float octaves
 
 }
 
-float simplex_noise(vec2 v)
-{
+
+float simplex_noise(vec2 v) {
     float n0,n1,n2;
     const vec2 C = vec2(0.366025403, // 0.5*(sqrt(3.0)-1.0)
                      0.211324865);   //(3.0-Math.sqrt(3.0))/6.0
@@ -213,6 +223,8 @@ float simplex_noise(vec2 v)
     return (100.0*(n0+n1+n2));
 
 }
+
+
 // Multifractal : fractal system which has a different fractal dimension in different regions.
 float hybridMultifractal2(vec2 position, float H, float lacunarity, float octaves, float offset) {
 
@@ -233,27 +245,29 @@ float hybridMultifractal2(vec2 position, float H, float lacunarity, float octave
     return height;
 
 }
+
+
 // Multifractal : fractal system which has a different fractal dimension in different regions.
-float multifractalSimplex(vec2 position, float H, float lacunarity, float octaves, float offset) 
-{	
-	float weight = (0.25f*simplex_noise(2.5*position) + offset)/3.0f;
-	float signal = weight;
+float multifractalSimplex(vec2 position, float H, float lacunarity, float octaves, float offset) {
+    float weight = (0.25f*simplex_noise(2.5*position) + offset)/3.0f;
+    float signal = weight;
     float height =  weight;
 
     // Loop will be unrolled by the compiler (GPU driver).
     for (int k=0; k<octaves; k++) {
-		if ( weight > 1.0f ) weight = 1.0f;
-		
-		signal = (0.25f*simplex_noise(2.5*position) + offset) * pow(lacunarity, -H*k);
+        if ( weight > 1.0f ) weight = 1.0f;
 
-		height += weight * signal;
+        signal = (0.25f*simplex_noise(2.5*position) + offset) * pow(lacunarity, -H*k);
 
-		weight *= signal;
+        height += weight * signal;
+
+        weight *= signal;
 
         position *= lacunarity;
     }
-	return height;
+    return height;
 }
+
 
 void main() {
 
@@ -267,7 +281,7 @@ void main() {
     //height = (multifractal(position2.xy, 0.25f, 4.0f, 5, 0.75f) / 4.0f)-0.15f;
     //height = multifractal(position2.xy, 1.0f, 0.6f, 5, 0.05f) / 2.0f;
     //height = (multifractal(position2.xy, 0.25f, 4.0f, 5, 0.75f) / 4.0f)-0.15f;
-	//height = (multifractalSimplex(position2.xy, 0.25f, 4.0f, 5, 0.75f) / 3.0f)-0.14f;
+    //height = (multifractalSimplex(position2.xy, 0.25f, 4.0f, 5, 0.75f) / 3.0f)-0.14f;
 
     //Simplex noise
     //height =  0.25f*simplex_noise(2.0f*position2.xy);
@@ -275,81 +289,81 @@ void main() {
     //Turbulence
     //height = turbulence(position2.xy, 1.1f, 10.0f, 10) / 2.0f;
 
+    int choice = 3;
 
-	int choice = 3;
+    if(choice ==1){ //additive combination
+        float heightFBM = (fBm(position2.xy, 1.1f, 10.0f, 10) / 2.0f) ;
+        float heightMultifractalSimplex =((multifractalSimplex(position2.xy, 0.25f, 4.0f, 5, 0.75f) / 3.0f)-0.14f);
+        float heightPerlinNoise = 0.25f * perlin_noise(2.5f * position2.xy);
+        float heightMultifractal = (multifractal(position2.xy, 0.1f, 4.0f, 5, 0.75f) / 4.0f)-0.15f;
+        float heightSimplex = 0.25f*simplex_noise(2.5f*position2.xy);
 
-	if(choice ==1){ //additive combination
-		float heightFBM = (fBm(position2.xy, 1.1f, 10.0f, 10) / 2.0f) ;
-		float heightMultifractalSimplex =((multifractalSimplex(position2.xy, 0.25f, 4.0f, 5, 0.75f) / 3.0f)-0.14f);
-		float heightPerlinNoise = 0.25f * perlin_noise(2.5f * position2.xy);
-		float heightMultifractal = (multifractal(position2.xy, 0.1f, 4.0f, 5, 0.75f) / 4.0f)-0.15f;
-		float heightSimplex = 0.25f*simplex_noise(2.5f*position2.xy);
-	
-		float coef1 = 0.6;
-		float coef2 = 0.2;
-		float coef3 = 0.1;
-		float coef4 = 0.4;
-		float coef5 = 0.2;
+        float coef1 = 0.6;
+        float coef2 = 0.2;
+        float coef3 = 0.1;
+        float coef4 = 0.4;
+        float coef5 = 0.2;
 
-		height = (heightFBM*coef1 + heightMultifractalSimplex*coef2 + heightPerlinNoise*coef3 + heightMultifractal*coef4 + heightSimplex*coef5);
-	}
-	else if (choice ==2){//pseudo random spatial combination
-		// Generate a pseudo-random value [0 255].
-		float rnd = 0.25f*simplex_noise(2.5f*position2.xy);
-		//float rnd = (multifractalSimplex(position2.xy, 0.25f, 4.0f, 5, 0.75f) / 3.0f)-0.14f;
-		//float rnd = 0.25f * perlin_noise(2.5f * position2.xy);
-		if(rnd<0){
-			height =  (fBm(position2.xy, 1.1f, 10.0f, 10) / 2.0f);
-		}
-		else if(rnd>0 && rnd<0.1){
-			height = (multifractal(position2.xy, 0.25f, 4.0f, 5, 0.75f) / 4.0f)-0.15f;
-		}
-		else if(rnd>0.1 && rnd<0.2){
-			height =  (hybridMultifractal(position2.xy, 0.4f, 5.0f, 5, -0.25f)-0.1f);
-		}
-		else{
-			height = (fBm(position2.xy, 1.1f, 10.0f, 10) / 2.0f) ;
-		}
-	}
-	else if (choice ==3){//spatial progressiv combination
+        height = (heightFBM*coef1 + heightMultifractalSimplex*coef2 + heightPerlinNoise*coef3 + heightMultifractal*coef4 + heightSimplex*coef5);
+    }
+    else if (choice ==2){//pseudo random spatial combination
+        // Generate a pseudo-random value [0 255].
+        float rnd = 0.25f*simplex_noise(2.5f*position2.xy);
+        //float rnd = (multifractalSimplex(position2.xy, 0.25f, 4.0f, 5, 0.75f) / 3.0f)-0.14f;
+        //float rnd = 0.25f * perlin_noise(2.5f * position2.xy);
+        if(rnd<0){
+            height =  (fBm(position2.xy, 1.1f, 10.0f, 10) / 2.0f);
+        }
+        else if(rnd>0 && rnd<0.1){
+            height = (multifractal(position2.xy, 0.25f, 4.0f, 5, 0.75f) / 4.0f)-0.15f;
+        }
+        else if(rnd>0.1 && rnd<0.2){
+            height =  (hybridMultifractal(position2.xy, 0.4f, 5.0f, 5, -0.25f)-0.1f);
+        }
+        else{
+            height = (fBm(position2.xy, 1.1f, 10.0f, 10) / 2.0f) ;
+        }
+    }
+    else if (choice ==3){//spatial progressiv combination
 
-		float heightFBM = (fBm(position2.xy, 1.1f, 10.0f, 10) / 2.0f) ;
-		float heightMultifractalSimplex =((multifractalSimplex(position2.xy, 0.25f, 4.0f, 5, 0.75f) / 3.0f)-0.14f);
-		float heightPerlinNoise = 0.25f * perlin_noise(2.5f * position2.xy);
-		float heightMultifractal = (multifractal(position2.xy, 0.25f, 4.0f, 5, 0.75f) / 4.0f)-0.15f;
-		float heightHybrid =  (hybridMultifractal(position2.xy, 0.4f, 5.0f, 5, -0.25f)-0.1f);
-		
-		float coef1 = 2*position2.x;
-		float coef2 = 1 - 2*position2.x; //0.0f;
-		float coef3 = position2.y;
-		float coef4 = 1-position2.y;
-		float coef5 = 0.0; //1-2*position2.x;
+        float heightFBM = (fBm(position2.xy, 1.1f, 10.0f, 10) / 2.0f) ;
+        float heightMultifractalSimplex =((multifractalSimplex(position2.xy, 0.25f, 4.0f, 5, 0.75f) / 3.0f)-0.14f);
+        float heightPerlinNoise = 0.25f * perlin_noise(2.5f * position2.xy);
+        float heightMultifractal = (multifractal(position2.xy, 0.25f, 4.0f, 5, 0.75f) / 4.0f)-0.15f;
+        float heightHybrid =  (hybridMultifractal(position2.xy, 0.4f, 5.0f, 5, -0.25f)-0.1f);
 
-		height = (heightFBM*coef1 + heightMultifractalSimplex*coef2 + heightPerlinNoise*coef3 + heightMultifractal*coef4 + heightHybrid*coef5)/2;
-		
-	}
-	else if (choice==4)
-		height = turbulence(position2.xy, 1.1f, 10.0f, 10) / 2.0f;
-	else if (choice==5)
-		height = (multifractalSimplex(position2.xy, 0.25f, 4.0f, 5, 0.75f) / 3.0f)-0.14f;
-	else if (choice==6)
-		height =  0.25f*simplex_noise(2.0f*position2.xy);
-	else if (choice==7)
-		height = fBm(position2.xy, 1.1f, 10.0f, 10) / 2.0f;
-	else if(choice == 8)
-		height = 0.5f * perlin_noise(6.5f * position2.xy);
-	else if(choice == 9)
-		height = (multifractal(position2.xy, 0.25f, 4.0f, 5, 0.75f) / 4.0f)-0.15f;
-	else if(choice ==10)
-		//height = (hybridMultifractal(position2.xy, 0.4f, 5.0f, 5, -0.15f)-0.2f);
-		height = (hybridMultifractal(position2.xy, 0.4f, 5.0f, 5, -0.25f)-0.1f);
-	else
-		height = (hybridMultifractal2(position2.xy, 0.5f, 0.2f, 5, 0.2f));
+        float coef1 = 2*position2.x;
+        float coef2 = 1 - 2*position2.x; //0.0f;
+        float coef3 = position2.y;
+        float coef4 = 1-position2.y;
+        float coef5 = 0.0; //1-2*position2.x;
+
+        height = (heightFBM*coef1 + heightMultifractalSimplex*coef2 + heightPerlinNoise*coef3 + heightMultifractal*coef4 + heightHybrid*coef5)/2;
+
+    }
+    else if (choice==4)
+        height = turbulence(position2.xy, 1.1f, 10.0f, 10) / 2.0f;
+    else if (choice==5)
+        height = (multifractalSimplex(position2.xy, 0.25f, 4.0f, 5, 0.75f) / 3.0f)-0.14f;
+    else if (choice==6)
+        height =  0.25f*simplex_noise(2.0f*position2.xy);
+    else if (choice==7)
+        height = fBm(position2.xy, 1.1f, 10.0f, 10) / 2.0f;
+    else if(choice == 8)
+        height = 0.5f * perlin_noise(6.5f * position2.xy);
+    else if(choice == 9)
+        height = (multifractal(position2.xy, 0.25f, 4.0f, 5, 0.75f) / 4.0f)-0.15f;
+    else if(choice ==10)
+        //height = (hybridMultifractal(position2.xy, 0.4f, 5.0f, 5, -0.15f)-0.2f);
+        height = (hybridMultifractal(position2.xy, 0.4f, 5.0f, 5, -0.25f)-0.1f);
+    else
+        height = (hybridMultifractal2(position2.xy, 0.5f, 0.2f, 5, 0.2f));
     // Ground floor (lake).
     if (height < 0.0f)
         height = 0.0f;
 
 }
+
 
 void test() {
 
@@ -390,3 +404,4 @@ void test() {
 //    height = texture(permTableTex, s).r / 255 + 0.5;
 
 }
+

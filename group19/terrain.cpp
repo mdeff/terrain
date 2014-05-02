@@ -2,7 +2,6 @@
 #include "terrain.h"
 
 #include <iostream>
-#include <ctime>
 
 #include <GL/glew.h>
 #include <GL/glfw.h>
@@ -16,8 +15,6 @@
 const int N = 128;
 const int nVertices = N*N;
 const int nIndices = (N-1)*(N-1)*6;
-
-const float time0 = std::time(NULL);
 
 
 /// Generate the triangle grid vertices.
@@ -172,7 +169,7 @@ void Terrain::init(GLuint heightMapTexID) {
     _modelviewID = glGetUniformLocation(_programID, "modelview");
     _projectionID = glGetUniformLocation(_programID, "projection");
 
-    _timerID = glGetUniformLocation(_programID, "timer");
+    _timeID = glGetUniformLocation(_programID, "time");
 }
 
 
@@ -187,9 +184,10 @@ void Terrain::draw(mat4& projection, mat4& modelview) const {
     glUniformMatrix4fv(_modelviewID, 1, GL_FALSE, modelview.data());
     glUniformMatrix4fv(_projectionID, 1, GL_FALSE, projection.data());
 
-    //send time value to animate water
-    float timer = std::clock()%5000; //%500
-    glUniform1f(_timerID, timer);
+    // Time value which animates water.
+    static float time = 0;
+    time += 0.1;
+    glUniform1f(_timeID, time);
 
     //--- Render
     glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, 0);

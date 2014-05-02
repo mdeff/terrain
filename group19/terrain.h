@@ -18,7 +18,7 @@ private:
     // Specialized to this object.
     GLuint _modelviewID;
     GLuint _projectionID;
-    GLuint _timerID;
+    GLuint _timeID;
 
     void gen_triangle_grid();
     GLuint loadTexture(const char * imagepath);
