@@ -35,7 +35,7 @@ void update_matrix_stack(const mat4& model) {
 //    vec3 cam_pos(0.0f, 0.0f, 5.0f);
 //    vec3 cam_up(0.0f, 1.0f, 0.0f);
     /// Camera is in a corner, looking down to the terrain.
-    vec3 cam_pos(2.5f, -2.0f, 1.8f);
+    vec3 cam_pos(1.2f, -1.0f, 1.4f);
     //vec3 cam_pos(2.0f, -2.0f, 1.5f);
     //vec3 cam_pos(0.7f, -0.7f, 0.3f); // Close texture view.
     //vec3 cam_pos(0.8f, 1.2f, 2.0f);

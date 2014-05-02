@@ -222,5 +222,5 @@ Skybox::~Skybox(){
 	delete[] top;
 	delete[] bottom;
 	delete[] left;
-	delete[] right;
+
 }
