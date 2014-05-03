@@ -14,7 +14,7 @@ uniform int N; //size of the grid
 // First texture. Defined by glActiveTexture and passed by glUniform1i.
 uniform sampler2D heightMapTex;
 
-// Environmental texture
+// Environmental textures.
 uniform sampler2D sandTex;
 uniform sampler2D iceMoutainTex;
 uniform sampler2D treeTex;

@@ -5,7 +5,7 @@ uniform mat4 projection;
 uniform mat4 modelview;
 uniform vec3 light_dir_tmp;
 
-// First texture. Defined by glActiveTexture and passed by glUniform1i.
+// Texture 0. Defined by glActiveTexture and passed by glUniform1i.
 uniform sampler2D heightMapTex;
 
 // First input buffer. Defined here, retrieved in C++ by glGetAttribLocation.

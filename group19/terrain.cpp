@@ -197,7 +197,7 @@ void Terrain::draw(mat4& projection, mat4& modelview) const {
     /// Clear the screen framebuffer.
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    /// Render the terrain.
+    /// Render the terrain from the camera point of view.
     glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, 0);
 
 }

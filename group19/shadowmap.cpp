@@ -46,7 +46,7 @@ void Shadowmap::init(GLuint heightMapTexID) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
 
-    /// Configure the framebuffer : shadowmapTexture become the
+    /// Configure the framebuffer : shadowmapTexture becomes the
     /// fragment shader first output buffer.
     glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _shadowMapTexID, 0);
 
@@ -62,7 +62,7 @@ void Shadowmap::init(GLuint heightMapTexID) {
 }
 
 
-void Shadowmap::draw(mat4& projection, mat4& modelview) const {
+void Shadowmap::draw(mat4& /*projection*/, mat4& /*modelview*/) const {
 
     // Common drawing.
     RenderingContext::draw();
@@ -71,10 +71,31 @@ void Shadowmap::draw(mat4& projection, mat4& modelview) const {
 
     //--- Update the content of the uniforms (texture IDs, matrices, ...)
 
-    //--- Render
+    /// Spot light projection.
+    float fieldOfView = 45.0f;
+    float aspectRatio = 1.f;
+    float nearPlane = 0.1f;
+    float farPlane  = 10.f;
+    static mat4 projection = Eigen::perspective(fieldOfView, aspectRatio, nearPlane, farPlane);
+
+    /// Light position.
+    vec3 lightPosition(3.0, 3.0, 3.0);
+    vec3 lightAt(0.0,0.0,0.0);
+    vec3 lightUp(0.0,1.0,0.0);
+    static mat4 view = Eigen::lookAt(lightPosition, lightAt, lightUp);
+
+    /// Assemble the lightMVP matrix for a spotlight source.
+    mat4 lightMVP = projection * view;
+    GLuint lightMatrixID = glGetUniformLocation(_programID, "lightMVP");
+    glUniformMatrix4fv(lightMatrixID, 1, GL_FALSE, lightMVP.data());
+
+
+
+    /// Clear the shadowmap framebuffer.
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    //glBindVertexArray(0);
+    /// Render the terrain from the light source point of view.
+//    glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, 0);
 
 }
 
