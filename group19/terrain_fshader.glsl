@@ -14,13 +14,15 @@ uniform int N; //size of the grid
 // First texture. Defined by glActiveTexture and passed by glUniform1i.
 uniform sampler2D heightMapTex;
 
-// Environmental texture
+// Environmental textures.
 uniform sampler2D sandTex;
 uniform sampler2D iceMoutainTex;
 uniform sampler2D treeTex;
 uniform sampler2D stoneTex;
 uniform sampler2D waterTex;
 uniform sampler2D snowTex;
+uniform sampler2D waterNormalMap;
+
 
 // Position (world coordinates) after heightmap displacement.
 in vec3 displaced;
@@ -38,6 +40,14 @@ layout(location = 0) out vec3 color;
 
 void main() {
 
+	// Different levels of height for texture mapping
+	const float ground = 0.01f;
+    const float sandMax = 0.015f;
+    const float forestMin = 0.025f;
+    const float forestMax = 0.25f;
+    const float snowMin= 0.315f;
+    const float snowMax = 0.425;
+
     float grid_size = 2.0/float(N);
     float tex_size = grid_size/2.0;
     ivec3 off = ivec3(-1, 0, 1);
@@ -46,17 +56,24 @@ void main() {
     //current UV coordinate
     vec2 UV = vec2((displaced.xy +1.0)/2.0);
 
-    //first calculate the normal vector using finite difference
-    float s11 = texture(heightMapTex, UV).r;
-    float s01 = textureOffset(heightMapTex, UV, off.xy).r;
-    float s21 = textureOffset(heightMapTex, UV, off.zy).r;
-    float s10 = textureOffset(heightMapTex, UV, off.yx).r;
-    float s12 = textureOffset(heightMapTex, UV, off.yz).r;
+	//if it is water region, use normal from normal map 
+	//otherwise need to calculate it 
+	vec3 normal;
+	if (displaced.z < ground) {
+		normal = normalize(2*texture(waterNormalMap,100*UV).rgb);
+	} else {
+		//first calculate the normal vector using finite difference
+		float s11 = texture(heightMapTex, UV).r;
+		float s01 = textureOffset(heightMapTex, UV, off.xy).r;
+		float s21 = textureOffset(heightMapTex, UV, off.zy).r;
+		float s10 = textureOffset(heightMapTex, UV, off.yx).r;
+		float s12 = textureOffset(heightMapTex, UV, off.yz).r;
 
-    vec3 va = normalize(vec3(size.xy, s21 - s01));
-    vec3 vb = normalize(vec3(0.0, size.x,  s12 - s10));
-    vec3 tmp = cross(va,vb);
-    vec3 normal = normalize(vec3(tmp.xy, 2*tmp.z));
+		vec3 va = normalize(vec3(size.xy, s21 - s01));
+		vec3 vb = normalize(vec3(0.0, size.x,  s12 - s10));
+		vec3 tmp = cross(va,vb);
+		normal = normalize(vec3(tmp.xy, 2*tmp.z));
+	}
 
     // Normalize the vectors.
     vec3 L = normalize(light_dir);
@@ -69,20 +86,12 @@ void main() {
     vec3 specular = Is * ks * pow(max(dot(V,reflect(L,normal)),0.0),p);
 
     // Color dependent on the elevation (similar to texture mapping).
-    vec3 mapped;
-
-    const float ground = 0.01f;
-    const float sandMax = 0.015f;
-    const float forestMin = 0.025f;
-    const float forestMax = 0.25f;
-    const float snowMin= 0.315f;
-    const float snowMax = 0.425;
+    vec3 mapped;    
 
     float slope = smoothstep(0.35, 0.65 , normal.z);
 
     if(displaced.z < ground) {
-        float offset = time/1000;
-        mapped = texture2D(waterTex, 10*vec2(displaced.x+cos(offset),displaced.y+sin(offset))).rgb;
+        mapped = texture2D(waterTex, 5*vec2(displaced.x,displaced.y)).rgb;
     } else if (displaced.z < sandMax) {
         mapped = texture2D(sandTex, displaced.xy).rgb;
     } else if (displaced.z < forestMin) {  //mix between sand, rock

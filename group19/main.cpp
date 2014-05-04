@@ -10,14 +10,15 @@
 
 extern GLuint gen_heightmap();
 
-// Rendering contexts.
-Terrain terrain;
-Skybox skybox;
-Shadowmap shadowmap;
-
 /// Screen size.
 const int windowWidth(1024);
 const int windowHeight(768);
+
+// Rendering contexts.
+Terrain terrain(windowWidth, windowHeight);
+Skybox skybox(windowWidth, windowHeight);
+Shadowmap shadowmap(1024, 1024);  ///< Shadow map texture size.
+
 
 /// Matrices that have to be shared between rendering contexts.
 static mat4 projection;
@@ -27,10 +28,10 @@ static mat4 modelview;
 void update_matrix_stack(const mat4& model) {
 
     /// Define projection matrix (camera intrinsics)
-    projection = Eigen::perspective(45.0f, 4.0f/3.0f, 0.1f, 100.0f);
+    projection = Eigen::perspective(45.0f, 4.0f/4.0f, 0.1f, 100.0f);
 
     /// Define the view matrix (camera extrinsics)
-    vec3 cam_look(0.1f, 0.1f, 0.5f);
+    vec3 cam_look(-0.3f, 0.1f, 0.5f);
     /// Camera is in the sky, looking down.
 //    vec3 cam_pos(0.0f, 0.0f, 5.0f);
 //    vec3 cam_up(0.0f, 1.0f, 0.0f);
@@ -57,7 +58,7 @@ void init() {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_MULTISAMPLE);
     glEnable(GL_TEXTURE_2D);
-	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
     //glEnable(GL_DEPTH_TEST);
     //glEnable(GL_CULL_FACE);
 
@@ -90,14 +91,6 @@ void display() {
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     shadowmap.draw(projection, modelview);
-
-    /// Set the screen framebuffer back as the rendering target and specify
-    /// the transformation from normalized device coordinates to window coordinates.
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glViewport(0, 0, windowWidth, windowHeight);
-
-	//clear the buffer
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Draw terrain and skybox.
     terrain.draw(projection, modelview);

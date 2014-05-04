@@ -1,10 +1,11 @@
 #version 330 core
 
-layout(location = 0) in vec3 vertexPosition_modelspace; // position
 uniform mat4 lightMVP;
 
-// First texture. Defined by glActiveTexture and passed by glUniform1i.
+// Texture 0. Defined by glActiveTexture and passed by glUniform1i.
 uniform sampler2D heightMapTex;
+
+layout(location = 0) in vec3 vertexPosition_modelspace; // position
 
 void main() {
 
@@ -17,4 +18,5 @@ void main() {
 
     // Vertex in camera space then projection/clip space.
     gl_Position = lightMVP * vec4(displaced, 1.0);
+
 }

@@ -1,15 +1,16 @@
 #version 330 core
-//texture
-uniform samplerCube skybox_tex;
 
-//3d texture coordinate
+// Texture.
+uniform samplerCube skyboxTex;
+
+// 3D texture coordinates.
 in vec3 texCoords;
 
-out vec3 color;
+// First output buffer is pixel color.
+layout(location = 0) out vec3 color;
 
 
-void main()
-{
-	vec3 T = normalize(texCoords);
-	color =  texture(skybox_tex, T).rgb;
+void main() {
+    vec3 T = normalize(texCoords);
+    color =  texture(skyboxTex, T).rgb;
 }

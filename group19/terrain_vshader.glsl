@@ -5,11 +5,14 @@ uniform mat4 projection;
 uniform mat4 modelview;
 uniform vec3 light_dir_tmp;
 
-// First texture. Defined by glActiveTexture and passed by glUniform1i.
+// Texture 0. Defined by glActiveTexture and passed by glUniform1i.
 uniform sampler2D heightMapTex;
 
 // First input buffer. Defined here, retrieved in C++ by glGetAttribLocation.
 layout(location = 0) in vec3 position;
+
+//for animate the wave
+uniform float time;
 
 
 // Position (world coordinates) after heightmap displacement.
@@ -32,8 +35,14 @@ void main() {
     vec2 UV = vec2((position.xy+1.0)/2.0);
     float height = texture(heightMapTex, UV).r;
 
-    displaced = vec3(position.xy, height);
+	// Generate wave using sin function
+	if(height <= 0.01f)
+	{
+		height = sin(-6.28*position.x - 6.28*position.y+time*0.07) * 0.008; 
+	}
 
+	displaced = vec3(position.xy, height);
+	
     // Vertex in camera space then projection/clip space.
     vec4 position_mv = modelview * vec4(displaced.xyz,  1.0);
     gl_Position = projection * position_mv;

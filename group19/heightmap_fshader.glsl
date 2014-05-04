@@ -1,6 +1,6 @@
 #version 330 core
 
-// First and second textures.
+// Textures 0 and 1.
 // Defined by glActiveTexture and passed by glUniform1i.
 uniform sampler1D permTableTex;
 uniform sampler1D gradVectTex;

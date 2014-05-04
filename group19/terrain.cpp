@@ -17,6 +17,11 @@ const int nVertices = N*N;
 const int nIndices = (N-1)*(N-1)*6;
 
 
+Terrain::Terrain(unsigned int width, unsigned int height) :
+    RenderingContext(width, height) {
+}
+
+
 /// Generate the triangle grid vertices.
 void Terrain::gen_triangle_grid() {
 
@@ -102,6 +107,9 @@ void Terrain::init(GLuint heightMapTexID) {
     // Common initialization.
     RenderingContext::init(terrain_vshader, terrain_fshader);
 
+    /// Render to the screen : FBO 0;
+    _frameBufferID = 0;
+
     /// Bind the heightmap to texture 0.
     const GLuint heightMapTex = 0;
     glActiveTexture(GL_TEXTURE0+heightMapTex);
@@ -111,23 +119,28 @@ void Terrain::init(GLuint heightMapTexID) {
 
     // Load textures and bind them to textures 1 - 6.
     int slotNum = loadTexture("../../textures/sand.tga");
-    GLuint sandTextID = glGetUniformLocation(_programID, "sandTex");
-    glUniform1i(sandTextID, slotNum);
+    uniformID = glGetUniformLocation(_programID, "sandTex");
+    glUniform1i(uniformID, slotNum);
     slotNum = loadTexture("../../textures/dordona_range.tga");
-    GLuint iceMoutainTexID  = glGetUniformLocation(_programID, "iceMoutainTex");
-    glUniform1i(iceMoutainTexID, slotNum);
+    uniformID = glGetUniformLocation(_programID, "iceMoutainTex");
+    glUniform1i(uniformID, slotNum);
     slotNum = loadTexture("../../textures/forest.tga");
-    GLuint treeTexID  = glGetUniformLocation(_programID, "treeTex");
-    glUniform1i(treeTexID, slotNum);
+    uniformID = glGetUniformLocation(_programID, "treeTex");
+    glUniform1i(uniformID, slotNum);
     slotNum = loadTexture("../../textures/stone_2.tga");
-    GLuint stoneTexID  = glGetUniformLocation(_programID, "stoneTex");
-    glUniform1i(stoneTexID, slotNum);
+    uniformID = glGetUniformLocation(_programID, "stoneTex");
+    glUniform1i(uniformID, slotNum);
     slotNum = loadTexture("../../textures/water.tga");
-    GLuint waterTexID  = glGetUniformLocation(_programID, "waterTex");
-    glUniform1i(waterTexID, slotNum);
+    uniformID = glGetUniformLocation(_programID, "waterTex");
+    glUniform1i(uniformID, slotNum);
     slotNum = loadTexture("../../textures/snow.tga");
-    GLuint snowTexID  = glGetUniformLocation(_programID, "snowTex");
-    glUniform1i(snowTexID, slotNum);
+    uniformID = glGetUniformLocation(_programID, "snowTex");
+    glUniform1i(uniformID, slotNum);
+
+	// Load normal map for lighting of water
+	slotNum = loadTexture("../../textures/water_normal_map.tga");
+    uniformID = glGetUniformLocation(_programID, "waterNormalMap");
+    glUniform1i(uniformID, slotNum);
 
     /// Generate a flat and regular triangle grid.
     gen_triangle_grid();
@@ -148,7 +161,7 @@ void Terrain::init(GLuint heightMapTexID) {
 
     /// Define the material properties and pass them to the shaders
     vec3 ka(0.65f, 0.7f, 0.65f);
-    vec3 kd(0.35f, 0.25f, 0.35f);
+    vec3 kd(0.25f, 0.15f, 0.25f);
     vec3 ks(0.35f, 0.25f, 0.35f);
     float p = 60.0f;
     GLuint ka_id = glGetUniformLocation(_programID, "ka");
@@ -175,25 +188,25 @@ void Terrain::init(GLuint heightMapTexID) {
 
 void Terrain::draw(mat4& projection, mat4& modelview) const {
 
-    // Common drawing.
+    /// Common drawing.
     RenderingContext::draw();
 
-    //--- Bind the necessary textures
-
-    //--- Update the content of the uniforms (texture IDs, matrices, ...)
+    /// Update the content of the uniforms.
     glUniformMatrix4fv(_modelviewID, 1, GL_FALSE, modelview.data());
     glUniformMatrix4fv(_projectionID, 1, GL_FALSE, projection.data());
 
-    // Time value which animates water.
+    /// Time value which animates water.
     static float time = 0;
     glUniform1f(_timeID, time++);
 
-    //--- Render
+    /// Clear the screen framebuffer.
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    /// Render the terrain from the camera point of view.
     glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, 0);
 
-    //glBindVertexArray(0);
-
 }
+
 
 void Terrain::clean() {
     RenderingContext::clean();

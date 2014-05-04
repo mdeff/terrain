@@ -11,9 +11,9 @@
 #include "shadowmap_fshader.h"
 
 
-/// Shadow map texture size.
-const int texWidth(1024);
-const int texHeight(1024);
+Shadowmap::Shadowmap(unsigned int width, unsigned int height) :
+    RenderingContext(width, height) {
+}
 
 
 void Shadowmap::init(GLuint heightMapTexID) {
@@ -23,10 +23,8 @@ void Shadowmap::init(GLuint heightMapTexID) {
 
     /// Create a framebuffer (container for textures, and an optional depth buffer).
     /// The shadow map will be rendered to this FBO instead of the screen.
-    /// Specify the transformation from normalized device coordinates to texture coordinates.
     glGenFramebuffers(1, &_frameBufferID);
     glBindFramebuffer(GL_FRAMEBUFFER, _frameBufferID);
-    glViewport(0, 0, texWidth, texHeight);
 
     /// Bind the heightmap to texture 0.
     const GLuint heightMapTex = 0;
@@ -40,7 +38,7 @@ void Shadowmap::init(GLuint heightMapTexID) {
     // Depth texture. Slower than a depth buffer, but you can sample it later in your shader
     glGenTextures(1, &_shadowMapTexID);
     glBindTexture(GL_TEXTURE_2D, _shadowMapTexID);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, texWidth, texWidth, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, _width, _height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -48,7 +46,7 @@ void Shadowmap::init(GLuint heightMapTexID) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
 
-    /// Configure the framebuffer : shadowmapTexture become the
+    /// Configure the framebuffer : shadowmapTexture becomes the
     /// fragment shader first output buffer.
     glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _shadowMapTexID, 0);
 
@@ -64,25 +62,40 @@ void Shadowmap::init(GLuint heightMapTexID) {
 }
 
 
-void Shadowmap::draw(mat4& projection, mat4& modelview) const {
+void Shadowmap::draw(mat4& /*projection*/, mat4& /*modelview*/) const {
 
     // Common drawing.
     RenderingContext::draw();
-
-    /// The shadow map will be rendered to this FBO instead of the screen.
-    /// Specify the transformation from normalized device coordinates to texture coordinates.
-    glBindFramebuffer(GL_FRAMEBUFFER, _frameBufferID);
-    glViewport(0, 0, texWidth, texHeight);
-
 
     //--- Bind the necessary textures
 
     //--- Update the content of the uniforms (texture IDs, matrices, ...)
 
-    //--- Render
+    /// Spot light projection.
+    float fieldOfView = 45.0f;
+    float aspectRatio = 1.f;
+    float nearPlane = 0.1f;
+    float farPlane  = 10.f;
+    static mat4 projection = Eigen::perspective(fieldOfView, aspectRatio, nearPlane, farPlane);
+
+    /// Light position.
+    vec3 lightPosition(3.0, 3.0, 3.0);
+    vec3 lightAt(0.0,0.0,0.0);
+    vec3 lightUp(0.0,1.0,0.0);
+    static mat4 view = Eigen::lookAt(lightPosition, lightAt, lightUp);
+
+    /// Assemble the lightMVP matrix for a spotlight source.
+    mat4 lightMVP = projection * view;
+    GLuint lightMatrixID = glGetUniformLocation(_programID, "lightMVP");
+    glUniformMatrix4fv(lightMatrixID, 1, GL_FALSE, lightMVP.data());
+
+
+
+    /// Clear the shadowmap framebuffer.
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    //glBindVertexArray(0);
+    /// Render the terrain from the light source point of view.
+//    glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, 0);
 
 }
 

@@ -10,6 +10,7 @@ class Terrain : public RenderingContext {
 
 public:
     // Common methods of all renderers.
+    Terrain(unsigned int width, unsigned int height);
     void init(GLuint heightMapTexID);  ///< Or in the constructor
     void draw(mat4& projection, mat4& modelview) const;
     void clean();  ///< Or in the destructor
