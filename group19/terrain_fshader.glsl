@@ -60,7 +60,7 @@ void main() {
 	//otherwise need to calculate it 
 	vec3 normal;
 	if (displaced.z < ground) {
-		normal = normalize(2*texture(waterNormalMap,100*UV).rgb);
+		normal = normalize(texture(waterNormalMap,UV).rgb);
 	} else {
 		//first calculate the normal vector using finite difference
 		float s11 = texture(heightMapTex, UV).r;
@@ -91,7 +91,7 @@ void main() {
     float slope = smoothstep(0.35, 0.65 , normal.z);
 
     if(displaced.z < ground) {
-        mapped = texture2D(waterTex, 5*vec2(displaced.x,displaced.y)).rgb;
+        mapped = texture2D(waterTex, 5*vec2(displaced.x+ cos(time/5000.0),displaced.y+sin(time/5000.0))).rgb;
     } else if (displaced.z < sandMax) {
         mapped = texture2D(sandTex, displaced.xy).rgb;
     } else if (displaced.z < forestMin) {  //mix between sand, rock

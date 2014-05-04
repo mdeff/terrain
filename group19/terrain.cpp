@@ -139,7 +139,7 @@ void Terrain::init(GLuint heightMapTexID) {
 
 
 	// Load normal map for lighting of water
-	slotNum = loadTexture("../../textures/water_normal_map.tga");
+	slotNum = loadTexture("../../textures/water_normal_map_2.tga");
     uniformID = glGetUniformLocation(_programID, "waterNormalMap");
     glUniform1i(uniformID, slotNum);
 
