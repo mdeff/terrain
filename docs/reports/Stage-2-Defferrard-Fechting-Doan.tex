@@ -42,8 +42,20 @@ In this part, our idea is that we can use whatever texture that we want, whateve
 
 \subsubsection{Modeling the sky}
 
-Note that the height texture files, which are $1024 \cdot 1024 \cdot 3=3\textrm{MB}$ each, are too big to be allocated on the stack. We thus had to allocate some space on the heap.
+For this part, the idea is very straightforward as we try to render two objects : terrain and a textured cube covered the terrain and display them together on the screen. However, it is very time-consuming to implement but good things are after finishing this part, we can gain a very solid understanding of OpenGL vertex buffer mechanism.
 
+To render multiple objects together, before rendering each object, we set its frame buffer as a render target and bind the vertex array of that object. In addition, we use separate program to render each object, so before drawing it, we need to call \texttt{glUseProgram} in OpenGL.
+
+To texturize the skybox with sky images, we make use of \texttt{GL\_CUBE\_MAP\_SEAMLESS} option in OpenGL to get rid of the problem with seams. We also note that for high-resolution texture files, which are $1024 \cdot 1024 \cdot 3=3\textrm{MB}$ each, are too big to be allocated on the stack so they need to be placed also on the heap.
+
+The results of this part is shown in Figure~\ref{skybox}.
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[height=4cm]{{{img_stage2/skybox}}}
+	\caption{The terrain covered by a sky box.}
+	\label{skybox}
+\end{figure}
 \subsubsection{Self shadowing}
 
 
@@ -54,8 +66,9 @@ Note that the height texture files, which are $1024 \cdot 1024 \cdot 3=3\textrm{
 \subsubsection{Water depth effect (participating media)}
 
 \subsubsection{Water dynamics}
+For this part, we follow a very simple approach. In the vertex shader of the terrain generation, for only vertices belonging to the water region, we displace it in z-direction by a sin function of x and y position (up to a scale). We also pass a uniform variable \texttt{time} to control the phase of the displacement. Even this is super simple but the result is pretty good. 
 
-In order to animate the water texture, we measure time during program execution and send this value through a uniform variable to the fragment shader. This time value will be used to compute an offset applied to the position of the pixel to read in texture.
+In addition, we also do normal mapping for water region. Instead of calculating the normal like other regions, we do a normal vector lookup in the normal map and use that vector for shading. 
 
 \subsubsection{Time of the day}
 
