@@ -65,7 +65,8 @@ void Skybox::init() {
     _frameBufferID = 0;
 
     /// Bind the Skybox to texture 8 (make sure not coincide with previous texture slot).
-    const int skyboxTex = 9;
+
+    const int skyboxTex = 8;
     GLuint uniformID = glGetUniformLocation(_programID, "skyboxTex");
     glUniform1i(uniformID, skyboxTex);
 

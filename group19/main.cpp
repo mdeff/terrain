@@ -7,6 +7,7 @@
 #include "terrain.h"
 #include "skybox.h"
 #include "shadowmap.h"
+#include "watermap.h"
 
 extern GLuint gen_heightmap();
 
@@ -18,6 +19,7 @@ const int windowHeight(768);
 Terrain terrain(windowWidth, windowHeight);
 Skybox skybox(windowWidth, windowHeight);
 Shadowmap shadowmap(1024, 1024);  ///< Shadow map texture size.
+//Watermap watermap(windowWidth, windowHeight);
 
 
 /// Matrices that have to be shared between rendering contexts.
@@ -50,7 +52,6 @@ void update_matrix_stack(const mat4& model) {
 
 
 
-
 void init() {
 	
     /// OpenGL parameters.
@@ -77,12 +78,11 @@ void init() {
     shadowmap.init(heightMapTexID);
     terrain.init(heightMapTexID);
     skybox.init();
+	//watermap.init(heightMapTexID, windowWidth, windowHeight);
 
     /// Initialize the matrix stack.  	
 	update_matrix_stack(mat4::Identity());
-
 }
-
 
 void display() {
 
@@ -95,6 +95,8 @@ void display() {
     // Draw terrain and skybox.
     terrain.draw(projection, modelview);
     skybox.draw(projection, modelview);
+	
+	//watermap.draw(projection, modelview);
 
 }
 

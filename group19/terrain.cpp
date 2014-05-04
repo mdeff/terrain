@@ -137,10 +137,12 @@ void Terrain::init(GLuint heightMapTexID) {
     uniformID = glGetUniformLocation(_programID, "snowTex");
     glUniform1i(uniformID, slotNum);
 
+
 	// Load normal map for lighting of water
 	slotNum = loadTexture("../../textures/water_normal_map.tga");
     uniformID = glGetUniformLocation(_programID, "waterNormalMap");
     glUniform1i(uniformID, slotNum);
+
 
     /// Generate a flat and regular triangle grid.
     gen_triangle_grid();
