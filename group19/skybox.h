@@ -26,7 +26,7 @@ private:
     GLuint _projectionID;
 
     int loadBMP(const char * imagepath, unsigned char* data) const;
-    GLuint loadCubeTexture(int slotNum) const;
+    void loadCubeTexture() const;
 
 };
 

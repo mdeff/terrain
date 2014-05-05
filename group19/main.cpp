@@ -75,10 +75,16 @@ void init() {
     glViewport(0, 0, windowWidth, windowHeight);
 
     // Initialize the rendering contexts.
-    shadowmap.init(heightMapTexID);
     terrain.init(heightMapTexID);
     skybox.init();
 	//watermap.init(heightMapTexID, windowWidth, windowHeight);
+
+    // Terrain and Shadowmap contexts share the same vertices.
+//    GLuint vertexBufferID, elementBufferID;
+//    terrain.get_buffer_IDs(vertexBufferID, elementBufferID);
+//    shadowmap.set_buffer_IDs(vertexBufferID, elementBufferID);
+//    shadowmap.set_vertexarray_ID(terrain.get_vertexarray_ID());
+    shadowmap.init(heightMapTexID);
 
     /// Initialize the matrix stack.  	
 	update_matrix_stack(mat4::Identity());

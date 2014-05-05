@@ -18,34 +18,29 @@ Shadowmap::Shadowmap(unsigned int width, unsigned int height) :
 
 void Shadowmap::init(GLuint heightMapTexID) {
 
-    /// Common initialization : vertex array and shader programs.
-    RenderingContext::init(shadowmap_vshader, shadowmap_fshader);
-
     /// Create a framebuffer (container for textures, and an optional depth buffer).
     /// The shadow map will be rendered to this FBO instead of the screen.
     glGenFramebuffers(1, &_frameBufferID);
-    glBindFramebuffer(GL_FRAMEBUFFER, _frameBufferID);
+
+    /// Common initialization : vertex array and shader programs.
+    RenderingContext::init(shadowmap_vshader, shadowmap_fshader);
 
     /// Bind the heightmap to texture 0.
-    const GLuint heightMapTex = 0;
-    glActiveTexture(GL_TEXTURE0+heightMapTex);
-    glBindTexture(GL_TEXTURE_2D, heightMapTexID);
-    GLuint uniformID = glGetUniformLocation(_programID, "heightMapTex");
-    glUniform1i(uniformID, heightMapTex);
+    set_texture(0, heightMapTexID, "heightMapTex");
 
     /// Create the texture which will contain the color / depth output
     /// (the actual shadow map) of our shader.
     // Depth texture. Slower than a depth buffer, but we can sample it later in the shader.
-    glGenTextures(1, &_shadowMapTexID);
-    glBindTexture(GL_TEXTURE_2D, _shadowMapTexID);
+    set_texture(1, -1);
+
     // Depth format is unsigned int. Set it to 16 bits.
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, _width, _height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, 0);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+//    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, _width, _height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, 0);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
 
     /// Attach the created texture to the depth attachment point.
     /// The texture becomes the fragment shader first output buffer.
@@ -55,10 +50,10 @@ void Shadowmap::init(GLuint heightMapTexID) {
     glDrawBuffer(GL_NONE);
 
     /// Check that our framebuffer is complete.
-    if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        std::cerr << "Shadowmap framebuffer not complete." << std::endl;
-        exit(EXIT_FAILURE);
-    }
+//    if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+//        std::cerr << "Shadowmap framebuffer not complete." << std::endl;
+//        exit(EXIT_FAILURE);
+//    }
 
 }
 

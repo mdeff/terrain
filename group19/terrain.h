@@ -21,8 +21,8 @@ private:
     GLuint _projectionID;
     GLuint _timeID;
 
-    void gen_triangle_grid(GLuint& vertexBufferID, GLuint elementBufferID) const;
-    GLuint loadTexture(const char * imagepath) const;
+    void gen_triangle_grid();
+    GLuint load_texture(const char * imagepath) const;
 
 };
 

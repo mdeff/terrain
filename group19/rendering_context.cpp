@@ -1,14 +1,19 @@
 
+#include <string>
 #include "rendering_context.h"
 #include "opengp.h"
 
 
+/// By default,render to the default framebuffer (screen) : FBO 0.
 RenderingContext::RenderingContext(unsigned int width, unsigned int height) :
-    _width(width), _height(height) {
+    _width(width), _height(height), _frameBufferID(0), _nTextures(0) {
 }
 
 
 void RenderingContext::init(const char* vshader, const char* fshader) {
+
+    /// Set the context FBO as the rendering target.
+    glBindFramebuffer(GL_FRAMEBUFFER, _frameBufferID);
 
     /// Vertex array object.
     glGenVertexArrays(1, &_vertexArrayID);
@@ -25,7 +30,7 @@ void RenderingContext::init(const char* vshader, const char* fshader) {
 
 void RenderingContext::draw() const {
 
-    /// Set the object FBO as the rendering target.
+    /// Set the context FBO as the rendering target.
     glBindFramebuffer(GL_FRAMEBUFFER, _frameBufferID);
 
     /// Specify the transformation from normalized device coordinates
@@ -34,6 +39,12 @@ void RenderingContext::draw() const {
 
     /// Select the shader program.
     glUseProgram(_programID);
+
+    /// Bind all the necessary textures.
+    for(int i=0; i<_nTextures; ++i) {
+        glActiveTexture(GL_TEXTURE0 + i);
+        glBindTexture(GL_TEXTURE_2D, _textureIDs[i]);
+    }
 
     /*
      * Bind vertex array
@@ -47,8 +58,50 @@ void RenderingContext::draw() const {
 
 
 void RenderingContext::clean() {
-
+    glDeleteBuffers(1, &_vertexBufferID);
+    glDeleteBuffers(1, &_elementBufferID);
     glDeleteProgram(_programID);
     glDeleteVertexArrays(1, &_vertexArrayID);
+}
 
+
+GLuint RenderingContext::set_texture(const GLuint textureIndex, int textureID, std::string uniformName, GLenum target) {
+
+    /// Create a texture if no ID was passed.
+    if(textureID < 0)
+        glGenTextures(1, (GLuint*)&textureID);
+
+    /// "Bind" the newly created texture to the context : all future texture functions will modify this texture.
+    glActiveTexture(GL_TEXTURE0 + textureIndex);
+    glBindTexture(target, textureID);
+
+    if(!uniformName.empty()) {
+        GLuint uniformID = glGetUniformLocation(_programID, uniformName.c_str());
+        glUniform1i(uniformID, textureIndex);
+    }
+
+    _textureIDs[textureIndex] = textureID;
+    _nTextures = textureIndex + 1;
+
+    return textureID;
+}
+
+
+void RenderingContext::get_buffer_IDs(GLuint& vertexBufferID, GLuint& elementBufferID) const {
+    vertexBufferID = _vertexBufferID;
+    elementBufferID = _elementBufferID;
+}
+
+void RenderingContext::set_buffer_IDs(const GLuint vertexBufferID, const GLuint elementBufferID) {
+    _vertexBufferID = vertexBufferID;
+    _elementBufferID = elementBufferID;
+}
+
+
+GLuint RenderingContext::get_vertexarray_ID() const {
+    return _vertexArrayID;
+}
+
+void RenderingContext::set_vertexarray_ID(const GLuint vertexArrayID) {
+    _vertexArrayID = vertexArrayID;
 }

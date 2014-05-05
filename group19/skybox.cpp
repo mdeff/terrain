@@ -61,16 +61,9 @@ void Skybox::init() {
     /// Common initialization : vertex array and shader programs.
     RenderingContext::init(skybox_vshader, skybox_fshader);
 
-    /// Render to the default framebuffer (screen) : FBO 0.
-    _frameBufferID = 0;
-
-    /// Bind the Skybox to texture 8 (make sure not coincide with previous texture slot).
-    const int skyboxTex = 8;
-    GLuint uniformID = glGetUniformLocation(_programID, "skyboxTex");
-    glUniform1i(uniformID, skyboxTex);
-
-    /// Load and bind the Skybox cube texture.
-    loadCubeTexture(skyboxTex);
+    /// Bind the Skybox cube map to texture 0.
+    set_texture(0, -1, "skyboxTex", GL_TEXTURE_CUBE_MAP);
+    loadCubeTexture();
 
     /// Copy the vertices in a vertex buffer (VBO).
     GLuint vertexBufferID;
@@ -180,7 +173,7 @@ int Skybox::loadBMP(const char* imagepath, unsigned char* data) const {
 }
 
 
-GLuint Skybox::loadCubeTexture(int slotNum) const {
+void Skybox::loadCubeTexture() const {
 
     // hardcode the size of image for now
     int width = 1024, height = 1024, channel = 3;
@@ -209,11 +202,7 @@ GLuint Skybox::loadCubeTexture(int slotNum) const {
     if (!loadBMP("../../skybox/bottom.bmp", bottom))
         exit(EXIT_FAILURE);
 
-    /// Bind the cube map.
-    GLuint texID;
-    glGenTextures(1, &texID);
-    glActiveTexture(GL_TEXTURE0 + slotNum);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, texID);
+    /// Set the filtering.
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -230,7 +219,5 @@ GLuint Skybox::loadCubeTexture(int slotNum) const {
 
     /// Deallocate heap data.
     delete left, right, back, front, top, bottom;
-
-    return texID;
 
 }
