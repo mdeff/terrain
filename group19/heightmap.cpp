@@ -192,8 +192,8 @@ GLuint gen_heightmap() {
     //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 //    glGenerateMipmap(GL_TEXTURE_2D);
 
-    /// Configure the framebuffer : heightmapTexture become the
-    /// fragment shader first output buffer.
+    /// Attach the created texture to the first color attachment point.
+    /// The texture becomes the fragment shader first output buffer.
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, heightMapTexID, 0);
 //    GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0};
 //    glDrawBuffers(1, drawBuffers);

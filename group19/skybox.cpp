@@ -58,14 +58,13 @@ void Skybox::init() {
          size,-size, size
     };
 
-    /// Common initialization.
+    /// Common initialization : vertex array and shader programs.
     RenderingContext::init(skybox_vshader, skybox_fshader);
 
-    /// Render to the screen : FBO 0;
+    /// Render to the default framebuffer (screen) : FBO 0.
     _frameBufferID = 0;
 
     /// Bind the Skybox to texture 8 (make sure not coincide with previous texture slot).
-
     const int skyboxTex = 8;
     GLuint uniformID = glGetUniformLocation(_programID, "skyboxTex");
     glUniform1i(uniformID, skyboxTex);
@@ -73,13 +72,13 @@ void Skybox::init() {
     /// Load and bind the Skybox cube texture.
     loadCubeTexture(skyboxTex);
 
-    /// Copy the vertices in a vertex buffer.
+    /// Copy the vertices in a vertex buffer (VBO).
     GLuint vertexBufferID;
     glGenBuffers(1, &vertexBufferID);
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &vertices, GL_STATIC_DRAW);
 
-    /// Vertex attribute "position" points to the binded buffer.
+    /// Vertex attribute "position" points to elements of the array buffer.
     GLuint positionID = glGetAttribLocation(_programID, "position");
     glEnableVertexAttribArray(positionID);
     // vec3: 3 floats per vertex for the position attribute.
@@ -102,9 +101,9 @@ void Skybox::draw(mat4& projection, mat4& modelview) const {
     glUniformMatrix4fv(_projectionID, 1, GL_FALSE, projection.data());
 
     /// Do not clear the screen framebuffer : done by Terrain.
-    /// Otherwise we'll see only the Skybox.
+    /// Otherwise Terrain drawn pixels will be cleared and we'll only see the skybox.
 
-    /// Render the Skybox.
+    /// Render the skybox from camera point of view to default framebuffer.
     glDrawArrays(GL_TRIANGLES, 0, nVertices);
 
 }

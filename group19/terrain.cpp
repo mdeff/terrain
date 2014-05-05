@@ -12,9 +12,9 @@
 
 /// NxN triangle grid.
 /// const is better than #define : type checked, optimized out anyway
-const int N = 128;
-const int nVertices = N*N;
-const int nIndices = (N-1)*(N-1)*6;
+const unsigned int N = 128;
+const unsigned int nVertices = N*N;
+const unsigned int nIndices = (N-1)*(N-1)*6;
 
 
 Terrain::Terrain(unsigned int width, unsigned int height) :
@@ -23,7 +23,7 @@ Terrain::Terrain(unsigned int width, unsigned int height) :
 
 
 /// Generate the triangle grid vertices.
-void Terrain::gen_triangle_grid() {
+void Terrain::gen_triangle_grid(GLuint& vertexBufferID, GLuint elementBufferID) const {
 
     /// Generate the vertices (line by line) : 16^2 = 256 vertices.
     vec3 vertices[nVertices];
@@ -33,8 +33,7 @@ void Terrain::gen_triangle_grid() {
         }
     }
 
-    /// Copy the vertices in a vertex buffer.
-    GLuint vertexBufferID;
+    /// Copy the vertices to GPU in a vertex buffer.
     glGenBuffers(1, &vertexBufferID);
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
@@ -55,22 +54,15 @@ void Terrain::gen_triangle_grid() {
         }
     }
 
-    /// Copy the indices in an index buffer.
-    GLuint elementBufferID;
+    /// Copy the indices to GPU in an index buffer.
     glGenBuffers(1, &elementBufferID);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferID);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    /// Vertex attribute "position" points to the binded buffer.
-    GLuint positionID = glGetAttribLocation(_programID, "position");
-    glEnableVertexAttribArray(positionID);
-    // vec3: 3 floats per vertex for the position attribute.
-    glVertexAttribPointer(positionID, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
 }
 
 
-GLuint Terrain::loadTexture(const char * imagepath) {
+GLuint Terrain::loadTexture(const char * imagepath) const {
 
     // Start at 1.
     static int slotNum = 0;
@@ -104,10 +96,10 @@ GLuint Terrain::loadTexture(const char * imagepath) {
 
 void Terrain::init(GLuint heightMapTexID) {
 
-    // Common initialization.
+    /// Common initialization : vertex array and shader programs.
     RenderingContext::init(terrain_vshader, terrain_fshader);
 
-    /// Render to the screen : FBO 0;
+    /// Render to the default framebuffer (screen) : FBO 0.
     _frameBufferID = 0;
 
     /// Bind the heightmap to texture 0.
@@ -117,7 +109,7 @@ void Terrain::init(GLuint heightMapTexID) {
     GLuint uniformID = glGetUniformLocation(_programID, "heightMapTex");
     glUniform1i(uniformID, heightMapTex);
 
-    // Load textures and bind them to textures 1 - 6.
+    /// Load material textures and bind them to textures 1 - 6.
     int slotNum = loadTexture("../../textures/sand.tga");
     uniformID = glGetUniformLocation(_programID, "sandTex");
     glUniform1i(uniformID, slotNum);
@@ -137,15 +129,22 @@ void Terrain::init(GLuint heightMapTexID) {
     uniformID = glGetUniformLocation(_programID, "snowTex");
     glUniform1i(uniformID, slotNum);
 
-
-	// Load normal map for lighting of water
+    /// Load the normal map for water lighting to texture 7.
 	slotNum = loadTexture("../../textures/water_normal_map_2.tga");
     uniformID = glGetUniformLocation(_programID, "waterNormalMap");
     glUniform1i(uniformID, slotNum);
 
+    /// Generate a flat and regular triangle grid. Copy vertices to GPU.
+    GLuint vertexBufferID, elementBufferID;
+    gen_triangle_grid(vertexBufferID, elementBufferID);
 
-    /// Generate a flat and regular triangle grid.
-    gen_triangle_grid();
+    /// Vertex attribute "position" points to data from the binded buffer.
+//    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
+//    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferID);
+    GLuint positionID = glGetAttribLocation(_programID, "position");
+    glEnableVertexAttribArray(positionID);
+    // vec3: 3 floats per vertex for the position attribute.
+    glVertexAttribPointer(positionID, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
     /// Define light properties and pass them to the shaders.
     vec3 light_dir_tmp(1.0f,0.5f,1.0f);
@@ -161,7 +160,7 @@ void Terrain::init(GLuint heightMapTexID) {
     glUniform3fv(Id_id, 1, Id.data());
     glUniform3fv(Is_id, 1, Is.data());
 
-    /// Define the material properties and pass them to the shaders
+    /// Define the material properties and pass them to the shaders.
     vec3 ka(0.65f, 0.7f, 0.65f);
     vec3 kd(0.25f, 0.15f, 0.25f);
     vec3 ks(0.35f, 0.25f, 0.35f);
@@ -176,7 +175,7 @@ void Terrain::init(GLuint heightMapTexID) {
     glUniform1f(p_id, p);
 
     GLuint N_id = glGetUniformLocation(_programID, "N");
-    glUniform1d(N_id,N);
+    glUniform1d(N_id, N);
 
 
 
@@ -198,13 +197,14 @@ void Terrain::draw(mat4& projection, mat4& modelview) const {
     glUniformMatrix4fv(_projectionID, 1, GL_FALSE, projection.data());
 
     /// Time value which animates water.
+    // TODO: implement rollover ?
     static float time = 0;
     glUniform1f(_timeID, time++);
 
     /// Clear the screen framebuffer.
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    /// Render the terrain from the camera point of view.
+    /// Render the terrain from camera point of view to default framebuffer.
     glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, 0);
 
 }
