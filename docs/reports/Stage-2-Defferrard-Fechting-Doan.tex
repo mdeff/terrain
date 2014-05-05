@@ -21,9 +21,8 @@
 
 \section{Overview}
 
-This report presents our advancement on the second part of the project : rendering using procedural methods. Figure~ shows an example of what our actual code base is able to generate. All the minimal steps to display a procedurally generated terrain were successfully completed. We did also implement some other optional suggested methods, like 
-
-With this stage, we realized that we are better technicians than artists.
+This report presents our advancement on the second part of the project : rendering using texture mapping and shadowing.
+%At this stage, we realized that we are better technicians than artists.
 
 \section{Implementation}
 
@@ -56,7 +55,24 @@ The results of this part is shown in Figure~\ref{skybox}.
 	\caption{The terrain covered by a sky box.}
 	\label{skybox}
 \end{figure}
+
 \subsubsection{Self shadowing}
+
+The shadow mapping is implemented by a third C++ class : the \texttt{ShadowMap}. See section~\ref{OO} for a discussion on the object oriented refactoring of our code base. This class shares the same Vertex array object (thus the vertices and indices buffers) as the \texttt{Terrain} class. It renders to a depth texture which is then passed to the \texttt{Terrain} class as an input texture. Figure~\ref{shadow_maps} shows this texture for two different light source positions.
+
+\begin{figure}[ht]
+	\centering
+	\subfloat[Light source at (0,3,0)]{
+		\label{shadow_map_0_3_0}
+		\includegraphics[height=4cm]{{{img_stage2/shadow_map_0_3_0}}}
+	} \quad
+	\subfloat[Light source at (3,0,0)]{
+		\label{shadow_map_3_0_0}
+		\includegraphics[height=4cm]{{{img_stage2/shadow_map_3_0_0}}}
+	}
+	\caption{Shadow maps}
+	\label{shadow_maps}
+\end{figure}
 
 
 \subsection{Advanced}
@@ -66,6 +82,7 @@ The results of this part is shown in Figure~\ref{skybox}.
 \subsubsection{Water depth effect (participating media)}
 
 \subsubsection{Water dynamics}
+
 For this part, we follow a very simple approach. In the vertex shader of the terrain generation, for only vertices belonging to the water region, we displace it in z-direction by a sin function of x and y position (up to a scale). We also pass a uniform variable \texttt{time} to control the phase of the displacement. Even this is super simple but the result is pretty good. 
 
 In addition, we also do normal mapping for water region. Instead of calculating the normal like other regions, we do a normal vector lookup in the normal map and use that vector for shading. 
@@ -76,6 +93,7 @@ In addition, we also do normal mapping for water region. Instead of calculating 
 \section{Improvements on last stage}
 
 \subsection{Code modularization using object oriented programming}
+\label{OO}
 
 We re-factored our code base to use an object oriented paradigm. This allows better modularization and generalization. The idea is to have a base class (\texttt{RenderingContext}) who defines the interface and implements common methods. The contexts (\texttt{Terrain}, \texttt{Skybox} and \texttt{Shadow}) then inherits from it and implement further specializations. This simplifies the manipulation of the contexts from the main program as they all have the same interface. A common implementation also limits code duplication.
 
