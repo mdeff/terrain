@@ -14,7 +14,7 @@
 /// const is better than #define : type checked, optimized out anyway
 const unsigned int N = 128;
 const unsigned int nVertices = N*N;
-const unsigned int nIndices = (N-1)*(N-1)*6;
+unsigned int nIndices = (N-1)*(N-1)*6;
 
 
 Terrain::Terrain(unsigned int width, unsigned int height) :
@@ -26,10 +26,10 @@ Terrain::Terrain(unsigned int width, unsigned int height) :
 void Terrain::gen_triangle_grid() {
 
     /// Generate the vertices (line by line) : 16^2 = 256 vertices.
-    vec3 vertices[nVertices];
+    vec2 vertices[nVertices];
     for(int y=0; y<N; y++) {
         for(int x=0; x<N; x++) {
-            vertices[y*N+x] = vec3(float(2.0*x)/(N-1)-1, float(2.0*y)/(N-1)-1, 0);
+            vertices[y*N+x] = vec2(float(2.0*x)/(N-1)-1, float(2.0*y)/(N-1)-1);
         }
     }
 
@@ -110,12 +110,12 @@ void Terrain::init(GLuint heightMapTexID) {
     gen_triangle_grid();
 
     /// Vertex attribute "position" points to data from the currently binded array buffer.
-    glBindBuffer(GL_ARRAY_BUFFER, _vertexBufferID);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _elementBufferID);
-    GLuint positionID = glGetAttribLocation(_programID, "position");
-    glEnableVertexAttribArray(positionID);
-    // vec3: 3 floats per vertex for the position attribute.
-    glVertexAttribPointer(positionID, 3, GL_FLOAT, GL_FALSE, 0, 0);
+//    glBindBuffer(GL_ARRAY_BUFFER, _vertexBufferID);
+//    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _elementBufferID);
+    //GLuint positionID = glGetAttribLocation(_programID, "position");
+    //glEnableVertexAttribArray(positionID);
+    // vec2: 2 floats per vertex for the xy plane position attribute.
+    //glVertexAttribPointer(positionID, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
     /// Define light properties and pass them to the shaders.
     vec3 light_dir_tmp(1.0f,0.5f,1.0f);
@@ -155,6 +155,8 @@ void Terrain::init(GLuint heightMapTexID) {
     _projectionID = glGetUniformLocation(_programID, "projection");
 
     _timeID = glGetUniformLocation(_programID, "time");
+
+    _vertexAttribID = glGetAttribLocation(_programID, "position");
 }
 
 
@@ -163,9 +165,11 @@ void Terrain::draw(mat4& projection, mat4& modelview) const {
     /// Common drawing.
     RenderingContext::draw();
 
-    glActiveTexture(GL_TEXTURE0);
-    //glBindTexture(GL_TEXTURE_2D, depthTexture);
-    //glUniform1i(ShadowMapID, 0);
+    /// Vertex attribute "position" points to data from the currently binded array buffer.
+    glBindBuffer(GL_ARRAY_BUFFER, _vertexBufferID);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _elementBufferID);
+    glEnableVertexAttribArray(_vertexAttribID);
+    glVertexAttribPointer(_vertexAttribID, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
     /// Update the content of the uniforms.
     glUniformMatrix4fv(_modelviewID, 1, GL_FALSE, modelview.data());
@@ -176,11 +180,60 @@ void Terrain::draw(mat4& projection, mat4& modelview) const {
     static float time = 0;
     glUniform1f(_timeID, time++);
 
+
+    ///>>>>>>>>>> TODO >>>>>>>>>>>
+    /// TODO: Practical 6.
+    /// 1) Enable the uvbuffer as a third vertex attribute array. Don't forget to disable it after the call to drawArrays
+    ///<<<<<<<<<< TODO <<<<<<<<<<<
+    /// Vertex attribute "uv" points to data from the currently binded array buffer.
+    glBindBuffer(GL_ARRAY_BUFFER, _vertexBufferID);
+    glEnableVertexAttribArray(_vertexAttribID);
+    glVertexAttribPointer(_vertexAttribID, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+    ///>>>>>>>>>> TODO >>>>>>>>>>>
+    /// TODO: Practical 6.
+    /// 2) Assemble the offsetMatrix that maps from light-coordinates in (-1,1)x(-1,1) to texture coordinates in (0,1)x(0,1)
+    ///<<<<<<<<<< TODO <<<<<<<<<<<    /// Spot light projection.
+    float fieldOfView = 45.0f;
+    float aspectRatio = 1.f;
+    float nearPlane = 0.1f;
+    float farPlane  = 10.f;
+    static mat4 lightProjection = Eigen::perspective(fieldOfView, aspectRatio, nearPlane, farPlane);
+
+    /// Light position.
+    vec3 lightPosition(3.0, 3.0, 3.0);
+    vec3 lightAt(0.0,0.0,0.0);
+    //vec3 lightUp(0.0,1.0,0.0);
+    vec3 lightUp(0.0,0.0,1.0);
+    static mat4 view = Eigen::lookAt(lightPosition, lightAt, lightUp);
+
+    /// Assemble the lightMVP matrix for a spotlight source.
+    mat4 lightMVP = lightProjection * view;
+
+    /* This can be fixed by tweaking the fetch coordinates directly in the fragment
+     *  shader but it’s more efficient to multiply the homogeneous coordinates by the
+     * following matrix, which simply divides coordinates by 2 ( the diagonal : [-1,1]
+     * -> [-0.5, 0.5] ) and translates them ( the lower row : [-0.5, 0.5] -> [0,1] ).
+     */
+    mat4 biasMatrix;
+    biasMatrix <<
+            0.5f, 0.0f, 0.0f, 0.0f,
+            0.0f, 0.5f, 0.0f, 0.0f,
+            0.0f, 0.0f, 0.5f, 0.0f,
+            0.5f, 0.5f, 0.5f, 1.0f;
+    mat4 lightOffsetMVP = biasMatrix*lightMVP;
+    GLuint lightOffsetMVPID = glGetUniformLocation(_programID, "lightOffsetMVP");
+    glUniformMatrix4fv(lightOffsetMVPID, 1, GL_FALSE, lightOffsetMVP.data());
+
+
     /// Clear the screen framebuffer.
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     /// Render the terrain from camera point of view to default framebuffer.
     glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, 0);
+
+
+    glDisableVertexAttribArray(_vertexAttribID);
 
 }
 

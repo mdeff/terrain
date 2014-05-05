@@ -5,3 +5,4 @@ refactor in functions and compilation units
 use OO paradigm
 compute normal map ahead of time, then combine with heightmap in a vec4 texture
 better sampler object management : glBindSampler
+light position linked in Terrain and Shadowmap

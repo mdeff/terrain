@@ -6,17 +6,25 @@
 
 /// By default,render to the default framebuffer (screen) : FBO 0.
 RenderingContext::RenderingContext(unsigned int width, unsigned int height) :
-    _width(width), _height(height), _frameBufferID(0), _nTextures(0) {
+    _width(width), _height(height), _nTextures(0) {
 }
 
 
-void RenderingContext::init(const char* vshader, const char* fshader) {
+void RenderingContext::init(const char* vshader, const char* fshader, GLint frameBufferID, GLint vertexArrayID) {
+
+    /// Create a framebuffer (container for textures, and an optional depth buffer).
+    /// The created FBO (instead of the screen) will contain the rendering results.
+    if(frameBufferID < 0)
+        glGenFramebuffers(1, (GLuint*)&frameBufferID);
+    _frameBufferID = frameBufferID;
 
     /// Set the context FBO as the rendering target.
     glBindFramebuffer(GL_FRAMEBUFFER, _frameBufferID);
 
     /// Vertex array object.
-    glGenVertexArrays(1, &_vertexArrayID);
+    if(vertexArrayID < 0)
+        glGenVertexArrays(1, (GLuint*)&vertexArrayID);
+    _vertexArrayID = vertexArrayID;
     glBindVertexArray(_vertexArrayID);
 
     /// Compile and install the rendering shaders.
