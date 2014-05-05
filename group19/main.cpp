@@ -86,6 +86,18 @@ void init() {
 
 void display() {
 
+	//to measure FPS
+	static double lastTime = glfwGetTime();
+	static int nbFrames = 0;
+    // Measure speed
+    double currentTime = glfwGetTime();
+    nbFrames++;
+    if ( currentTime - lastTime >= 1.0 ){ // compute and display amount of frame every sc
+        printf("%f frames/s\n", double(nbFrames));
+        nbFrames = 0;
+        lastTime += 1.0;
+    }
+
     //To render only the boundary
     //comment it if you want to render full triangles
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
