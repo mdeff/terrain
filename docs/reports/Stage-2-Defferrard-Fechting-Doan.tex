@@ -158,6 +158,16 @@ To test the normal vector, we output it as the color of each fragment as shown i
 \end{figure}
 
 \section{Results}
-
+In order to quantify the computation power needed and estimate the efficiency of our program, we proceeded FPS measurements. We measured the amount of frame per second in different case:  
+\begin{itemize}
+\item Only terrain display with $N=32$ (1024 vertices): 254 FPS
+\item Only terrain display with $N=64$ (4096 vertices): 176 FPS
+\item Only terrain display with $N=128$ (16384 vertices): 114 FPS
+\item Terrain and skybox ($N=128$) : 108 FPS
+\item Terrain, skybox and water animation ($N=128$) : 109FPS
+\item Terrain, skybox and shadowmap ($N=128$) : ???
+\end{itemize}
+We can observe that as expected the amount of frames per second decrease with the increasing amount of vertices.
+The skybox have a really low "cost" (decrease of 6 FPS corresponding to 5.2 \% ) and the water animation (just mooving the texture) is negligible. 
 
 \end{document}
