@@ -19,6 +19,9 @@ public:
     GLuint get_vertexarray_ID() const;
     void set_vertexarray_ID(const GLuint vertexArrayID);
 
+    GLuint get_texture_ID(const GLuint textureIndex) const;
+    void set_texture_ID(const GLuint textureIndex, const GLuint textureID);
+
 protected:
 
     // Common methods of all renderers.

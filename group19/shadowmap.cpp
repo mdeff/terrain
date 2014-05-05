@@ -30,6 +30,7 @@ void Shadowmap::init(GLuint heightMapTexID, GLint vertexArrayID) {
     /// Create the texture which will contain the color / depth output
     /// (the actual shadow map) of our shader.
     // Depth texture. Slower than a depth buffer, but we can sample it later in the shader.
+    // Do not need to be binded in draw().
     set_texture(1);
 
     // Depth format is unsigned int. Set it to 16 bits.
@@ -92,9 +93,8 @@ void Shadowmap::draw(mat4& /*projection*/, mat4& /*modelview*/) const {
     static mat4 projection = Eigen::perspective(fieldOfView, aspectRatio, nearPlane, farPlane);
 
     /// Light position.
-    vec3 lightPosition(3.0, 3.0, 3.0);
+    vec3 lightPosition(0.0, 3.0, 0.0);
     vec3 lightAt(0.0,0.0,0.0);
-    //vec3 lightUp(0.0,1.0,0.0);
     vec3 lightUp(0.0,0.0,1.0);
     static mat4 view = Eigen::lookAt(lightPosition, lightAt, lightUp);
 

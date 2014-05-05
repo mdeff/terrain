@@ -35,13 +35,14 @@ void update_matrix_stack(const mat4& model) {
     /// Define the view matrix (camera extrinsics)
     vec3 cam_look(-0.3f, 0.1f, 0.5f);
     /// Camera is in the sky, looking down.
-//    vec3 cam_pos(0.0f, 0.0f, 5.0f);
+//    vec3 cam_pos(0.0f, -5.0f, 5.0f);
 //    vec3 cam_up(0.0f, 1.0f, 0.0f);
     /// Camera is in a corner, looking down to the terrain.
-    vec3 cam_pos(0.9f, -0.8f, 1.0f);
     //vec3 cam_pos(2.0f, -2.0f, 2.5f);
     //vec3 cam_pos(0.7f, -0.7f, 0.3f); // Close texture view.
     //vec3 cam_pos(0.8f, 1.2f, 2.0f);
+    /// View from center.
+    vec3 cam_pos(0.9f, -0.8f, 1.0f);
     vec3 cam_up(0.0f, 0.0f, 1.0f);
     static mat4 view = Eigen::lookAt(cam_pos, cam_look, cam_up);
 
@@ -80,10 +81,16 @@ void init() {
 	//watermap.init(heightMapTexID, windowWidth, windowHeight);
 
     // Terrain and Shadowmap contexts share the same vertices.
+    // FIXME : generate vertices out of any context ?
     GLuint vertexBufferID, elementBufferID;
     terrain.get_buffer_IDs(vertexBufferID, elementBufferID);
     shadowmap.set_buffer_IDs(vertexBufferID, elementBufferID);
     shadowmap.init(heightMapTexID, terrain.get_vertexarray_ID());
+
+    // The shadow map texture is used by the two rendering contexts.
+    // Texture 8 in Terrain and texture 1 in Shadowmap.
+    GLuint textureID = shadowmap.get_texture_ID(8);
+    terrain.set_texture_ID(1, textureID);
 
     /// Initialize the matrix stack.  	
 	update_matrix_stack(mat4::Identity());

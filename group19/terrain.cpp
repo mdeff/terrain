@@ -106,6 +106,9 @@ void Terrain::init(GLuint heightMapTexID) {
     set_texture(7, -1, "waterNormalMap");
     load_texture("../../textures/water_normal_map_2.tga");
 
+    /// Bind the shadowmap to texture 8.
+    //set_texture(8, shadowMapTexID, "shadowMapTex");
+
     /// Generate a flat and regular triangle grid. Copy vertices to GPU.
     gen_triangle_grid();
 
@@ -186,14 +189,12 @@ void Terrain::draw(mat4& projection, mat4& modelview) const {
     /// 1) Enable the uvbuffer as a third vertex attribute array. Don't forget to disable it after the call to drawArrays
     ///<<<<<<<<<< TODO <<<<<<<<<<<
     /// Vertex attribute "uv" points to data from the currently binded array buffer.
-    glBindBuffer(GL_ARRAY_BUFFER, _vertexBufferID);
-    glEnableVertexAttribArray(_vertexAttribID);
-    glVertexAttribPointer(_vertexAttribID, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
     ///>>>>>>>>>> TODO >>>>>>>>>>>
     /// TODO: Practical 6.
     /// 2) Assemble the offsetMatrix that maps from light-coordinates in (-1,1)x(-1,1) to texture coordinates in (0,1)x(0,1)
-    ///<<<<<<<<<< TODO <<<<<<<<<<<    /// Spot light projection.
+    ///<<<<<<<<<< TODO <<<<<<<<<<<
+    /// Spot light projection.
     float fieldOfView = 45.0f;
     float aspectRatio = 1.f;
     float nearPlane = 0.1f;
@@ -201,10 +202,18 @@ void Terrain::draw(mat4& projection, mat4& modelview) const {
     static mat4 lightProjection = Eigen::perspective(fieldOfView, aspectRatio, nearPlane, farPlane);
 
     /// Light position.
-    vec3 lightPosition(3.0, 3.0, 3.0);
+    vec3 lightPosition(0.0, 3.0, 0.0);
     vec3 lightAt(0.0,0.0,0.0);
-    //vec3 lightUp(0.0,1.0,0.0);
     vec3 lightUp(0.0,0.0,1.0);
+//    vec3 lightPosition(3.0, 0.0, 0.0);
+//    vec3 lightAt(0.0,0.0,0.0);
+//    vec3 lightUp(0.0,0.0,1.0);
+//    vec3 lightPosition(0.0, 0.0, 5.0);
+//    vec3 lightAt(0.0,0.0,0.0);
+//    vec3 lightUp(1.0,1.0,5.0);
+//    vec3 lightPosition(3.0, 3.0, 3.0);
+//    vec3 lightAt(0.0,0.0,0.0);
+//    vec3 lightUp(0.0,0.0,1.0);
     static mat4 view = Eigen::lookAt(lightPosition, lightAt, lightUp);
 
     /// Assemble the lightMVP matrix for a spotlight source.

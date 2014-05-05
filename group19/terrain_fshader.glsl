@@ -24,10 +24,16 @@ uniform sampler2D snowTex;
 uniform sampler2D waterNormalMap;
 
 
+uniform sampler2D shadowMapTex;
+//uniform sampler2DShadow shadowMap;
+in vec4 ShadowCoord;
+
+
 // Position (world coordinates) after heightmap displacement.
 in vec3 displaced;
 // Position (camera coordinates) after heightmap displacement.
 in vec3 displaced_mv;
+
 
 //light direction
 in vec3 light_dir;
@@ -86,7 +92,7 @@ void main() {
     vec3 specular = Is * ks * pow(max(dot(V,reflect(L,normal)),0.0),p);
 
     // Color dependent on the elevation (similar to texture mapping).
-    vec3 mapped;    
+    vec3 mapped;
 
     float slope = smoothstep(0.35, 0.65 , normal.z);
 
@@ -135,14 +141,30 @@ void main() {
 //    vec3 diffuse = vcolor;
 
     //Shadow / visibility
-//    float bias = 0.001;
+    float bias = 0.005;  // 0.001
     ///>>>>>>>>>> TODO >>>>>>>>>>>
     /// TODO: Practical 6.
     /// 2) query the visibility of ShadowCoord in shadowMap, bias the query by subtracting bias. What happens without bias?
     /// Hint: Divide the ShadowCoord by its w-component before using it as a 3d point.
     /// Ressources: https://www.opengl.org/wiki/Sampler_(GLSL)#Shadow_samplers
     ///<<<<<<<<<< TODO <<<<<<<<<<<
-//    float visibility = 1.0;
+    float visibility = 1.0;
+    //if(texture(shadowMapTex, ShadowCoord.xy).z  <  ShadowCoord.z) {
+    if(texture(shadowMapTex, ShadowCoord.xy).z < ShadowCoord.z - bias) {
+        visibility = 0.0;
+    }
 
-//    color = light * diffuse * visibility;
+//    color =
+//     // Ambient : simulates indirect lighting
+//     MaterialAmbientColor +
+//     // Diffuse : "color" of the object
+//     visibility * MaterialDiffuseColor * LightColor * LightPower * cosTheta+
+//     // Specular : reflective highlight, like a mirror
+//     visibility * MaterialSpecularColor * LightColor * LightPower * pow(cosAlpha,5);
+
+    //color = ambient + visibility * diffuse + visibility * specular;
+    //color = visibility * diffuse + visibility * specular;
+    //color = vec3(texture(shadowMapTex, ShadowCoord.xy));
+    //color = vec3(ShadowCoord.z);
+    //clor = ShadowCoord.xyz;
 }

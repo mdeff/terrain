@@ -95,6 +95,16 @@ GLuint RenderingContext::set_texture(const GLuint textureIndex, int textureID, s
 }
 
 
+GLuint RenderingContext::get_texture_ID(const GLuint textureIndex) const {
+    return _textureIDs[textureIndex];
+}
+
+void RenderingContext::set_texture_ID(const GLuint textureIndex, const GLuint textureID) {
+    _textureIDs[textureIndex] = textureID;
+    _nTextures = textureIndex + 1;
+}
+
+
 void RenderingContext::get_buffer_IDs(GLuint& vertexBufferID, GLuint& elementBufferID) const {
     vertexBufferID = _vertexBufferID;
     elementBufferID = _elementBufferID;
