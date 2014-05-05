@@ -165,9 +165,17 @@ In order to quantify the computation power needed and estimate the efficiency of
 \item Only terrain display with $N=128$ (16384 vertices): 114 FPS
 \item Terrain and skybox ($N=128$) : 108 FPS
 \item Terrain, skybox and water animation ($N=128$) : 109FPS
-\item Terrain, skybox and shadowmap ($N=128$) : ???
 \end{itemize}
 We can observe that as expected the amount of frames per second decrease with the increasing amount of vertices.
 The skybox have a really low "cost" (decrease of 6 FPS corresponding to 5.2 \% ) and the water animation (just mooving the texture) is negligible. 
+
+\section{Project managing tools}
+As we never work together in the same place, we need some efficient communication tools. During the first part of the project, we communicated per Email and reached over 100 mails. In order to have a clear communication, avoid time loss and improve clearness of our project progress, we used a tool called Trello (\url{https://trello.com}). It's a simple tool allowing list managing with a simple and efficient interface (figure \ref{trello}).
+\begin{figure}[H]
+	\centering
+	\includegraphics[height=4cm]{{{img_stage2/Trello}}}
+	\caption{Trello interface}
+	\label{trello}
+\end{figure}
 
 \end{document}
