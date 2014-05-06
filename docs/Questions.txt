@@ -119,7 +119,7 @@ version (acually the 3.0) ?
 More generally, should we use the same version of the API as given to us or
 could we use an another version ?
 
-################################################################################
+--------------------------------------------------------------------------------
 
 Dear Fabien,
 
@@ -141,3 +141,66 @@ your grade will suffer the consequences.
 Overall, IMHO, it's not worth the risk!!  With my best regards --Andrea
 
 ################################################################################
+
+Hi,
+
+We are having trouble drawing the multiple VBOs we have, for example water and
+terrain.
+
+We are doing it like this: first, generate a vertex array and buffers which we
+successively bind and fill with the vertex data (position and index).
+
+Then, after shader compilation, we enable the vertex attribute array for
+position, bind the terrain vertex buffer and point to the location of the
+attribute "position". And disable vertex attribute array.
+
+We do this for both vertex meshes.
+
+To draw, we enable the vertex attribute array 0 and bind the terrain vertex
+buffer. After that we set the vertex attribute pointer to the array at 0 and
+bind the index array buffer.
+
+We draw the elements as triangles and disable the attribute array.
+
+We do this for both terrain and water, but only water gets drawn... I thought
+this was the way to do it as many tutorials suggest, but no tweak I tried
+worked.
+
+Are we missing something? any help would be greatly appreciated :)
+
+--------------------------------------------------------------------------------
+
+The correct usage should be like this:
+
+Load the Vertex Data (do this foreach Element that you want to
+draw on the screen:
+-) Generate VAO and bind it
+-) foreach location
+  - generate a VBO and bind it
+  - load the vertex data with glBufferData
+  - set the location for the shaders with glVertexAttribPointer and
+    glEnableVertexAttribArray
+Draw the Vertex Data:
+-) Bind the VAO
+-) Draw the vertices with glDrawArrays
+
+hope that helps
+
+--------------------------------------------------------------------------------
+
+Hi there, please refer to the tutorial we gave you at the end of the project,
+part 2 description. As you can read there the only thing you need to do in the
+draw is setting the textures and re-bind the vertex-array object.
+
+Try to build the smallest code example that can reproduce the behaviour (as
+commonly done in bug reporting), and if it doesn't work (often you find the
+mistake when building simple examples) you can come to our offices and we will
+look at it.
+
+Also, did you make sure that the two elements in the scene render properly if
+the other one is commented out? 
+
+Have a great day!
+
+################################################################################
+
