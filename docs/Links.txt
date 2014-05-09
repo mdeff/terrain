@@ -1,35 +1,48 @@
 Framebuffer object (FBO) :
-http://www.opengl.org/wiki/Framebuffer_Object
+  http://www.opengl.org/wiki/Framebuffer_Object
 
 Sampler (texture sampling) :
-https://www.opengl.org/wiki/Sampler_(GLSL)
+  https://www.opengl.org/wiki/Sampler_(GLSL)
 
 Random shuffle algorithm :
-https://en.wikipedia.org/wiki/Fisher-Yates
+  https://en.wikipedia.org/wiki/Fisher-Yates
 
 Perlin noise and turbulence :
-http://paulbourke.net/texture_colour/perlin/
+  http://paulbourke.net/texture_colour/perlin/
 
 Render to texture :
-http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-14-render-to-texture/
+  http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-14-render-to-texture/
 
 Multi-texturing :
-http://antongerdelan.net/opengl/multitextures.html
+  http://antongerdelan.net/opengl/multitextures.html
 
 Random number in glsl :
-http://stackoverflow.com/questions/12964279/whats-the-origin-of-this-glsl-rand-one-liner
+  http://stackoverflow.com/questions/12964279/whats-the-origin-of-this-glsl-rand-one-liner
 
 Improved Perlin noise on the GPU :
-http://http.developer.nvidia.com/GPUGems2/gpugems2_chapter26.html
+  http://http.developer.nvidia.com/GPUGems2/gpugems2_chapter26.html
 
 Improved Perlin noise reference implementation (CPU) :
-http://cs.nyu.edu/~perlin/noise/
+  http://cs.nyu.edu/~perlin/noise/
 
 OpenGL benchmarking :
-https://github.com/ValveSoftware/voglperf
+  https://github.com/ValveSoftware/voglperf
 
 OpenGL debugging :
-https://github.com/ValveSoftware/vogl
+  https://github.com/ValveSoftware/vogl
 
 OpenGL tracing :
-https://github.com/apitrace/apitrace
+  https://github.com/apitrace/apitrace
+
+Textures :
+  http://www.spiralgraphics.biz/packs/liquid/index.htm
+
+Normalmap from heightmap :
+  http://stackoverflow.com/questions/5281261/generating-a-normal-map-from-a-height-map
+
+Water reflection :
+  http://antongerdelan.net/opengl/cubemaps.html
+  http://blog.bonzaisoftware.com/tnp/gl-water-tutorial/
+  http://ivanleben.blogspot.com.au/2008/03/water-reflections-with-opengl.html
+  http://renderingwonders.wordpress.com/2011/01/03/chapter-08-%E2%80%93-buffer-objects-storage-is-now-in-your-hands-%E2%80%93-fbo-textures/
+  http://cgvr.cs.uni-bremen.de/teaching/cg_literatur/Cube_map_tutorial/cube_map.html

@@ -1,8 +1,21 @@
-correct heigthmap bug
-correct normal computation
-find good terrain
-refactor in functions and compilation units
-use OO paradigm
+correct heightmap bug
+heightmap scaling
 compute normal map ahead of time, then combine with heightmap in a vec4 texture
 better sampler object management : glBindSampler
 light position linked in Terrain and Shadowmap
+
+Water reflection: Pierre can you continue with this? I will assist you as well since I am having some ideas for it. 
+Wave equation: More realistic wave animation should be good. I will be in charge of this. 
+Complete shadow map
+L-system, level of detail, infinite detail, time of the day
+I want to add some tree or human or ship into our terrain. So when we moving around the camera in stage 3, it would be impressive to see various scenes.
+
+
+Done
+----
+
+correct normal computation --> done by Alex
+use OO paradigm --> done by Michaël, can still be improved
+refactor in functions and compilation units --> done by Michaël
+find good terrain --> done by Pierre, can still be improved
+    [Alex] The terrain is good. I still like the one with choice = 3
