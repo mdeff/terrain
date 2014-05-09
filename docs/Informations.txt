@@ -24,4 +24,41 @@ try to solve your problems first by reading up on exercises, practicals and
 tutorials.
 
 ################################################################################
+Check for OpenGL Errors
+-----------------------
 
+To find bugs easier, we recommend you to use the function glCheckError()
+frequently in your code. It will report the type of the last OpenGL error, the
+file and line of code the glCheckError() function. To define the function,
+simply add the following code at the end of common.h:
+
+static inline const char* ErrorString(GLenum error) {
+    const char* msg;
+
+    switch (error) {
+#define Case(Token) case Token: msg = #Token; break;
+        Case(GL_INVALID_ENUM);
+        Case(GL_INVALID_VALUE);
+        Case(GL_INVALID_OPERATION);
+        Case(GL_INVALID_FRAMEBUFFER_OPERATION);
+        Case(GL_NO_ERROR);
+        Case(GL_OUT_OF_MEMORY);
+#undef Case
+    }
+
+    return msg;
+}
+
+static inline void _glCheckError(const char* file, int line) {
+    GLenum error;
+    while ((error = glGetError()) != GL_NO_ERROR) {
+        fprintf(stderr, "ERROR: file %s, line %i: %s.\n", file, line,
+        ErrorString(error));
+    }
+}
+
+#ifndef NDEBUG
+#define glCheckError() _glCheckError(__FILE__, __LINE__)
+#else
+#define glCheckError() ((void)0)
+#endif
