@@ -24,3 +24,12 @@ http://http.developer.nvidia.com/GPUGems2/gpugems2_chapter26.html
 
 Improved Perlin noise reference implementation (CPU) :
 http://cs.nyu.edu/~perlin/noise/
+
+OpenGL benchmarking :
+https://github.com/ValveSoftware/voglperf
+
+OpenGL debugging :
+https://github.com/ValveSoftware/vogl
+
+OpenGL tracing :
+https://github.com/apitrace/apitrace
