@@ -158,12 +158,13 @@ void Terrain::init(GLuint heightMapTexID) {
     _projectionID = glGetUniformLocation(_programID, "projection");
 
     _timeID = glGetUniformLocation(_programID, "time");
+    _lightOffsetMVPID = glGetUniformLocation(_programID, "lightOffsetMVP");
 
     _vertexAttribID = glGetAttribLocation(_programID, "position");
 }
 
 
-void Terrain::draw(mat4& projection, mat4& modelview) const {
+void Terrain::draw(mat4& projection, mat4& modelview, mat4& lightMVP) const {
 
     /// Common drawing.
     RenderingContext::draw();
@@ -183,57 +184,16 @@ void Terrain::draw(mat4& projection, mat4& modelview) const {
     static float time = 0;
     glUniform1f(_timeID, time++);
 
-
-    ///>>>>>>>>>> TODO >>>>>>>>>>>
-    /// TODO: Practical 6.
-    /// 1) Enable the uvbuffer as a third vertex attribute array. Don't forget to disable it after the call to drawArrays
-    ///<<<<<<<<<< TODO <<<<<<<<<<<
-    /// Vertex attribute "uv" points to data from the currently binded array buffer.
-
-    ///>>>>>>>>>> TODO >>>>>>>>>>>
-    /// TODO: Practical 6.
-    /// 2) Assemble the offsetMatrix that maps from light-coordinates in (-1,1)x(-1,1) to texture coordinates in (0,1)x(0,1)
-    ///<<<<<<<<<< TODO <<<<<<<<<<<
-    /// Spot light projection.
-    float fieldOfView = 45.0f;
-    float aspectRatio = 1.f;
-    float nearPlane = 0.1f;
-    float farPlane  = 10.f;
-    static mat4 lightProjection = Eigen::perspective(fieldOfView, aspectRatio, nearPlane, farPlane);
-
-    /// Light position.
-    vec3 lightPosition(0.0, 3.0, 0.0);
-    vec3 lightAt(0.0,0.0,0.0);
-    vec3 lightUp(0.0,0.0,1.0);
-//    vec3 lightPosition(3.0, 0.0, 0.0);
-//    vec3 lightAt(0.0,0.0,0.0);
-//    vec3 lightUp(0.0,0.0,1.0);
-//    vec3 lightPosition(0.0, 0.0, 5.0);
-//    vec3 lightAt(0.0,0.0,0.0);
-//    vec3 lightUp(1.0,1.0,5.0);
-//    vec3 lightPosition(3.0, 3.0, 3.0);
-//    vec3 lightAt(0.0,0.0,0.0);
-//    vec3 lightUp(0.0,0.0,1.0);
-    static mat4 view = Eigen::lookAt(lightPosition, lightAt, lightUp);
-
-    /// Assemble the lightMVP matrix for a spotlight source.
-    mat4 lightMVP = lightProjection * view;
-
-    /* This can be fixed by tweaking the fetch coordinates directly in the fragment
-     *  shader but it’s more efficient to multiply the homogeneous coordinates by the
-     * following matrix, which simply divides coordinates by 2 ( the diagonal : [-1,1]
-     * -> [-0.5, 0.5] ) and translates them ( the lower row : [-0.5, 0.5] -> [0,1] ).
-     */
+    /// Map from light-coordinates in (-1,1)x(-1,1) to texture
+    /// coordinates in (0,1)x(0,1).
     mat4 biasMatrix;
     biasMatrix <<
             0.5f, 0.0f, 0.0f, 0.0f,
             0.0f, 0.5f, 0.0f, 0.0f,
             0.0f, 0.0f, 0.5f, 0.0f,
             0.5f, 0.5f, 0.5f, 1.0f;
-    mat4 lightOffsetMVP = biasMatrix*lightMVP;
-    GLuint lightOffsetMVPID = glGetUniformLocation(_programID, "lightOffsetMVP");
-    glUniformMatrix4fv(lightOffsetMVPID, 1, GL_FALSE, lightOffsetMVP.data());
-
+    mat4 lightOffsetMVP = biasMatrix * lightMVP;
+    glUniformMatrix4fv(_lightOffsetMVPID, 1, GL_FALSE, lightOffsetMVP.data());
 
     /// Clear the screen framebuffer.
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

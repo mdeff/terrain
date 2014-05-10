@@ -72,7 +72,7 @@ void Shadowmap::init(GLuint heightMapTexID, GLint vertexArrayID) {
 }
 
 
-void Shadowmap::draw(mat4& /*projection*/, mat4& /*modelview*/) const {
+void Shadowmap::draw(mat4& /*projection*/, mat4& /*modelview*/, mat4& lightMVP) const {
 
     // Common drawing.
     RenderingContext::draw();
@@ -83,27 +83,8 @@ void Shadowmap::draw(mat4& /*projection*/, mat4& /*modelview*/) const {
     glEnableVertexAttribArray(_vertexAttribID);
     glVertexAttribPointer(_vertexAttribID, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
-    //--- Update the content of the uniforms (texture IDs, matrices, ...)
-
-    /// Spot light projection.
-    float fieldOfView = 45.0f;
-    float aspectRatio = 1.f;
-    float nearPlane = 0.1f;
-    float farPlane  = 10.f;
-    static mat4 projection = Eigen::perspective(fieldOfView, aspectRatio, nearPlane, farPlane);
-
-    /// Light position.
-    vec3 lightPosition(0.0, 3.0, 0.0);
-    vec3 lightAt(0.0,0.0,0.0);
-    vec3 lightUp(0.0,0.0,1.0);
-    static mat4 view = Eigen::lookAt(lightPosition, lightAt, lightUp);
-
-    /// Assemble the lightMVP matrix for a spotlight source.
-    mat4 lightMVP = projection * view;
-    GLuint lightMatrixID = glGetUniformLocation(_programID, "lightMVP");
-    glUniformMatrix4fv(lightMatrixID, 1, GL_FALSE, lightMVP.data());
-
-
+    /// Update the content of the uniforms.
+    glUniformMatrix4fv(_lightMatrixID, 1, GL_FALSE, lightMVP.data());
 
     /// Clear the framebuffer object.
     //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

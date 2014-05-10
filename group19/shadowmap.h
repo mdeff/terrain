@@ -12,7 +12,7 @@ public:
     // Common methods of all renderers.
     Shadowmap(unsigned int width, unsigned int height);
     void init(GLuint heightMapTexID, GLint vertexArrayID);  ///< Or in the constructor
-    void draw(mat4& projection, mat4& model_view) const;
+    void draw(mat4& projection, mat4& model_view, mat4& lightMVP) const;
     void clean();  ///< Or in the destructor
 
 private:

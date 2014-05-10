@@ -25,6 +25,7 @@ Shadowmap shadowmap(1024, 1024);  ///< Shadow map texture size.
 /// Matrices that have to be shared between rendering contexts.
 static mat4 projection;
 static mat4 modelview;
+static mat4 lightMVP;
 
 
 void update_matrix_stack(const mat4& model) {
@@ -44,10 +45,28 @@ void update_matrix_stack(const mat4& model) {
     /// View from center.
     vec3 cam_pos(0.9f, -0.8f, 1.0f);
     vec3 cam_up(0.0f, 0.0f, 1.0f);
-    static mat4 view = Eigen::lookAt(cam_pos, cam_look, cam_up);
+    mat4 view = Eigen::lookAt(cam_pos, cam_look, cam_up);
 
     /// Assemble the "Model View" matrix
     modelview = view * model;
+
+
+
+    /// Spot light projection.
+    float fieldOfView = 45.0f;
+    float aspectRatio = 1.f;
+    float nearPlane = 0.1f;
+    float farPlane  = 10.f;
+    mat4 lightProjection = Eigen::perspective(fieldOfView, aspectRatio, nearPlane, farPlane);
+
+    /// Light position.
+    vec3 lightPosition(0.0, 3.0, 0.0);
+    vec3 lightAt(0.0,0.0,0.0);
+    vec3 lightUp(0.0,0.0,1.0);
+    mat4 lightView = Eigen::lookAt(lightPosition, lightAt, lightUp);
+
+    /// Assemble the lightMVP matrix for a spotlight source.
+    lightMVP = lightProjection * lightView;
 
 }
 
@@ -114,10 +133,10 @@ void display() {
     //comment it if you want to render full triangles
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-    shadowmap.draw(projection, modelview);
+    shadowmap.draw(projection, modelview, lightMVP);
 
     // Draw terrain and skybox.
-    terrain.draw(projection, modelview);
+    terrain.draw(projection, modelview, lightMVP);
     skybox.draw(projection, modelview);
 	
 	//watermap.draw(projection, modelview);
