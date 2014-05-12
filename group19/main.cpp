@@ -30,21 +30,34 @@ static mat4 lightMVP;
 
 void update_matrix_stack(const mat4& model) {
 
-    /// Define projection matrix (camera intrinsics)
-    projection = Eigen::perspective(45.0f, 4.0f/4.0f, 0.1f, 100.0f);
+    /// Camera projection.
+    // The horizontal Field of View, in degrees : the amount of "zoom". Think "camera lens". Usually between 90° (extra wide) and 30° (quite zoomed in)
+    float fieldOfView = 45.0f;
+    // Aspect Ratio. Depends on the size of your window. Notice that 4/3 == 800/600 == 1280/960
+    float aspectRatio = float(windowWidth)/float(windowHeight);
+    // Near clipping plane. Keep as little as possible, or you'll get precision issues.
+    float nearPlane = 0.1f;
+    // Far clipping plane. Keep as big as possible.
+    float farPlane  = 100.f;
 
-    /// Define the view matrix (camera extrinsics)
-    vec3 cam_look(-0.3f, 0.1f, 0.5f);
+    /// Define projection matrix (camera intrinsics)
+    // Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
+    projection = Eigen::perspective(fieldOfView, aspectRatio, nearPlane, farPlane);
+
+
+    /// Define the view matrix (camera extrinsics) (position in world space).
     /// Camera is in the sky, looking down.
-//    vec3 cam_pos(0.0f, -5.0f, 5.0f);
-//    vec3 cam_up(0.0f, 1.0f, 0.0f);
+    vec3 cam_pos(0.0f, -3.0f, 4.0f);
+    vec3 cam_up(0.0f, 1.0f, 0.0f);
+    vec3 cam_look(0.0f, 0.0f, 0.0f);
     /// Camera is in a corner, looking down to the terrain.
     //vec3 cam_pos(2.0f, -2.0f, 2.5f);
     //vec3 cam_pos(0.7f, -0.7f, 0.3f); // Close texture view.
     //vec3 cam_pos(0.8f, 1.2f, 2.0f);
     /// View from center.
-    vec3 cam_pos(0.9f, -0.8f, 1.0f);
-    vec3 cam_up(0.0f, 0.0f, 1.0f);
+//    vec3 cam_pos(0.9f, -0.8f, 1.0f);
+//    vec3 cam_up(0.0f, 0.0f, 1.0f);
+//    vec3 cam_look(-0.3f, 0.1f, 0.5f);
     mat4 view = Eigen::lookAt(cam_pos, cam_look, cam_up);
 
     /// Assemble the "Model View" matrix
@@ -53,16 +66,13 @@ void update_matrix_stack(const mat4& model) {
 
 
     /// Spot light projection.
-    float fieldOfView = 45.0f;
-    float aspectRatio = 1.f;
-    float nearPlane = 0.1f;
-    float farPlane  = 10.f;
+    aspectRatio = 1.f;
     mat4 lightProjection = Eigen::perspective(fieldOfView, aspectRatio, nearPlane, farPlane);
 
     /// Light position.
-    vec3 lightPosition(0.0, 3.0, 0.0);
+    vec3 lightPosition(0.0, 0.0, 5.0);
     vec3 lightAt(0.0,0.0,0.0);
-    vec3 lightUp(0.0,0.0,1.0);
+    vec3 lightUp(0.0,1.0,0.0);
     mat4 lightView = Eigen::lookAt(lightPosition, lightAt, lightUp);
 
     /// Assemble the lightMVP matrix for a spotlight source.
@@ -86,7 +96,7 @@ void init() {
 
     /// Generate the heightmap texture.
     /// Before shader compilation, as it uses its own shaders.
-//    GLuint heightMapID = gen_test_heightmap();
+//    GLuint heightMapTexID = gen_test_heightmap();
     GLuint heightMapTexID = gen_heightmap();
 
     /// Set the screen framebuffer back as the rendering target and specify
@@ -116,6 +126,7 @@ void init() {
     /// Initialize the matrix stack.  	
 	update_matrix_stack(mat4::Identity());
 }
+
 
 void display() {
 

@@ -12,6 +12,7 @@ uniform mat4 lightOffsetMVP;
 uniform sampler2D heightMapTex;
 
 // First input buffer. Defined here, retrieved in C++ by glGetAttribLocation.
+// Vertices position in model space.
 layout(location = 0) in vec2 position;
 
 
@@ -44,15 +45,17 @@ void main() {
     vec2 UV = (position + 1.0) / 2.0;
     float height = texture(heightMapTex, UV).r;
 
-	// Generate wave using sin function
-	if(height <= 0.01f)
-	{
-		height = sin(-6.28*position.x - 6.28*position.y+time*0.07) * 0.008; 
-	}
+    // Generate wave using sin function
+    if(height <= 0.01f) {
+            height = sin(-6.28*position.x - 6.28*position.y+time*0.07) * 0.008;
+    }
 
-	displaced = vec3(position.xy, height);
+    displaced = vec3(position.xy, height);
 	
-    // Vertex in camera space then projection/clip space.
+    // Vertex in camera space then clip space.
+    // Model matrix transforms from model space to world space.
+    // View matrix transforms from world space to camera space.
+    // Projection matrix transforms from camera space to clip space (homogeneous space).
     // gl_Position is the position of the vertex as seen from the current camera
     vec4 position_mv = modelview * vec4(displaced.xyz,  1.0);
     gl_Position = projection * position_mv;
@@ -65,7 +68,7 @@ void main() {
     view_dir = vec3(position_mv);
 
 
-    // ShadowCoord is the position of the vertex as seen from the last camera (the light)
-    ShadowCoord = lightOffsetMVP * vec4(displaced,1);
+    // ShadowCoord is the position of the vertex as seen from the last camera (the light).
+    ShadowCoord = lightOffsetMVP * vec4(displaced, 1.0);
 
 }
