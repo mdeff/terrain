@@ -100,16 +100,18 @@ void init() {
 	//watermap.init(heightMapTexID, windowWidth, windowHeight);
 
     // Terrain and Shadowmap contexts share the same vertices.
-    // FIXME : generate vertices out of any context ?
+    // TODO : generate vertices out of any context ?
     GLuint vertexBufferID, elementBufferID;
     terrain.get_buffer_IDs(vertexBufferID, elementBufferID);
     shadowmap.set_buffer_IDs(vertexBufferID, elementBufferID);
+
+    // Initialize the rendering context.
     shadowmap.init(heightMapTexID, terrain.get_vertexarray_ID());
 
     // The shadow map texture is used by the two rendering contexts.
     // Texture 8 in Terrain and texture 1 in Shadowmap.
-    GLuint textureID = shadowmap.get_texture_ID(8);
-    terrain.set_texture_ID(1, textureID);
+    GLuint textureID = shadowmap.get_texture_ID(1);
+    terrain.set_texture_ID(8, textureID);
 
     /// Initialize the matrix stack.  	
 	update_matrix_stack(mat4::Identity());
