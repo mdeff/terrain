@@ -40,6 +40,10 @@ Textures :
 Normalmap from heightmap :
   http://stackoverflow.com/questions/5281261/generating-a-normal-map-from-a-height-map
 
+Shadowmap :
+  http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-16-shadow-mapping/
+  https://www.opengl.org/wiki/Sampler_%28GLSL%29#Shadow_samplers
+
 Water reflection :
   http://antongerdelan.net/opengl/cubemaps.html
   http://blog.bonzaisoftware.com/tnp/gl-water-tutorial/
