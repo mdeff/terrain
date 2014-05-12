@@ -173,6 +173,7 @@ void Terrain::draw(mat4& projection, mat4& modelview, mat4& lightMVP) const {
     glBindBuffer(GL_ARRAY_BUFFER, _vertexBufferID);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _elementBufferID);
     glEnableVertexAttribArray(_vertexAttribID);
+    // vec2: 2 floats per vertex for the xy plane position attribute.
     glVertexAttribPointer(_vertexAttribID, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
     /// Update the content of the uniforms.

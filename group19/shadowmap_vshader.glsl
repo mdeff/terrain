@@ -5,8 +5,8 @@ uniform mat4 lightMVP;
 // Texture 0. Defined by glActiveTexture and passed by glUniform1i.
 uniform sampler2D heightMapTex;
 
-//layout(location = 0) in vec3 vertexPosition_modelspace; // position
-layout(location = 0) in vec2 position; // position
+//layout(location = 0) in vec3 vertexPosition_modelspace;
+layout(location = 0) in vec2 position;
 
 void main() {
 

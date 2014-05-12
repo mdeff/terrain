@@ -47,7 +47,7 @@ void Shadowmap::init(GLuint heightMapTexID, GLint vertexArrayID) {
     glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _textureIDs[1], 0);
 
     /// There is only depth (no color) output in the bound framebuffer.
-    //glDrawBuffer(GL_NONE);
+    glDrawBuffer(GL_NONE);
 
     /// Check that our framebuffer is complete.
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
@@ -59,10 +59,10 @@ void Shadowmap::init(GLuint heightMapTexID, GLint vertexArrayID) {
     /// Vertex attribute "position" points to data from the currently binded array buffer.
     //    glBindBuffer(GL_ARRAY_BUFFER, _vertexBufferID);
     //    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _elementBufferID);
-    GLuint positionID = glGetAttribLocation(_programID, "position");
-    glEnableVertexAttribArray(positionID);
+    //GLuint positionID = glGetAttribLocation(_programID, "position");
+    //glEnableVertexAttribArray(positionID);
     // vec2: 2 floats per vertex for the xy plane position attribute.
-    glVertexAttribPointer(positionID, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    //glVertexAttribPointer(positionID, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
 
     /// Set uniform and attribute IDs.
@@ -81,6 +81,7 @@ void Shadowmap::draw(mat4& /*projection*/, mat4& /*modelview*/, mat4& lightMVP) 
     glBindBuffer(GL_ARRAY_BUFFER, _vertexBufferID);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _elementBufferID);
     glEnableVertexAttribArray(_vertexAttribID);
+    // vec2: 2 floats per vertex for the xy plane position attribute.
     glVertexAttribPointer(_vertexAttribID, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
     /// Update the content of the uniforms.
