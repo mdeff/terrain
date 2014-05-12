@@ -25,7 +25,7 @@ uniform sampler2D waterNormalMap;
 
 
 uniform sampler2D shadowMapTex;
-//uniform sampler2DShadow shadowMap;
+//uniform sampler2DShadow shadowMapTex;
 in vec4 ShadowCoord;
 
 
@@ -44,52 +44,47 @@ in vec3 view_dir;
 // gl_FragColor
 layout(location = 0) out vec3 color;
 
-void main() {
 
-	// Different levels of height for texture mapping
-	const float ground = 0.01f;
-    const float sandMax = 0.015f;
-    const float forestMin = 0.025f;
-    const float forestMax = 0.25f;
-    const float snowMin= 0.315f;
-    const float snowMax = 0.425;
+// Different levels of height for texture mapping
+const float ground = 0.01f;
+const float sandMax = 0.015f;
+const float forestMin = 0.025f;
+const float forestMax = 0.25f;
+const float snowMin= 0.315f;
+const float snowMax = 0.425;
 
-    float grid_size = 2.0/float(N);
-    float tex_size = grid_size/2.0;
-    ivec3 off = ivec3(-1, 0, 1);
-    vec2 size = vec2(2.0/1024.0, 0.0);   //1024 is the size of the generated height map
+
+vec3 compute_normal() {
+
+    const ivec3 off = ivec3(-1, 0, 1);
+    const vec2 size = vec2(2.0/1024.0, 0.0);   //1024 is the size of the generated height map
 
     //current UV coordinate
     vec2 UV = vec2((displaced.xy +1.0)/2.0);
 
-	//if it is water region, use normal from normal map 
-	//otherwise need to calculate it 
-	vec3 normal;
-	if (displaced.z < ground) {
-		normal = normalize(texture(waterNormalMap,UV).rgb);
-	} else {
-		//first calculate the normal vector using finite difference
-		float s11 = texture(heightMapTex, UV).r;
-		float s01 = textureOffset(heightMapTex, UV, off.xy).r;
-		float s21 = textureOffset(heightMapTex, UV, off.zy).r;
-		float s10 = textureOffset(heightMapTex, UV, off.yx).r;
-		float s12 = textureOffset(heightMapTex, UV, off.yz).r;
+    // if it is water region, use normal from normal map
+    // otherwise need to calculate it
+    vec3 normal;
+    if (displaced.z < ground) {
+        normal = normalize(texture(waterNormalMap,UV).rgb);
+    } else {
+        //first calculate the normal vector using finite difference
+        float s11 = texture(heightMapTex, UV).r;
+        float s01 = textureOffset(heightMapTex, UV, off.xy).r;
+        float s21 = textureOffset(heightMapTex, UV, off.zy).r;
+        float s10 = textureOffset(heightMapTex, UV, off.yx).r;
+        float s12 = textureOffset(heightMapTex, UV, off.yz).r;
 
-		vec3 va = normalize(vec3(size.xy, s21 - s01));
-		vec3 vb = normalize(vec3(0.0, size.x,  s12 - s10));
-		vec3 tmp = cross(va,vb);
-		normal = normalize(vec3(tmp.xy, 2*tmp.z));
-	}
+        vec3 va = normalize(vec3(size.xy, s21 - s01));
+        vec3 vb = normalize(vec3(0.0, size.x,  s12 - s10));
+        vec3 tmp = cross(va,vb);
+        normal = normalize(vec3(tmp.xy, 2*tmp.z));
+    }
+    return normal;
+}
 
-    // Normalize the vectors.
-    vec3 L = normalize(light_dir);
-    vec3 V = normalize(view_dir);
 
-    // Compute the diffuse color component.
-    vec3 diffuse = Id * kd * max(dot(normal,L),0.0);
-
-    // Compute the specular color component
-    vec3 specular = Is * ks * pow(max(dot(V,reflect(L,normal)),0.0),p);
+vec3 texture_mapping(vec3 normal) {
 
     // Color dependent on the elevation (similar to texture mapping).
     vec3 mapped;
@@ -103,7 +98,7 @@ void main() {
     } else if (displaced.z < forestMin) {  //mix between sand, rock
         vec3 stone = texture2D(stoneTex, 10*displaced.xy).rgb;
         vec3 sand = texture2D(sandTex, 30*displaced.xy).rgb;
-        mapped = mix(stone, sand, slope);            
+        mapped = mix(stone, sand, slope);
     } else if (displaced.z  < forestMax) {  //mix between forest and rock
         vec3 stone = texture2D(stoneTex, 10*displaced.xy).rgb;
         vec3 forest = texture2D(treeTex, 10*displaced.xy).rgb;
@@ -124,8 +119,28 @@ void main() {
         mapped = texture2D(snowTex, 60*displaced.xy).rgb;
     }
 
-    //Ambient color component
-    vec3 ambient = Ia * ka * mapped;
+    return mapped;
+}
+
+
+void main() {
+
+    // Normalize the vectors.
+    vec3 L = normalize(light_dir);
+    vec3 V = normalize(view_dir);
+
+    // Compute the normal.
+    vec3 normal = compute_normal();
+
+    // Compute the diffuse color component.
+    vec3 diffuse = Id * kd * max(dot(normal,L),0.0);
+
+    // Compute the specular color component.
+    vec3 specular = Is * ks * pow(max(dot(V,reflect(L,normal)),0.0),p);
+
+    // Compute the ambient color component based on texture mapping.
+    vec3 ambient = Ia * ka * texture_mapping(normal);
+
     // Assemble the colors.
     color = ambient + diffuse + specular;
 
@@ -148,10 +163,16 @@ void main() {
     /// Hint: Divide the ShadowCoord by its w-component before using it as a 3d point.
     /// Ressources: https://www.opengl.org/wiki/Sampler_(GLSL)#Shadow_samplers
     ///<<<<<<<<<< TODO <<<<<<<<<<<
+    // The texture only stores one component : r (red).
+    // Z is the distance to the camera in camera space.
+    // A perspective transformation is not affine, and as such, can't be represented entirely by a matrix. After beeing multiplied by the ProjectionMatrix, homogeneous coordinates are divided by their own W component. This W component happens to be -Z (because the projection matrix has been crafted this way). This way, points that are far away from the origin are divided by a big Z; their X and Y coordinates become smaller; points become more close to each other, objects seem smaller; and this is what gives the perspective.
     float visibility = 1.0;
-    //if(texture(shadowMapTex, ShadowCoord.xy).z  <  ShadowCoord.z) {
-    if(texture(shadowMapTex, ShadowCoord.xy).z < ShadowCoord.z - bias) {
-        visibility = 0.0;
+    //if(texture(shadowMapTex, ShadowCoord.xy).r  <  ShadowCoord.z) {
+    //if(texture(shadowMapTex, ShadowCoord.xy).r < ShadowCoord.z - bias) {
+    //if(textureProj(shadowMapTex, ShadowCoord.xy).r < ShadowCoord.z - bias) {
+    if(texture(shadowMapTex, ShadowCoord.xy/ShadowCoord.w).r  <  (ShadowCoord.z-bias)/ShadowCoord.w) {
+    //if(textureProj(shadowMapTex, ShadowCoord.xyw).r  <  (ShadowCoord.z-bias)/ShadowCoord.w) {
+        visibility = 0.5;
     }
 
 //    color =
@@ -162,9 +183,16 @@ void main() {
 //     // Specular : reflective highlight, like a mirror
 //     visibility * MaterialSpecularColor * LightColor * LightPower * pow(cosAlpha,5);
 
-    //color = ambient + visibility * diffuse + visibility * specular;
-    //color = visibility * diffuse + visibility * specular;
-    //color = vec3(texture(shadowMapTex, ShadowCoord.xy));
-    //color = vec3(ShadowCoord.z);
-    //clor = ShadowCoord.xyz;
+//    color = ambient + visibility * diffuse + visibility * specular;
+//    color = visibility * diffuse + visibility * specular;
+    color = visibility * ambient;
+
+    // Observe the shadow map.
+    //color = vec3(texture(shadowMapTex, ShadowCoord.xy).r);
+    //color = vec3(texture2D(shadowMapTex, ShadowCoord.xy).r);
+//    color = vec3(textureProj(shadowMapTex, ShadowCoord.xy).r);
+    //color = vec3(texture(shadowMapTex, ShadowCoord.xy/ShadowCoord.w).r);
+
+    // Observe distance from light.
+    //color = vec3(ShadowCoord.x);
 }
