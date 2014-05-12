@@ -6,7 +6,9 @@
 
 /// By default,render to the default framebuffer (screen) : FBO 0.
 RenderingContext::RenderingContext(unsigned int width, unsigned int height) :
-    _width(width), _height(height), _nTextures(0) {
+    _width(width), _height(height) {
+    for(int i = 0; i<_nTextures; i++)
+        _textureIDs[i] = -1;
 }
 
 
@@ -50,8 +52,10 @@ void RenderingContext::draw() const {
 
     /// Bind all the necessary textures.
     for(int i=0; i<_nTextures; ++i) {
-        glActiveTexture(GL_TEXTURE0 + i);
-        glBindTexture(GL_TEXTURE_2D, _textureIDs[i]);
+        if(_textureIDs[i] >= 0) {
+            glActiveTexture(GL_TEXTURE0 + i);
+            glBindTexture(GL_TEXTURE_2D, (GLuint)_textureIDs[i]);
+        }
     }
 
     /*
@@ -89,7 +93,6 @@ GLuint RenderingContext::set_texture(const GLuint textureIndex, int textureID, s
     }
 
     _textureIDs[textureIndex] = textureID;
-    _nTextures = textureIndex + 1;
 
     return textureID;
 }
@@ -101,7 +104,6 @@ GLuint RenderingContext::get_texture_ID(const GLuint textureIndex) const {
 
 void RenderingContext::set_texture_ID(const GLuint textureIndex, const GLuint textureID) {
     _textureIDs[textureIndex] = textureID;
-    _nTextures = textureIndex + 1;
 }
 
 

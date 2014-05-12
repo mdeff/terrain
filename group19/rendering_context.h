@@ -39,8 +39,8 @@ protected:
     GLuint _vertexBufferID;
     GLuint _elementBufferID;
 
-    GLuint _nTextures;
-    GLuint _textureIDs[20];
+    static const int _nTextures = 20;
+    GLint _textureIDs[_nTextures];
 
 
 private:
