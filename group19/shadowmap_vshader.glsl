@@ -1,23 +1,29 @@
 #version 330 core
 
+// Transformation matrix from model space to light clip space.
 uniform mat4 lightMVP;
 
 // Texture 0. Defined by glActiveTexture and passed by glUniform1i.
 uniform sampler2D heightMapTex;
 
-//layout(location = 0) in vec3 vertexPosition_modelspace;
-layout(location = 0) in vec2 position;
+// Vertices 2D position in model space.
+// First input buffer. Defined here, retrieved in C++ by glGetAttribLocation.
+layout(location = 0) in vec2 vertexPosition2DModel;
+
 
 void main() {
 
     // World (triangle grid) coordinates are (-1,-1) x (1,1).
     // Texture (height map) coordinates are (0,0) x (1,1).
-    vec2 UV = (position + 1.0) / 2.0;
-    float height = texture(heightMapTex, UV).r;
+    vec2 UV = (vertexPosition2DModel + 1.0) / 2.0;
+    float height = texture2D(heightMapTex, UV).r;
 
-    vec3 displaced = vec3(position.xy, height);
+    // 3D vertex position : X and Y from vertex array, Z from heightmap texture.
+    vec3 vertexPosition3DModel = vec3(vertexPosition2DModel.xy, height);
 
-    // Vertex in camera space then projection/clip space.
-    gl_Position = lightMVP * vec4(displaced, 1.0);
+    // Model matrix transforms from model space to world space.
+    // View matrix transforms from world space to camera space.
+    // Projection matrix transforms from camera space to clip space (homogeneous space).
+    gl_Position = lightMVP * vec4(vertexPosition3DModel, 1.0);
 
 }

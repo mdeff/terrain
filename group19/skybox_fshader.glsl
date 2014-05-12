@@ -1,6 +1,6 @@
 #version 330 core
 
-// Texture.
+// Texture 0. Defined by glActiveTexture and passed by glUniform1i.
 uniform samplerCube skyboxTex;
 
 // 3D texture coordinates.
@@ -11,6 +11,8 @@ layout(location = 0) out vec3 color;
 
 
 void main() {
+
     vec3 T = normalize(texCoords);
     color =  texture(skyboxTex, T).rgb;
+
 }

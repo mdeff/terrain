@@ -138,15 +138,15 @@ void Terrain::init(GLuint heightMapTexID) {
     vec3 ka(0.65f, 0.7f, 0.65f);
     vec3 kd(0.25f, 0.15f, 0.25f);
     vec3 ks(0.35f, 0.25f, 0.35f);
-    float p = 60.0f;
+    float power = 60.0f;
     GLuint ka_id = glGetUniformLocation(_programID, "ka");
     GLuint kd_id = glGetUniformLocation(_programID, "kd");
     GLuint ks_id = glGetUniformLocation(_programID, "ks");
-    GLuint p_id = glGetUniformLocation(_programID, "p");
+    GLuint power_id = glGetUniformLocation(_programID, "power");
     glUniform3fv(ka_id, 1, ka.data());
     glUniform3fv(kd_id, 1, kd.data());
     glUniform3fv(ks_id, 1, ks.data());
-    glUniform1f(p_id, p);
+    glUniform1f(power_id, power);
 
     GLuint N_id = glGetUniformLocation(_programID, "N");
     glUniform1d(N_id, N);
@@ -160,7 +160,7 @@ void Terrain::init(GLuint heightMapTexID) {
     _timeID = glGetUniformLocation(_programID, "time");
     _lightOffsetMVPID = glGetUniformLocation(_programID, "lightOffsetMVP");
 
-    _vertexAttribID = glGetAttribLocation(_programID, "position");
+    _vertexAttribID = glGetAttribLocation(_programID, "vertexPosition2DModel");
 }
 
 
@@ -173,7 +173,7 @@ void Terrain::draw(mat4& projection, mat4& modelview, mat4& lightMVP) const {
     glBindBuffer(GL_ARRAY_BUFFER, _vertexBufferID);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _elementBufferID);
     glEnableVertexAttribArray(_vertexAttribID);
-    // vec2: 2 floats per vertex for the xy plane position attribute.
+    // vec2: 2 floats per vertex for the vertexPosition2DModel attribute.
     glVertexAttribPointer(_vertexAttribID, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
     /// Update the content of the uniforms.

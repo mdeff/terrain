@@ -72,10 +72,10 @@ void Skybox::init() {
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &vertices, GL_STATIC_DRAW);
 
     /// Vertex attribute "position" points to elements of the array buffer.
-    GLuint positionID = glGetAttribLocation(_programID, "position");
-    glEnableVertexAttribArray(positionID);
-    // vec3: 3 floats per vertex for the position attribute.
-    glVertexAttribPointer(positionID, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    GLuint vertexAttribID = glGetAttribLocation(_programID, "vertexPosition3DModel");
+    glEnableVertexAttribArray(vertexAttribID);
+    // vec3: 3 floats per vertex for the vertexPosition3DModel attribute.
+    glVertexAttribPointer(vertexAttribID, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
     /// Set uniform IDs.
     _modelviewID = glGetUniformLocation(_programID, "modelview");

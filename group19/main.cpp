@@ -15,12 +15,14 @@ extern GLuint gen_heightmap();
 const int windowWidth(1024);
 const int windowHeight(768);
 
-// Rendering contexts.
+/// Textures (heightmap and shadowmap) sizes.
+const int textureWidth(1024);
+const int textureHeight(1024);
+
+/// Instanciate the rendering contexts.
 Terrain terrain(windowWidth, windowHeight);
 Skybox skybox(windowWidth, windowHeight);
-Shadowmap shadowmap(1024, 1024);  ///< Shadow map texture size.
-//Watermap watermap(windowWidth, windowHeight);
-
+Shadowmap shadowmap(textureWidth, textureHeight);
 
 /// Matrices that have to be shared between rendering contexts.
 static mat4 projection;
@@ -66,17 +68,17 @@ void update_matrix_stack(const mat4& model) {
 
 
     /// Spot light projection.
-    aspectRatio = 1.f;
+    aspectRatio = float(textureWidth)/float(textureHeight);
     mat4 lightProjection = Eigen::perspective(fieldOfView, aspectRatio, nearPlane, farPlane);
 
-    /// Light position.
+    /// Light source position (world coordinates).
     vec3 lightPosition(0.0, 0.0, 5.0);
     vec3 lightAt(0.0,0.0,0.0);
     vec3 lightUp(0.0,1.0,0.0);
     mat4 lightView = Eigen::lookAt(lightPosition, lightAt, lightUp);
 
     /// Assemble the lightMVP matrix for a spotlight source.
-    lightMVP = lightProjection * lightView;
+    lightMVP = lightProjection * lightView * model;
 
 }
 

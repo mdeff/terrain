@@ -67,7 +67,7 @@ void Shadowmap::init(GLuint heightMapTexID, GLint vertexArrayID) {
 
     /// Set uniform and attribute IDs.
     _lightMatrixID = glGetUniformLocation(_programID, "lightMVP");
-    _vertexAttribID = glGetAttribLocation(_programID, "position");
+    _vertexAttribID = glGetAttribLocation(_programID, "vertexPosition2DModel");
 
 }
 
@@ -81,7 +81,7 @@ void Shadowmap::draw(mat4& /*projection*/, mat4& /*modelview*/, mat4& lightMVP) 
     glBindBuffer(GL_ARRAY_BUFFER, _vertexBufferID);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _elementBufferID);
     glEnableVertexAttribArray(_vertexAttribID);
-    // vec2: 2 floats per vertex for the xy plane position attribute.
+    // vec2: 2 floats per vertex for the vertexPosition2DModel attribute.
     glVertexAttribPointer(_vertexAttribID, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
     /// Update the content of the uniforms.
