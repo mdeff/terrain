@@ -21,7 +21,7 @@
 
 \section{Overview}
 
-This report presents our advancement on the third part of the project : interaction and animation.
+This report presents our advancement on the third part of the project : interaction and animation. During all the run of the project, we focused on code design and quality rather than quantity. It would have been impossible to implement every single idea we had about the project anyway.
 %At this stage, we realized that we are better technicians than artists.
 
 
@@ -34,6 +34,17 @@ This report presents our advancement on the third part of the project : interact
 
 \section{Improvements on last stage}
 
+\subsection{Code cleanup}
+
+As this hand-in is the last opportunity to modify our code, we put great effort in cleaning it up, including comments. A great job was done to functionalize shader code. As a side effect, we did also discover some little mistakes.
+
+\subsection{Lightning}
+
+Phong shading was improperly implemented at stage 2. The material texture was only used for the ambient color. The diffuse and specular colors were fixed for all the terrain. Probably a reminiscent of stage 1. This is now fixed.
+
+The light direction was defined to be the same for all the vertices, which is a directional light. This was changed to a spot light (or point light in the lightning context), to be coherent with shadowing.
+
+We now retrieve material color properties from textures. The retrieved color is split across the three lightnings : ambient, diffuse and specular. For example, specular lightning coefficient is non-zero for water only.
 
 \section{Results}
 
