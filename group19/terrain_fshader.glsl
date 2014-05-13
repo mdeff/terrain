@@ -1,30 +1,16 @@
 #version 330 core
 
 // Light properties.
-uniform vec3 Ia;
-uniform vec3 Id;
-uniform vec3 Is;
-uniform vec3 ka;
-uniform vec3 kd;
-uniform vec3 ks;
-uniform float power;
+uniform vec3 Ia, Id, Is;
 
 // Time for water animation.
 uniform float time;
-
-// Grid size.
-uniform int N;
 
 // Texture 0. Defined by glActiveTexture and passed by glUniform1i.
 uniform sampler2D heightMapTex;
 
 // Environmental textures 1-6. Defined by glActiveTexture and passed by glUniform1i.
-uniform sampler2D sandTex;
-uniform sampler2D iceMoutainTex;
-uniform sampler2D treeTex;
-uniform sampler2D stoneTex;
-uniform sampler2D waterTex;
-uniform sampler2D snowTex;
+uniform sampler2D sandTex, iceMoutainTex, treeTex, stoneTex, waterTex, snowTex;
 
 // Texture 7. Defined by glActiveTexture and passed by glUniform1i.
 uniform sampler2D waterNormalMap;
@@ -40,8 +26,7 @@ in vec3 vertexPosition3DModel;
 in vec4 ShadowCoord;
 
 // Light and view directions.
-in vec3 light_dir;
-in vec3 view_dir;
+in vec3 lightDir, viewDir;
 
 // First output buffer is pixel color.
 // gl_FragColor
@@ -69,7 +54,8 @@ vec3 compute_normal(vec3 position) {
     // otherwise need to calculate it
     vec3 normal;
     if (position.z < ground) {
-        normal = normalize(texture(waterNormalMap,UV).rgb);
+        normal = texture(waterNormalMap,UV).rgb;
+        //normal = vec3(0.0, 0.0, 1.0);
     } else {
         //first calculate the normal vector using finite difference
         float s11 = texture(heightMapTex, UV).r;
@@ -81,9 +67,9 @@ vec3 compute_normal(vec3 position) {
         vec3 va = normalize(vec3(size.xy, s21 - s01));
         vec3 vb = normalize(vec3(0.0, size.x,  s12 - s10));
         vec3 tmp = cross(va,vb);
-        normal = normalize(vec3(tmp.xy, 2*tmp.z));
+        normal = vec3(tmp.xy, 2*tmp.z);
     }
-    return normal;
+    return normalize(normal);
 }
 
 
@@ -129,24 +115,43 @@ vec3 texture_mapping(vec3 position, vec3 normal) {
 void main() {
 
     // Normalize the vectors.
-    vec3 L = normalize(light_dir);
-    vec3 V = normalize(view_dir);
+    vec3 L = normalize(lightDir);
+    vec3 V = normalize(viewDir);
 
     // Compute the normal.
     vec3 normal = compute_normal(vertexPosition3DModel);
 
-    // Compute the diffuse color component.
-    vec3 diffuse = Id * kd * max(dot(normal,L),0.0);
+    // Retrieve material properties.
+    vec3 material = texture_mapping(vertexPosition3DModel, normal);
 
-    // Compute the specular color component.
-    vec3 specular = Is * ks * pow(max(dot(V,reflect(L,normal)),0.0),power);
+    // Specular lightning only relevant for water surfaces.
+    float power = 60.0f;
+    float ka, kd, ks;
+    if(vertexPosition3DModel.z < ground) {
+        ka = 0.2f;
+        kd = 0.3f;
+        ks = 0.5f;
+    } else {
+        ka = 0.3f;
+        kd = 0.7f;
+        ks = 0.0f;
+    }
 
     // Compute the ambient color component based on texture mapping.
-    vec3 ambient = Ia * ka * texture_mapping(vertexPosition3DModel, normal);
+    vec3 ambient = Ia * ka * material;
+
+    // Compute the diffuse color component.
+    vec3 diffuse = Id * kd * material * max(dot(normal,L),0.0);
+
+    // Hack : water is normal mapped for diffuse lightning and flat for specular.
+    if(vertexPosition3DModel.z < ground)
+        normal = vec3(0.0, 0.0, 1.0);
+
+    // Compute the specular color component.
+    vec3 specular = Is * ks * material * pow(max(dot(V,reflect(L,normal)),0.0),power);
 
     // Assemble the colors.
     color = ambient + diffuse + specular;
-
 
 
 
@@ -159,7 +164,7 @@ void main() {
 //    vec3 diffuse = vcolor;
 
     //Shadow / visibility
-    float bias = 0.005;  // 0.001
+    float bias = 0.001;  // 0.001
     ///>>>>>>>>>> TODO >>>>>>>>>>>
     /// TODO: Practical 6.
     /// 2) query the visibility of ShadowCoord in shadowMap, bias the query by subtracting bias. What happens without bias?
@@ -188,7 +193,7 @@ void main() {
 
 //    color = ambient + visibility * diffuse + visibility * specular;
 //    color = visibility * diffuse + visibility * specular;
-    color = visibility * ambient;
+//    color = visibility * ambient;
 
     // Observe the shadow map.
     //color = vec3(texture(shadowMapTex, ShadowCoord.xy).r);

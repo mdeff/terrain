@@ -28,6 +28,7 @@ Shadowmap shadowmap(textureWidth, textureHeight);
 static mat4 projection;
 static mat4 modelview;
 static mat4 lightMVP;
+static vec3 lightPositionModel;
 
 
 void update_matrix_stack(const mat4& model) {
@@ -71,11 +72,11 @@ void update_matrix_stack(const mat4& model) {
     aspectRatio = float(textureWidth)/float(textureHeight);
     mat4 lightProjection = Eigen::perspective(fieldOfView, aspectRatio, nearPlane, farPlane);
 
-    /// Light source position (world coordinates).
-    vec3 lightPosition(0.0, 0.0, 5.0);
+    /// Light source position (model coordinates).
+    lightPositionModel = vec3(1.0, 1.0, 10.0);
     vec3 lightAt(0.0,0.0,0.0);
     vec3 lightUp(0.0,1.0,0.0);
-    mat4 lightView = Eigen::lookAt(lightPosition, lightAt, lightUp);
+    mat4 lightView = Eigen::lookAt(lightPositionModel, lightAt, lightUp);
 
     /// Assemble the lightMVP matrix for a spotlight source.
     lightMVP = lightProjection * lightView * model;
@@ -151,7 +152,7 @@ void display() {
     shadowmap.draw(projection, modelview, lightMVP);
 
     // Draw terrain and skybox.
-    terrain.draw(projection, modelview, lightMVP);
+    terrain.draw(projection, modelview, lightMVP, lightPositionModel);
     skybox.draw(projection, modelview);
 	
 	//watermap.draw(projection, modelview);

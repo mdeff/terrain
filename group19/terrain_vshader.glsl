@@ -7,7 +7,8 @@ uniform mat4 modelview;
 // Transformation matrix from model space to light clip space.
 uniform mat4 lightOffsetMVP;
 
-uniform vec3 light_dir_tmp;
+// Light source position in model space.
+uniform vec3 lightPositionModel;
 
 // Time for water animation.
 uniform float time;
@@ -26,8 +27,7 @@ out vec3 vertexPosition3DModel;
 out vec4 ShadowCoord;
 
 // Light and view directions.
-out vec3 light_dir;
-out vec3 view_dir;
+out vec3 lightDir, viewDir;
 
 
 void main() {
@@ -54,8 +54,10 @@ void main() {
     // Vertex position in light source clip space.
     ShadowCoord = lightOffsetMVP * vec4(vertexPosition3DModel, 1.0);
 
-    // Light and view directions.
-    light_dir = light_dir_tmp;
-    view_dir = vec3(vertexPositionCamera);
+    // Light and view directions : subtraction of 2 points gives vector.
+    // Camera space --> camera position at origin --> subtraction by [0,0,0].
+    // No need to normalize as interpolation will not preserve vector lengths.
+    lightDir = lightPositionModel - vertexPosition3DModel;
+    viewDir = vec3(vertexPositionCamera);
 
 }

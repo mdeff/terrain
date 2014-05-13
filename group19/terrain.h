@@ -12,15 +12,16 @@ public:
     // Common methods of all renderers.
     Terrain(unsigned int width, unsigned int height);
     void init(GLuint heightMapTexID);  ///< Or in the constructor
-    void draw(mat4& projection, mat4& modelview, mat4& lightMVP) const;
+    void draw(mat4& projection, mat4& modelview, mat4& lightMVP, vec3& lightPositionModel) const;
     void clean();  ///< Or in the destructor
 
 private:
     // Specialized to this object.
     GLuint _modelviewID;
     GLuint _projectionID;
-    GLuint _timeID;
     GLuint _lightOffsetMVPID;
+    GLuint _lightPositionModelID;
+    GLuint _timeID;
 
     void gen_triangle_grid();
     GLuint load_texture(const char * imagepath) const;

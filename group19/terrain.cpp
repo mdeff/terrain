@@ -121,50 +121,28 @@ void Terrain::init(GLuint heightMapTexID) {
     //glVertexAttribPointer(positionID, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
     /// Define light properties and pass them to the shaders.
-    vec3 light_dir_tmp(1.0f,0.5f,1.0f);
     vec3 Ia(1.0f, 1.0f, 1.0f);
     vec3 Id(1.0f, 1.0f, 1.0f);
     vec3 Is(1.0f, 1.0f, 1.0f);
-    GLuint light_pos_id = glGetUniformLocation(_programID, "light_dir_tmp"); //Given in camera space
-    GLuint Ia_id = glGetUniformLocation(_programID, "Ia");
-    GLuint Id_id = glGetUniformLocation(_programID, "Id");
-    GLuint Is_id = glGetUniformLocation(_programID, "Is");
-    glUniform3fv(light_pos_id, 1, light_dir_tmp.data());
-    glUniform3fv(Ia_id, 1, Ia.data());
-    glUniform3fv(Id_id, 1, Id.data());
-    glUniform3fv(Is_id, 1, Is.data());
-
-    /// Define the material properties and pass them to the shaders.
-    vec3 ka(0.65f, 0.7f, 0.65f);
-    vec3 kd(0.25f, 0.15f, 0.25f);
-    vec3 ks(0.35f, 0.25f, 0.35f);
-    float power = 60.0f;
-    GLuint ka_id = glGetUniformLocation(_programID, "ka");
-    GLuint kd_id = glGetUniformLocation(_programID, "kd");
-    GLuint ks_id = glGetUniformLocation(_programID, "ks");
-    GLuint power_id = glGetUniformLocation(_programID, "power");
-    glUniform3fv(ka_id, 1, ka.data());
-    glUniform3fv(kd_id, 1, kd.data());
-    glUniform3fv(ks_id, 1, ks.data());
-    glUniform1f(power_id, power);
-
-    GLuint N_id = glGetUniformLocation(_programID, "N");
-    glUniform1d(N_id, N);
-
-
+    GLuint _IaID = glGetUniformLocation(_programID, "Ia");
+    GLuint _IdID = glGetUniformLocation(_programID, "Id");
+    GLuint _IsID = glGetUniformLocation(_programID, "Is");
+    glUniform3fv(_IaID, 1, Ia.data());
+    glUniform3fv(_IdID, 1, Id.data());
+    glUniform3fv(_IsID, 1, Is.data());
 
     /// Set uniform IDs.
     _modelviewID = glGetUniformLocation(_programID, "modelview");
     _projectionID = glGetUniformLocation(_programID, "projection");
-
-    _timeID = glGetUniformLocation(_programID, "time");
     _lightOffsetMVPID = glGetUniformLocation(_programID, "lightOffsetMVP");
+    _lightPositionModelID = glGetUniformLocation(_programID, "lightPositionModel");
+    _timeID = glGetUniformLocation(_programID, "time");
 
     _vertexAttribID = glGetAttribLocation(_programID, "vertexPosition2DModel");
 }
 
 
-void Terrain::draw(mat4& projection, mat4& modelview, mat4& lightMVP) const {
+void Terrain::draw(mat4& projection, mat4& modelview, mat4& lightMVP, vec3& lightPositionModel) const {
 
     /// Common drawing.
     RenderingContext::draw();
@@ -179,6 +157,7 @@ void Terrain::draw(mat4& projection, mat4& modelview, mat4& lightMVP) const {
     /// Update the content of the uniforms.
     glUniformMatrix4fv(_modelviewID, 1, GL_FALSE, modelview.data());
     glUniformMatrix4fv(_projectionID, 1, GL_FALSE, projection.data());
+    glUniform3fv(_lightPositionModelID, 1, lightPositionModel.data());
 
     /// Time value which animates water.
     // TODO: implement rollover ?
