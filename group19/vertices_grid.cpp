@@ -75,7 +75,7 @@ void VerticesGrid::draw(GLuint vertexAttribID) const {
     /// Draw the grid vertices.
     glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, 0);
 
-    /// Disable the vertex attribute as the vertex array is pointed by two attributes.
+    /// Disable the vertex attribute as the array is pointed by two attributes.
     glDisableVertexAttribArray(vertexAttribID);
 
 }

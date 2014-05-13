@@ -5,24 +5,22 @@
 #include "rendering_context.h"
 #include "opengp.h"
 
-class Vertices;
-
 class Skybox : public RenderingContext {
 
 public:
 
-    // Common methods of all renderers.
+    /// Common methods of all RenderingContext.
     Skybox(unsigned int width, unsigned int height);
     void init(Vertices* vertices);
     void draw(mat4& projection, mat4& modelview) const;
-    void clean();
 
 private:
 
-    // Specialized to this object.
+    /// Uniform IDs.
     unsigned int _modelviewID;
     unsigned int _projectionID;
 
+    /// Helper functions.
     int loadBMP(const char * imagepath, unsigned char* data) const;
     void loadCubeTexture() const;
 

@@ -4,7 +4,6 @@
 
 #include "vertices.h"
 
-
 class VerticesGrid : public Vertices {
 
 public:

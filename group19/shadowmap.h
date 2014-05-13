@@ -5,25 +5,19 @@
 #include "rendering_context.h"
 #include "opengp.h"
 
-class Vertices;
-
 class Shadowmap : public RenderingContext {
 
 public:
-    // Common methods of all renderers.
+
+    /// Common methods of all RenderingContext.
     Shadowmap(unsigned int width, unsigned int height);
     unsigned int init(Vertices* vertices, unsigned int heightMapTexID);
-    void draw(mat4& projection, mat4& model_view, mat4& lightMVP) const;
-    void clean();
+    void draw(mat4& lightMVP) const;
 
 private:
-    // Specialized to this object.
-    unsigned int _shadowMapTexID;
 
+    /// Uniform IDs.
     unsigned int _lightMatrixID;
-
-    void gen_triangle_grid();
-    unsigned int loadTexture(const char * imagepath);
 
 };
 

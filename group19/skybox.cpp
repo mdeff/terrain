@@ -1,3 +1,4 @@
+
 #include "skybox.h"
 #include "vertices.h"
 
@@ -19,7 +20,7 @@ Skybox::Skybox(unsigned int width, unsigned int height) :
 void Skybox::init(Vertices* vertices) {
 
     /// Common initialization : vertex array and shader programs.
-    RenderingContext::init(vertices, skybox_vshader, skybox_fshader);
+    RenderingContext::init(vertices, skybox_vshader, skybox_fshader, "vertexPosition3DModel");
 
     /// Bind the Skybox cube map to texture 0.
     set_texture(0, -1, "skyboxTex", GL_TEXTURE_CUBE_MAP);
@@ -28,10 +29,6 @@ void Skybox::init(Vertices* vertices) {
     /// Set uniform IDs.
     _modelviewID = glGetUniformLocation(_programID, "modelview");
     _projectionID = glGetUniformLocation(_programID, "projection");
-
-    /// Set vertex attribute array IDs.
-    // TODO: put in parent constructor so we do not forget it.
-    _vertexAttribID = glGetAttribLocation(_programID, "vertexPosition3DModel");
 
 }
 

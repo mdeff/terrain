@@ -5,16 +5,14 @@
 #include "rendering_context.h"
 #include "opengp.h"
 
-class Vertices;
-
 class Terrain : public RenderingContext {
 
 public:
-    // Common methods of all renderers.
+
+    /// Common methods of all RenderingContext.
     Terrain(unsigned int width, unsigned int height);
     void init(Vertices* vertices, unsigned int heightMapTexID, unsigned int shadowMapTexID);
     void draw(mat4& projection, mat4& modelview, mat4& lightMVP, vec3& lightPositionModel) const;
-    void clean();
 
 private:
 
@@ -25,7 +23,7 @@ private:
     unsigned int _lightPositionModelID;
     unsigned int _timeID;
 
-    void gen_triangle_grid();
+    /// Helper function.
     unsigned int load_texture(const char * imagepath) const;
 
 };

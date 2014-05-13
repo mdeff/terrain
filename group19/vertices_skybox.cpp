@@ -42,9 +42,7 @@ const float vertices[] = {
     -size, size, size,
      size,-size, size
 };
-
-const unsigned int nVertices = 36;
-//const unsigned int nVertices = sizeof(vertices) / sizeof(float) / 3;
+const unsigned int nVertices = sizeof(vertices) / sizeof(float) / 3;
 
 
 /// Copy box vertices to GPU.
@@ -80,6 +78,9 @@ void VerticesSkybox::draw(GLuint vertexAttribID) const {
 
     /// Draw the Skybox vertices.
     glDrawArrays(GL_TRIANGLES, 0, nVertices);
+
+    /// No need to disable the vertex attribute as the array is only pointed
+    /// by one attribute.
 
 }
 

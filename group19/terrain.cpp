@@ -17,28 +17,10 @@ Terrain::Terrain(unsigned int width, unsigned int height) :
 }
 
 
-GLuint Terrain::load_texture(const char * imagepath) const {
-
-    // Read the file, call glTexImage2D with the right parameters
-    if (glfwLoadTexture2D(imagepath, 0)) {
-        // Nice trilinear filtering.
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    } else {
-        std::cout << "Cannot load texture file : " << imagepath << std::endl;
-        exit(EXIT_FAILURE);
-    }
-
-}
-
-
 void Terrain::init(Vertices* vertices, GLuint heightMapTexID, GLuint shadowMapTexID) {
 
     /// Common initialization : vertex array and shader programs.
-    RenderingContext::init(vertices, terrain_vshader, terrain_fshader);
+    RenderingContext::init(vertices, terrain_vshader, terrain_fshader, "vertexPosition2DModel");
 
     /// Bind the heightmap to texture 0 and shadowmap to texture 8.
     set_texture(0, heightMapTexID, "heightMapTex");
@@ -80,10 +62,6 @@ void Terrain::init(Vertices* vertices, GLuint heightMapTexID, GLuint shadowMapTe
     _lightPositionModelID = glGetUniformLocation(_programID, "lightPositionModel");
     _timeID = glGetUniformLocation(_programID, "time");
 
-    /// Set vertex attribute array IDs.
-    // TODO: put in parent constructor so we do not forget it.
-    _vertexAttribID = glGetAttribLocation(_programID, "vertexPosition2DModel");
-
 }
 
 
@@ -122,6 +100,19 @@ void Terrain::draw(mat4& projection, mat4& modelview, mat4& lightMVP, vec3& ligh
 }
 
 
-void Terrain::clean() {
-    RenderingContext::clean();
+GLuint Terrain::load_texture(const char * imagepath) const {
+
+    // Read the file, call glTexImage2D with the right parameters
+    if (glfwLoadTexture2D(imagepath, 0)) {
+        // Nice trilinear filtering.
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    } else {
+        std::cout << "Cannot load texture file : " << imagepath << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
 }

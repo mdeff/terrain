@@ -13,7 +13,7 @@ RenderingContext::RenderingContext(unsigned int width, unsigned int height) :
 }
 
 
-void RenderingContext::init(Vertices* vertices, const char* vshader, const char* fshader, GLint frameBufferID) {
+void RenderingContext::init(Vertices* vertices, const char* vshader, const char* fshader, const char* vertexAttribName, GLint frameBufferID) {
 
     _vertices = vertices;
 
@@ -31,6 +31,9 @@ void RenderingContext::init(Vertices* vertices, const char* vshader, const char*
     if(!_programID)
         exit(EXIT_FAILURE);
     glUseProgram(_programID);
+
+    /// Set vertex attribute array ID.
+    _vertexAttribID = glGetAttribLocation(_programID, vertexAttribName);
 
 }
 

@@ -5,13 +5,15 @@
 
 #include "common.h"
 #include "terrain.h"
-#include "skybox.h"
 #include "shadowmap.h"
+#include "skybox.h"
 #include "vertices.h"
 #include "vertices_grid.h"
 #include "vertices_skybox.h"
 
+/// No need to put only this declaration in a separate header.
 extern GLuint gen_heightmap();
+//extern GLuint gen_test_heightmap();
 
 /// Screen size.
 const int windowWidth(1024);
@@ -30,7 +32,7 @@ Shadowmap shadowmap(textureWidth, textureHeight);
 Vertices* verticesGrid = new VerticesGrid();
 Vertices* verticesSkybox = new VerticesSkybox();
 
-/// Matrices that have to be shared between rendering contexts.
+/// Matrices that have to be shared between update_matrix_stack() and display().
 static mat4 projection;
 static mat4 modelview;
 static mat4 lightMVP;
@@ -90,7 +92,6 @@ void update_matrix_stack(const mat4& model) {
 }
 
 
-
 void init() {
 	
     /// OpenGL parameters.
@@ -99,13 +100,10 @@ void init() {
     glEnable(GL_MULTISAMPLE);
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-    //glEnable(GL_DEPTH_TEST);
     //glEnable(GL_CULL_FACE);
 
-
     /// Generate the heightmap texture.
-    /// Before shader compilation, as it uses its own shaders.
-//    GLuint heightMapTexID = gen_test_heightmap();
+    //GLuint heightMapTexID = gen_test_heightmap();
     GLuint heightMapTexID = gen_heightmap();
 
     /// Set the screen framebuffer back as the rendering target and specify
@@ -124,29 +122,28 @@ void init() {
 
     /// Initialize the matrix stack.  	
 	update_matrix_stack(mat4::Identity());
+
 }
 
 
 void display() {
 
-	//to measure FPS
+    /// Measure and print FPS (every second).
 	static double lastTime = glfwGetTime();
-	static int nbFrames = 0;
-    // Measure speed
+    static int nbFrames = 0;
     double currentTime = glfwGetTime();
     nbFrames++;
-    if ( currentTime - lastTime >= 1.0 ){ // compute and display amount of frame every sc
-        printf("%f frames/s\n", double(nbFrames));
+    if(currentTime - lastTime >= 1.0) {
+        printf("%d FPS\n", nbFrames);
         nbFrames = 0;
         lastTime += 1.0;
     }
 
-    //To render only the boundary
-    //comment it if you want to render full triangles
+    /// Uncomment to render only the boundary (not full triangles).
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     /// Render shadowmap, terrain and skybox.
-    shadowmap.draw(projection, modelview, lightMVP);
+    shadowmap.draw(lightMVP);
     terrain.draw(projection, modelview, lightMVP, lightPositionModel);
     skybox.draw(projection, modelview);
 

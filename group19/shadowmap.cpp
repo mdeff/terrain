@@ -2,7 +2,6 @@
 #include "shadowmap.h"
 #include "vertices.h"
 
-
 #include <iostream>
 
 #include <GL/glew.h>
@@ -11,9 +10,6 @@
 
 #include "shadowmap_vshader.h"
 #include "shadowmap_fshader.h"
-
-// FIXME : vertices as an object ?
-extern unsigned int nIndices;
 
 
 Shadowmap::Shadowmap(unsigned int width, unsigned int height) :
@@ -24,7 +20,7 @@ Shadowmap::Shadowmap(unsigned int width, unsigned int height) :
 GLuint Shadowmap::init(Vertices* vertices, GLuint heightMapTexID) {
 
     /// Common initialization : vertex array and shader programs.
-    RenderingContext::init(vertices, shadowmap_vshader, shadowmap_fshader, -1);
+    RenderingContext::init(vertices, shadowmap_vshader, shadowmap_fshader, "vertexPosition2DModel", -1);
 
     /// Bind the heightmap to texture 0.
     set_texture(0, heightMapTexID, "heightMapTex");
@@ -46,7 +42,7 @@ GLuint Shadowmap::init(Vertices* vertices, GLuint heightMapTexID) {
 
     /// Attach the created texture to the depth attachment point.
     /// The texture becomes the fragment shader first output buffer.
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _textureIDs[1], 0);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, shadowMapTexID, 0);
 
     /// There is only depth (no color) output in the bound framebuffer.
     glDrawBuffer(GL_NONE);
@@ -57,11 +53,8 @@ GLuint Shadowmap::init(Vertices* vertices, GLuint heightMapTexID) {
         exit(EXIT_FAILURE);
     }
 
-    /// Set uniform and attribute IDs.
+    /// Set uniform IDs.
     _lightMatrixID = glGetUniformLocation(_programID, "lightMVP");
-
-    /// Set vertex attribute array IDs.
-    _vertexAttribID = glGetAttribLocation(_programID, "vertexPosition2DModel");
 
     /// Return the shadowmap texture ID (for the terrain).
     return shadowMapTexID;
@@ -69,7 +62,7 @@ GLuint Shadowmap::init(Vertices* vertices, GLuint heightMapTexID) {
 }
 
 
-void Shadowmap::draw(mat4& /*projection*/, mat4& /*modelview*/, mat4& lightMVP) const {
+void Shadowmap::draw(mat4& lightMVP) const {
 
     // Common drawing.
     RenderingContext::draw();
@@ -83,9 +76,4 @@ void Shadowmap::draw(mat4& /*projection*/, mat4& /*modelview*/, mat4& lightMVP) 
     /// Render the terrain from light source point of view to FBO.
     _vertices->draw(_vertexAttribID);
 
-}
-
-
-void Shadowmap::clean() {
-    RenderingContext::clean();
 }

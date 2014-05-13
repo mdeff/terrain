@@ -39,6 +39,7 @@ GLuint gen_test_heightmap() {
 
     /// Return the height map texture ID.
     return textureID;
+
 }
 
 
@@ -137,6 +138,7 @@ GLuint gen_gradient_vectors(GLuint programID) {
     glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
     return gradVectTexID;
+
 }
 
 
@@ -239,4 +241,5 @@ GLuint gen_heightmap() {
 
     /// Return the height map texture ID.
     return heightMapTexID;
+
 }
