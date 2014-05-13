@@ -3,26 +3,27 @@
 #define __shadowmap_h__
 
 #include "rendering_context.h"
-#include <GL/glew.h>
 #include "opengp.h"
+
+class Vertices;
 
 class Shadowmap : public RenderingContext {
 
 public:
     // Common methods of all renderers.
     Shadowmap(unsigned int width, unsigned int height);
-    void init(GLuint heightMapTexID, GLint vertexArrayID);  ///< Or in the constructor
+    unsigned int init(Vertices* vertices, unsigned int heightMapTexID);
     void draw(mat4& projection, mat4& model_view, mat4& lightMVP) const;
-    void clean();  ///< Or in the destructor
+    void clean();
 
 private:
     // Specialized to this object.
-    GLuint _shadowMapTexID;
+    unsigned int _shadowMapTexID;
 
-    GLuint _lightMatrixID;
+    unsigned int _lightMatrixID;
 
     void gen_triangle_grid();
-    GLuint loadTexture(const char * imagepath);
+    unsigned int loadTexture(const char * imagepath);
 
 };
 

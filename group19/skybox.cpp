@@ -1,6 +1,8 @@
 #include "skybox.h"
+#include "vertices.h"
 
 #include <iostream>
+#include <stdio.h>
 
 #include <GL/glew.h>
 #include "opengp.h"
@@ -8,78 +10,28 @@
 #include "skybox_vshader.h"
 #include "skybox_fshader.h"
 
-const unsigned int nVertices = 36;
-
 
 Skybox::Skybox(unsigned int width, unsigned int height) :
     RenderingContext(width, height) {
 }
 
 
-void Skybox::init() {
-
-    const float size = 5.0f;
-    const GLfloat vertices[] = {
-        -size,-size,-size, // triangle 1 : begin
-        -size,-size, size,
-        -size, size, size, // triangle 1 : end
-         size, size,-size, // triangle 2 : begin
-        -size,-size,-size,
-        -size, size,-size, // triangle 2 : end
-         size,-size, size,
-        -size,-size,-size,
-         size,-size,-size,
-         size, size,-size,
-         size,-size,-size,
-        -size,-size,-size,
-        -size,-size,-size,
-        -size, size, size,
-        -size, size,-size,
-         size,-size, size,
-        -size,-size, size,
-        -size,-size,-size,
-        -size, size, size,
-        -size,-size, size,
-         size,-size, size,
-         size, size, size,
-         size,-size,-size,
-         size, size,-size,
-         size,-size,-size,
-         size, size, size,
-         size,-size, size,
-         size, size, size,
-         size, size,-size,
-        -size, size,-size,
-         size, size, size,
-        -size, size,-size,
-        -size, size, size,
-         size, size, size,
-        -size, size, size,
-         size,-size, size
-    };
+void Skybox::init(Vertices* vertices) {
 
     /// Common initialization : vertex array and shader programs.
-    RenderingContext::init(skybox_vshader, skybox_fshader);
+    RenderingContext::init(vertices, skybox_vshader, skybox_fshader);
 
     /// Bind the Skybox cube map to texture 0.
     set_texture(0, -1, "skyboxTex", GL_TEXTURE_CUBE_MAP);
     loadCubeTexture();
 
-    /// Copy the vertices in a vertex buffer (VBO).
-    GLuint vertexBufferID;
-    glGenBuffers(1, &vertexBufferID);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &vertices, GL_STATIC_DRAW);
-
-    /// Vertex attribute "position" points to elements of the array buffer.
-    GLuint vertexAttribID = glGetAttribLocation(_programID, "vertexPosition3DModel");
-    glEnableVertexAttribArray(vertexAttribID);
-    // vec3: 3 floats per vertex for the vertexPosition3DModel attribute.
-    glVertexAttribPointer(vertexAttribID, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
     /// Set uniform IDs.
     _modelviewID = glGetUniformLocation(_programID, "modelview");
     _projectionID = glGetUniformLocation(_programID, "projection");
+
+    /// Set vertex attribute array IDs.
+    // TODO: put in parent constructor so we do not forget it.
+    _vertexAttribID = glGetAttribLocation(_programID, "vertexPosition3DModel");
 
 }
 
@@ -97,7 +49,7 @@ void Skybox::draw(mat4& projection, mat4& modelview) const {
     /// Otherwise Terrain drawn pixels will be cleared and we'll only see the skybox.
 
     /// Render the skybox from camera point of view to default framebuffer.
-    glDrawArrays(GL_TRIANGLES, 0, nVertices);
+    _vertices->draw(_vertexAttribID);
 
 }
 

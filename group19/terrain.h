@@ -3,28 +3,30 @@
 #define __terrain_h__
 
 #include "rendering_context.h"
-#include <GL/glew.h>
 #include "opengp.h"
+
+class Vertices;
 
 class Terrain : public RenderingContext {
 
 public:
     // Common methods of all renderers.
     Terrain(unsigned int width, unsigned int height);
-    void init(GLuint heightMapTexID);  ///< Or in the constructor
+    void init(Vertices* vertices, unsigned int heightMapTexID, unsigned int shadowMapTexID);
     void draw(mat4& projection, mat4& modelview, mat4& lightMVP, vec3& lightPositionModel) const;
-    void clean();  ///< Or in the destructor
+    void clean();
 
 private:
-    // Specialized to this object.
-    GLuint _modelviewID;
-    GLuint _projectionID;
-    GLuint _lightOffsetMVPID;
-    GLuint _lightPositionModelID;
-    GLuint _timeID;
+
+    /// Uniform IDs.
+    unsigned int _modelviewID;
+    unsigned int _projectionID;
+    unsigned int _lightOffsetMVPID;
+    unsigned int _lightPositionModelID;
+    unsigned int _timeID;
 
     void gen_triangle_grid();
-    GLuint load_texture(const char * imagepath) const;
+    unsigned int load_texture(const char * imagepath) const;
 
 };
 

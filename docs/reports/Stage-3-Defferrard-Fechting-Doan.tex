@@ -46,6 +46,10 @@ The light direction was defined to be the same for all the vertices, which is a 
 
 We now retrieve material color properties from textures. The retrieved color is split across the three lightnings : ambient, diffuse and specular. For example, specular lightning coefficient is non-zero for water only.
 
+\subsection{Vertices object}
+
+To achieve better modulation, we have separated the vertices creation code into a class hierarchy. The \texttt{Vertices} base class is an abstract class, defining only virtual methods, which defines the interface. The \texttt{VerticesGrid} and \texttt{VerticesSkybox} inherit from it and implement the \texttt{generate} \texttt{draw} and \texttt{clean} methods which are specific to them. This design allows more than one \text{RenderingContext} object to share a \texttt{Vertices} object. The \texttt{Terrain} and \texttt{Shadowmap} makes use of this.
+
 \section{Results}
 
 

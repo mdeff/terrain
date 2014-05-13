@@ -1,6 +1,7 @@
 get_filename_component(DIR ${CMAKE_CURRENT_LIST_DIR} NAME)
 project(${DIR})
 add_executable(${DIR} main.cpp rendering_context.cpp
+                      vertices_grid.cpp vertices_skybox.cpp
                       heightmap.cpp terrain.cpp skybox.cpp shadowmap.cpp watermap.cpp
                       heightmap_vshader.glsl heightmap_fshader.glsl
                       terrain_vshader.glsl   terrain_fshader.glsl

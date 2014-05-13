@@ -7,7 +7,9 @@
 #include "terrain.h"
 #include "skybox.h"
 #include "shadowmap.h"
-#include "watermap.h"
+#include "vertices.h"
+#include "vertices_grid.h"
+#include "vertices_skybox.h"
 
 extern GLuint gen_heightmap();
 
@@ -23,6 +25,10 @@ const int textureHeight(1024);
 Terrain terrain(windowWidth, windowHeight);
 Skybox skybox(windowWidth, windowHeight);
 Shadowmap shadowmap(textureWidth, textureHeight);
+
+/// Instanciate the vertices.
+Vertices* verticesGrid = new VerticesGrid();
+Vertices* verticesSkybox = new VerticesSkybox();
 
 /// Matrices that have to be shared between rendering contexts.
 static mat4 projection;
@@ -107,24 +113,14 @@ void init() {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, windowWidth, windowHeight);
 
-    // Initialize the rendering contexts.
-    terrain.init(heightMapTexID);
-    skybox.init();
-	//watermap.init(heightMapTexID, windowWidth, windowHeight);
+    /// Generate the vertices.
+    verticesGrid->generate();
+    verticesSkybox->generate();
 
-    // Terrain and Shadowmap contexts share the same vertices.
-    // TODO : generate vertices out of any context ?
-    GLuint vertexBufferID, elementBufferID;
-    terrain.get_buffer_IDs(vertexBufferID, elementBufferID);
-    shadowmap.set_buffer_IDs(vertexBufferID, elementBufferID);
-
-    // Initialize the rendering context.
-    shadowmap.init(heightMapTexID, terrain.get_vertexarray_ID());
-
-    // The shadow map texture is used by the two rendering contexts.
-    // Texture 8 in Terrain and texture 1 in Shadowmap.
-    GLuint textureID = shadowmap.get_texture_ID(1);
-    terrain.set_texture_ID(8, textureID);
+    /// Initialize the rendering contexts.
+    GLuint shadowMapTexID = shadowmap.init(verticesGrid, heightMapTexID);
+    terrain.init(verticesGrid, heightMapTexID, shadowMapTexID);
+    skybox.init(verticesSkybox);
 
     /// Initialize the matrix stack.  	
 	update_matrix_stack(mat4::Identity());
@@ -149,13 +145,10 @@ void display() {
     //comment it if you want to render full triangles
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
+    /// Render shadowmap, terrain and skybox.
     shadowmap.draw(projection, modelview, lightMVP);
-
-    // Draw terrain and skybox.
     terrain.draw(projection, modelview, lightMVP, lightPositionModel);
     skybox.draw(projection, modelview);
-	
-	//watermap.draw(projection, modelview);
 
 }
 

@@ -191,7 +191,7 @@ void main() {
 //     // Specular : reflective highlight, like a mirror
 //     visibility * MaterialSpecularColor * LightColor * LightPower * pow(cosAlpha,5);
 
-//    color = ambient + visibility * diffuse + visibility * specular;
+    color = ambient + visibility * diffuse + visibility * specular;
 //    color = visibility * diffuse + visibility * specular;
 //    color = visibility * ambient;
 
