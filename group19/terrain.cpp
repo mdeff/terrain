@@ -19,29 +19,29 @@ Terrain::Terrain(unsigned int width, unsigned int height) :
 
 void Terrain::init(Vertices* vertices, GLuint heightMapTexID, GLuint shadowMapTexID) {
 
-    /// Common initialization : vertex array and shader programs.
+    /// Common initialization.
     RenderingContext::init(vertices, terrain_vshader, terrain_fshader, "vertexPosition2DModel");
 
-    /// Bind the heightmap to texture 0 and shadowmap to texture 8.
+    /// Bind the heightmap and shadowmap to textures 0 and 1.
     set_texture(0, heightMapTexID, "heightMapTex");
-    set_texture(8, shadowMapTexID, "shadowMapTex");
+    set_texture(1, shadowMapTexID, "shadowMapTex");
 
-    /// Load material textures and bind them to textures 1 - 6.
-    set_texture(1, -1, "sandTex");
+    /// Load material textures and bind them to textures 2 - 7.
+    set_texture(2, -1, "sandTex");
     load_texture("../../textures/sand.tga");
-    set_texture(2, -1, "iceMoutainTex");
+    set_texture(3, -1, "iceMoutainTex");
     load_texture("../../textures/dordona_range.tga");
-    set_texture(3, -1, "treeTex");
+    set_texture(4, -1, "treeTex");
     load_texture("../../textures/forest.tga");
-    set_texture(4, -1, "stoneTex");
+    set_texture(5, -1, "stoneTex");
     load_texture("../../textures/stone_2.tga");
-    set_texture(5, -1, "waterTex");
+    set_texture(6, -1, "waterTex");
     load_texture("../../textures/water.tga");
-    set_texture(6, -1, "snowTex");
+    set_texture(7, -1, "snowTex");
     load_texture("../../textures/snow.tga");
 
-    /// Load the normal map for water lightning to texture 7.
-    set_texture(7, -1, "waterNormalMap");
+    /// Load the normal map for water lightning to texture 8.
+    set_texture(8, -1, "waterNormalMap");
     load_texture("../../textures/water_normal_map_2.tga");
 
     /// Define light properties and pass them to the shaders.
@@ -82,13 +82,13 @@ void Terrain::draw(mat4& projection, mat4& modelview, mat4& lightMVP, vec3& ligh
 
     /// Map from light-coordinates in (-1,1)x(-1,1) to texture
     /// coordinates in (0,1)x(0,1).
-    mat4 biasMatrix;
-    biasMatrix <<
+    mat4 offsetMatrix;
+    offsetMatrix <<
             0.5f, 0.0f, 0.0f, 0.0f,
             0.0f, 0.5f, 0.0f, 0.0f,
             0.0f, 0.0f, 0.5f, 0.0f,
             0.5f, 0.5f, 0.5f, 1.0f;
-    mat4 lightOffsetMVP = biasMatrix * lightMVP;
+    mat4 lightOffsetMVP = offsetMatrix * lightMVP;
     glUniformMatrix4fv(_lightOffsetMVPID, 1, GL_FALSE, lightOffsetMVP.data());
 
     /// Clear the screen framebuffer.

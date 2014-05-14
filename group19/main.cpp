@@ -35,59 +35,43 @@ Vertices* verticesSkybox = new VerticesSkybox();
 /// Matrices that have to be shared between update_matrix_stack() and display().
 static mat4 projection;
 static mat4 modelview;
-static mat4 lightMVP;
-static vec3 lightPositionModel;
 
 
 void update_matrix_stack(const mat4& model) {
 
-    /// Camera projection.
-    // The horizontal Field of View, in degrees : the amount of "zoom". Think "camera lens". Usually between 90° (extra wide) and 30° (quite zoomed in)
+    /// Camera projection matrix (camera intrinsics).
+    // Horizontal field of view in degrees : amount of "zoom" ("camera lens").
+    // Usually between 90° (extra wide) and 30° (quite zoomed in).
     float fieldOfView = 45.0f;
-    // Aspect Ratio. Depends on the size of your window. Notice that 4/3 == 800/600 == 1280/960
-    float aspectRatio = float(windowWidth)/float(windowHeight);
-    // Near clipping plane. Keep as little as possible, or you'll get precision issues.
+    // Aspect ratio depends on the window size (for example 4/3 or 1).
+    float aspectRatio = float(windowWidth) / float(windowHeight);
+    // Near clipping plane. Keep as little as possible (precision issues).
     float nearPlane = 0.1f;
-    // Far clipping plane. Keep as big as possible.
-    float farPlane  = 100.f;
-
-    /// Define projection matrix (camera intrinsics)
-    // Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
+    // Far clipping plane. Keep as big as possible (usually 10.0f or 100.0f).
+    float farPlane  = 100.0f;
     projection = Eigen::perspective(fieldOfView, aspectRatio, nearPlane, farPlane);
 
-
-    /// Define the view matrix (camera extrinsics) (position in world space).
+    /// View matrix (camera extrinsics) (position in world space).
     /// Camera is in the sky, looking down.
-    vec3 cam_pos(0.0f, -3.0f, 4.0f);
-    vec3 cam_up(0.0f, 1.0f, 0.0f);
-    vec3 cam_look(0.0f, 0.0f, 0.0f);
+    vec3 camPos(0.0f, -3.0f, 4.0f);
+    vec3 camLookAt(0.0f, 0.0f, 0.0f);
+    vec3 camUp(0.0f, 1.0f, 0.0f);
+    /// Camera is right on top, comparison with light position.
+    camPos = vec3(0.0, 0.0, 5.0);
+    camLookAt = vec3(0.0, 0.0, 0.0);
+    camUp = vec3(1.0, 0.0, 0.0);
     /// Camera is in a corner, looking down to the terrain.
-    //vec3 cam_pos(2.0f, -2.0f, 2.5f);
-    //vec3 cam_pos(0.7f, -0.7f, 0.3f); // Close texture view.
-    //vec3 cam_pos(0.8f, 1.2f, 2.0f);
+    //vec3 camPos(2.0f, -2.0f, 2.5f);
+    //vec3 camPos(0.7f, -0.7f, 0.3f); // Close texture view.
+    //vec3 camPos(0.8f, 1.2f, 2.0f);
     /// View from center.
-//    vec3 cam_pos(0.9f, -0.8f, 1.0f);
-//    vec3 cam_up(0.0f, 0.0f, 1.0f);
-//    vec3 cam_look(-0.3f, 0.1f, 0.5f);
-    mat4 view = Eigen::lookAt(cam_pos, cam_look, cam_up);
+//    vec3 camPos(0.9f, -0.8f, 1.0f);
+//    vec3 camLookAt(-0.3f, 0.1f, 0.5f);
+//    vec3 camUp(0.0f, 0.0f, 1.0f);
+    mat4 view = Eigen::lookAt(camPos, camLookAt, camUp);
 
-    /// Assemble the "Model View" matrix
+    /// Assemble the "Model View" matrix.
     modelview = view * model;
-
-
-
-    /// Spot light projection.
-    aspectRatio = float(textureWidth)/float(textureHeight);
-    mat4 lightProjection = Eigen::perspective(fieldOfView, aspectRatio, nearPlane, farPlane);
-
-    /// Light source position (model coordinates).
-    lightPositionModel = vec3(1.0, 1.0, 10.0);
-    vec3 lightAt(0.0,0.0,0.0);
-    vec3 lightUp(0.0,1.0,0.0);
-    mat4 lightView = Eigen::lookAt(lightPositionModel, lightAt, lightUp);
-
-    /// Assemble the lightMVP matrix for a spotlight source.
-    lightMVP = lightProjection * lightView * model;
 
 }
 
@@ -120,6 +104,8 @@ void init() {
     terrain.init(verticesGrid, heightMapTexID, shadowMapTexID);
     skybox.init(verticesSkybox);
 
+    std::cerr << heightMapTexID << " " << shadowMapTexID << std::endl;
+
     /// Initialize the matrix stack.  	
 	update_matrix_stack(mat4::Identity());
 
@@ -134,10 +120,44 @@ void display() {
     double currentTime = glfwGetTime();
     nbFrames++;
     if(currentTime - lastTime >= 1.0) {
-        printf("%d FPS\n", nbFrames);
+        std::cout << nbFrames << " FPS" << std::endl;
         nbFrames = 0;
         lastTime += 1.0;
     }
+
+
+
+    /// Spot light projection matrix.
+    // Horizontal field of view in degrees : amount of "zoom" ("camera lens").
+    // Usually between 90° (extra wide) and 30° (quite zoomed in).
+    float fieldOfView = 45.0f;
+    // Aspect ratio depends on the window size (for example 4/3 or 1).
+    float aspectRatio = float(textureWidth) / float(textureHeight);
+    // Near clipping plane. Keep as little as possible (precision issues).
+    float nearPlane = 0.1f;
+    // Far clipping plane. Keep as big as possible (usually 10.0f or 100.0f).
+    float farPlane  = 100.0f;
+    mat4 lightProjection = Eigen::perspective(fieldOfView, aspectRatio, nearPlane, farPlane);
+
+    /// Light source position (model coordinates).
+//    vec3 lightPositionModel(3.0, 3.0, 3.0);
+//    vec3 lightLookAt(0.0, 0.0, 0.0);
+//    vec3 lightUp(0.0, 1.0, 0.0);
+//    mat4 lightView = Eigen::lookAt(lightPositionModel, lightLookAt, lightUp);
+
+    /// Moving light source position (model coordinates).
+    static float t = 0.0f;
+    t += 0.01f;
+    vec3 lightPositionModel = vec3(3.0*std::sin(t), 3.0, 3.0*std::cos(t));
+    vec3 lightLookAt(0.0, 0.0, 0.0);
+    vec3 lightUp(0.0, 1.0, 0.0);
+    mat4 lightView = Eigen::lookAt(lightPositionModel, lightLookAt, lightUp);
+
+    /// Assemble the lightMVP matrix for a spotlight source.
+    mat4 lightMVP = lightProjection * lightView;
+
+
+
 
     /// Uncomment to render only the boundary (not full triangles).
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);

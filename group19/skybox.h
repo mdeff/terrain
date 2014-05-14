@@ -21,8 +21,8 @@ private:
     unsigned int _projectionID;
 
     /// Helper functions.
-    int loadBMP(const char * imagepath, unsigned char* data) const;
     void loadCubeTexture() const;
+    int loadBMP(const char* imagepath, unsigned char* data) const;
 
 };
 

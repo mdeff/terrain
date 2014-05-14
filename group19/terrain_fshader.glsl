@@ -154,15 +154,6 @@ void main() {
     color = ambient + diffuse + specular;
 
 
-
-    vec3 light = vec3(0.8);
-
-    ///>>>>>>>>>> TODO >>>>>>>>>>>
-    /// TODO: Practical 6.
-    /// 1) Assign the texture color in tex at position UV to diffuse instead of the interpolated vertexcolor
-    ///<<<<<<<<<< TODO <<<<<<<<<<<
-//    vec3 diffuse = vcolor;
-
     //Shadow / visibility
     float bias = 0.001;  // 0.001
     ///>>>>>>>>>> TODO >>>>>>>>>>>
@@ -193,13 +184,14 @@ void main() {
 
     color = ambient + visibility * diffuse + visibility * specular;
 //    color = visibility * diffuse + visibility * specular;
-//    color = visibility * ambient;
+//    color = visibility * diffuse;
 
     // Observe the shadow map.
     //color = vec3(texture(shadowMapTex, ShadowCoord.xy).r);
     //color = vec3(texture2D(shadowMapTex, ShadowCoord.xy).r);
 //    color = vec3(textureProj(shadowMapTex, ShadowCoord.xy).r);
-    //color = vec3(texture(shadowMapTex, ShadowCoord.xy/ShadowCoord.w).r);
+//    color = vec3(texture(shadowMapTex, ShadowCoord.xy/ShadowCoord.w).r);
+//    color = vec3(texture(shadowMapTex, vertexPosition3DModel.xy).r);
 
     // Observe distance from light.
     //color = vec3(ShadowCoord.x);

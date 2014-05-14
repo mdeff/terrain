@@ -19,7 +19,7 @@ Skybox::Skybox(unsigned int width, unsigned int height) :
 
 void Skybox::init(Vertices* vertices) {
 
-    /// Common initialization : vertex array and shader programs.
+    /// Common initialization.
     RenderingContext::init(vertices, skybox_vshader, skybox_fshader, "vertexPosition3DModel");
 
     /// Bind the Skybox cube map to texture 0.
@@ -47,6 +47,56 @@ void Skybox::draw(mat4& projection, mat4& modelview) const {
 
     /// Render the skybox from camera point of view to default framebuffer.
     _vertices->draw(_vertexAttribID);
+
+}
+
+
+void Skybox::loadCubeTexture() const {
+
+    // hardcode the size of image for now
+    int width = 1024, height = 1024, channel = 3;
+    int imgSize = width*height*channel;
+
+    /// Allocate data for each pixel buffer.
+    /// Too much data to be allocated on the stack --> allocate on the heap.
+    unsigned char* left   = new unsigned char[imgSize];
+    unsigned char* right  = new unsigned char[imgSize];
+    unsigned char* back   = new unsigned char[imgSize];
+    unsigned char* front  = new unsigned char[imgSize];
+    unsigned char* top    = new unsigned char[imgSize];
+    unsigned char* bottom = new unsigned char[imgSize];
+
+    /// Load each an image for each face of the cube.
+    if (!loadBMP("../../skybox/left.bmp", left))
+        exit(EXIT_FAILURE);
+    if (!loadBMP("../../skybox/right.bmp", right))
+        exit(EXIT_FAILURE);
+    if (!loadBMP("../../skybox/back.bmp", back))
+        exit(EXIT_FAILURE);
+    if (!loadBMP("../../skybox/front.bmp", front))
+        exit(EXIT_FAILURE);
+    if (!loadBMP("../../skybox/top.bmp", top))
+        exit(EXIT_FAILURE);
+    if (!loadBMP("../../skybox/bottom.bmp", bottom))
+        exit(EXIT_FAILURE);
+
+    /// Set the filtering.
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    /// Enable textures.
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, left);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, right);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, back);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, front);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, top);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, bottom);
+
+    /// Deallocate heap data.
+    delete left, right, back, front, top, bottom;
 
 }
 
@@ -119,54 +169,4 @@ int Skybox::loadBMP(const char* imagepath, unsigned char* data) const {
 
     // Return 1 if the file is read successfully
     return 1;
-}
-
-
-void Skybox::loadCubeTexture() const {
-
-    // hardcode the size of image for now
-    int width = 1024, height = 1024, channel = 3;
-    int imgSize = width*height*channel;
-
-    /// Allocate data for each pixel buffer.
-    /// Too much data to be allocated on the stack --> allocate on the heap.
-    unsigned char* left   = new unsigned char[imgSize];
-    unsigned char* right  = new unsigned char[imgSize];
-    unsigned char* back   = new unsigned char[imgSize];
-    unsigned char* front  = new unsigned char[imgSize];
-    unsigned char* top    = new unsigned char[imgSize];
-    unsigned char* bottom = new unsigned char[imgSize];
-
-    /// Load each an image for each face of the cube.
-    if (!loadBMP("../../skybox/left.bmp", left))
-        exit(EXIT_FAILURE);
-    if (!loadBMP("../../skybox/right.bmp", right))
-        exit(EXIT_FAILURE);
-    if (!loadBMP("../../skybox/back.bmp", back))
-        exit(EXIT_FAILURE);
-    if (!loadBMP("../../skybox/front.bmp", front))
-        exit(EXIT_FAILURE);
-    if (!loadBMP("../../skybox/top.bmp", top))
-        exit(EXIT_FAILURE);
-    if (!loadBMP("../../skybox/bottom.bmp", bottom))
-        exit(EXIT_FAILURE);
-
-    /// Set the filtering.
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
-    /// Enable textures.
-    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, left);
-    glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, right);
-    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, back);
-    glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, front);
-    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, top);
-    glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, bottom);
-
-    /// Deallocate heap data.
-    delete left, right, back, front, top, bottom;
-
 }
