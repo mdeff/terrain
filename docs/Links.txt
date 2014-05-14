@@ -44,6 +44,9 @@ Shadowmap :
   http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-16-shadow-mapping/
   https://www.opengl.org/wiki/Sampler_%28GLSL%29#Shadow_samplers
 
+OpenGL tutorials :
+  http://ogldev.atspace.co.uk/
+
 Water reflection :
   http://antongerdelan.net/opengl/cubemaps.html
   http://blog.bonzaisoftware.com/tnp/gl-water-tutorial/
