@@ -50,6 +50,24 @@ We now retrieve material color properties from textures. The retrieved color is 
 
 To achieve better modulation, we have separated the vertices creation code into a class hierarchy. The \texttt{Vertices} base class is an abstract class, defining only virtual methods, which defines the interface. The \texttt{VerticesGrid} and \texttt{VerticesSkybox} inherit from it and implement the \texttt{generate} \texttt{draw} and \texttt{clean} methods which are specific to them. This design allows more than one \text{RenderingContext} object to share a \texttt{Vertices} object. The \texttt{Terrain} and \texttt{Shadowmap} makes use of this.
 
+\subsection{Heightmap}
+
+The heightmap texture was configured with the default heuristic for out-of-range values. This default is to wrap around the texture (\texttt{GL\_REPEAT}) which creates artifacts at the borders of the terrain (fig.~\ref{heightmap_artifacts}). Clamping the texture coordinates (\texttt{GL\_CLAMP\_TO\_EDGE}) to the [0,1] range eliminates the artifacts (fig.~\ref{heightmap_ok}).
+
+\begin{figure}[ht]
+	\centering
+	\subfloat[With artifacts at the border]{
+		\label{heightmap_artifacts}
+		\includegraphics[height=4cm]{{{img_stage3/heightmap_artifacts}}}
+	} \quad
+	\subfloat[Without artifacts]{
+		\label{heightmap_ok}
+		\includegraphics[height=4cm]{{{img_stage3/heightmap_ok}}}
+	}
+	\caption{Heightmap}
+	\label{heightmap}
+\end{figure}
+
 \section{Results}
 
 
