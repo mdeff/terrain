@@ -60,7 +60,7 @@ void update_matrix_stack(const mat4& model) {
     /// View matrix (camera extrinsics) (position in world space).
     /// Camera is in the sky, looking down.
     //vec3 camPos(0.0f, -3.0f, 4.0f);
-    vec3 camLookAt(0.0f, 0.0f, 0.7f);
+    vec3 camLookAt(0.0f, 0.0f, 0.2f);
     vec3 camUp(0.0f, 0.0f, 1.0f);
     /// Camera is right on top, comparison with light position.
     //camPos = vec3(0.0, 0.0, 5.0);
@@ -70,9 +70,9 @@ void update_matrix_stack(const mat4& model) {
     /// Camera is in a corner, looking down to the terrain.
     //vec3 camPos(2.0f, -2.0f, 2.5f);
 
-    vec3 camPos(1.0f, 0.0f,0.7f); // Close texture view.
+    //vec3 camPos(1.0f, 0.0f,0.7f); // Close texture view.
 
-//    vec3 camPos(0.9f, -0.8f, 0.7f); // Close texture view.
+    vec3 camPos(0.9f, -0.8f, 0.7f); // Close texture view.
 
     /// View from center.
 //    vec3 camPos(0.9f, -0.8f, 1.0f);
