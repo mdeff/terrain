@@ -1,15 +1,15 @@
 
-#include <string>
 #include "rendering_context.h"
 #include "vertices.h"
+#include <GL/glew.h>
 #include "opengp.h"
 
 
 /// By default,render to the default framebuffer (screen) : FBO 0.
 RenderingContext::RenderingContext(unsigned int width, unsigned int height) :
     _width(width), _height(height) {
-    for(int i = 0; i<_nTextures; i++)
-        _textureIDs[i] = -1;
+    for(int i = 0; i<_nTextures; ++i)
+        _textures[i].ID = -1;
 }
 
 
@@ -52,24 +52,34 @@ void RenderingContext::draw() const {
 
     /// Bind all the necessary textures.
     for(int i=0; i<_nTextures; ++i) {
-        if(_textureIDs[i] >= 0) {
+        if(_textures[i].ID >= 0) {
             glActiveTexture(GL_TEXTURE0 + i);
-            glBindTexture(GL_TEXTURE_2D, (GLuint)_textureIDs[i]);
+            glBindTexture(_textures[i].target, (GLuint)_textures[i].ID);
         }
     }
 }
 
 
 void RenderingContext::clean() {
-    _vertices->clean();
+
+    /// Delete the shader programs.
     glDeleteProgram(_programID);
+
     /// Do not delete the default (screen) framebuffer.
     if(_frameBufferID != 0)
         glDeleteFramebuffers(1, &_frameBufferID);
+
+    /// Delete all the binded textures.
+    // TODO: be carefull of shared textures.
+    for(int i=0; i<_nTextures; ++i) {
+        if(_textures[i].ID >= 0) {
+            glDeleteTextures(1, (GLuint*)&_textures[i].ID);
+        }
+    }
 }
 
 
-GLuint RenderingContext::set_texture(const GLuint textureIndex, int textureID, std::string uniformName, GLenum target) {
+void RenderingContext::set_texture(const GLuint textureIndex, int textureID, const char* uniformName, GLenum target) {
 
     /// Create a texture if no ID was passed.
     if(textureID < 0)
@@ -80,12 +90,11 @@ GLuint RenderingContext::set_texture(const GLuint textureIndex, int textureID, s
     glActiveTexture(GL_TEXTURE0 + textureIndex);
     glBindTexture(target, textureID);
 
-    if(!uniformName.empty()) {
-        GLuint uniformID = glGetUniformLocation(_programID, uniformName.c_str());
-        glUniform1i(uniformID, textureIndex);
-    }
+    /// Put the texture index value in the Sampler uniform.
+    GLuint uniformID = glGetUniformLocation(_programID, uniformName);
+    glUniform1i(uniformID, textureIndex);
 
-    _textureIDs[textureIndex] = textureID;
+    _textures[textureIndex].ID = textureID;
+    _textures[textureIndex].target = target;
 
-    return textureID;
 }

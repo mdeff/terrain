@@ -4,16 +4,14 @@
 #include <sstream>
 
 #include "common.h"
-#include "terrain.h"
+#include "heightmap.h"
 #include "shadowmap.h"
 #include "skybox.h"
+#include "terrain.h"
 #include "vertices.h"
+#include "vertices_quad.h"
 #include "vertices_grid.h"
 #include "vertices_skybox.h"
-
-/// No need to put only this declaration in a separate header.
-extern GLuint gen_heightmap();
-//extern GLuint gen_test_heightmap();
 
 /// Screen size.
 const int windowWidth(1024);
@@ -24,9 +22,9 @@ const int textureWidth(1024);
 const int textureHeight(768);
 
 /// Instanciate the rendering contexts.
-Terrain terrain(windowWidth, windowHeight);
-Skybox skybox(windowWidth, windowHeight);
 Shadowmap shadowmap(textureWidth, textureHeight);
+Skybox skybox(windowWidth, windowHeight);
+Terrain terrain(windowWidth, windowHeight);
 
 /// Instanciate the vertices.
 Vertices* verticesGrid = new VerticesGrid();
@@ -138,13 +136,14 @@ void init() {
     //glEnable(GL_CULL_FACE);
 
     /// Generate the heightmap texture.
-    //GLuint heightMapTexID = gen_test_heightmap();
-    GLuint heightMapTexID = gen_heightmap();
-
-    /// Set the screen framebuffer back as the rendering target and specify
-    /// the transformation from normalized device coordinates to window coordinates.
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glViewport(0, 0, windowWidth, windowHeight);
+    Vertices* verticesQuad = new VerticesQuad();
+    verticesQuad->generate();
+    Heightmap heightmap(textureWidth, textureHeight);
+    GLuint heightMapTexID = heightmap.init(verticesQuad);
+    heightmap.draw();
+    heightmap.clean();
+    verticesQuad->clean();
+    delete verticesQuad;
 
     /// Generate the vertices.
     verticesGrid->generate();
@@ -154,8 +153,6 @@ void init() {
     GLuint shadowMapTexID = shadowmap.init(verticesGrid, heightMapTexID);
     terrain.init(verticesGrid, heightMapTexID, shadowMapTexID);
     skybox.init(verticesSkybox);
-
-    std::cerr << heightMapTexID << " " << shadowMapTexID << std::endl;
 
     /// Initialize the matrix stack.  	
 	update_matrix_stack(mat4::Identity());

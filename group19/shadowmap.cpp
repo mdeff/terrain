@@ -24,13 +24,15 @@ GLuint Shadowmap::init(Vertices* vertices, GLuint heightMapTexID) {
 //    RenderingContext::init(vertices, shadowmap_vshader, shadowmap_fshader, "vertexPosition2DModel");
 
     /// Bind the heightmap to texture 0.
-    set_texture(0, heightMapTexID, "heightMapTex");
+    set_texture(0, heightMapTexID, "heightMapTex", GL_TEXTURE_2D);
 
     /// Create and bind to texture 1 the texture which will contain the
     /// depth output (the actual shadow map) of our shader. A depth texture is
     /// slower than a depth buffer, but can be sampled later. No need to be
     /// binded to a texture index, but it is simpler to use the framework.
-    GLuint shadowMapTexID = set_texture(1);
+    GLuint shadowMapTexID;
+    glGenTextures(1, &shadowMapTexID);
+    glBindTexture(GL_TEXTURE_2D, shadowMapTexID);
 //goto test;
     /// Depth format is unsigned integer, not float. We set it to 16 bits.
     /// Can also be 32 bits : GL_DEPTH_COMPONENT32.

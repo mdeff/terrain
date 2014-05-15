@@ -23,25 +23,25 @@ void Terrain::init(Vertices* vertices, GLuint heightMapTexID, GLuint shadowMapTe
     RenderingContext::init(vertices, terrain_vshader, terrain_fshader, "vertexPosition2DModel");
 
     /// Bind the heightmap and shadowmap to textures 0 and 1.
-    set_texture(0, heightMapTexID, "heightMapTex");
-    set_texture(1, shadowMapTexID, "shadowMapTex");
+    set_texture(0, heightMapTexID, "heightMapTex", GL_TEXTURE_2D);
+    set_texture(1, shadowMapTexID, "shadowMapTex", GL_TEXTURE_2D);
 
     /// Load material textures and bind them to textures 2 - 7.
-    set_texture(2, -1, "sandTex");
+    set_texture(2, -1, "sandTex", GL_TEXTURE_2D);
     load_texture("../../textures/sand.tga");
-    set_texture(3, -1, "iceMoutainTex");
+    set_texture(3, -1, "iceMoutainTex", GL_TEXTURE_2D);
     load_texture("../../textures/dordona_range.tga");
-    set_texture(4, -1, "treeTex");
+    set_texture(4, -1, "treeTex", GL_TEXTURE_2D);
     load_texture("../../textures/forest.tga");
-    set_texture(5, -1, "stoneTex");
+    set_texture(5, -1, "stoneTex", GL_TEXTURE_2D);
     load_texture("../../textures/stone_2.tga");
-    set_texture(6, -1, "waterTex");
+    set_texture(6, -1, "waterTex", GL_TEXTURE_2D);
     load_texture("../../textures/water.tga");
-    set_texture(7, -1, "snowTex");
+    set_texture(7, -1, "snowTex", GL_TEXTURE_2D);
     load_texture("../../textures/snow.tga");
 
     /// Load the normal map for water lightning to texture 8.
-    set_texture(8, -1, "waterNormalMap");
+    set_texture(8, -1, "waterNormalMap", GL_TEXTURE_2D);
     load_texture("../../textures/water_normal_map_2.tga");
 
     /// Define light properties and pass them to the shaders.
