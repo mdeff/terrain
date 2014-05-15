@@ -35,8 +35,8 @@ layout(location = 0) out vec3 color;
 
 
 // Different levels of height for texture mapping.
-const float ground = 0.01f;
-const float sandMax = 0.015f;
+const float ground = 0.011f;
+const float sandMax = 0.02f;
 const float forestMin = 0.025f;
 const float forestMax = 0.25f;
 const float snowMin= 0.315f;
@@ -82,7 +82,7 @@ vec3 texture_mapping(vec3 position, vec3 normal) {
     float slope = smoothstep(0.35, 0.65 , normal.z);
 
     if(position.z < ground) {
-        mapped = texture2D(waterTex, 5*vec2(position.x+ cos(time/5000.0),position.y+sin(time/5000.0))).rgb;
+        mapped = texture2D(waterTex, position.xy).rgb;//texture2D(waterTex, 0.2*vec2(position.x+ (time/2000.0),position.y+(time/2000.0))).rgb;
     } else if (position.z < sandMax) {
         mapped = texture2D(sandTex, position.xy).rgb;
     } else if (position.z < forestMin) {  //mix between sand, rock
@@ -129,7 +129,7 @@ void main() {
     float power = 60.0f;
     float ka, kd, ks;
     if(vertexPosition3DModel.z < ground) {
-        ka = 0.2f;
+        ka = 0.6f;
         kd = 0.3f;
         ks = 0.5f;
     } else {

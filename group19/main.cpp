@@ -59,14 +59,14 @@ void update_matrix_stack(const mat4& model) {
     /// Camera is in the sky, looking down.
     vec3 camPos(0.0f, -3.0f, 4.0f);
     vec3 camLookAt(0.0f, 0.0f, 0.0f);
-    vec3 camUp(0.0f, 1.0f, 0.0f);
+    vec3 camUp(0.0f, 0.0f, 1.0f);
     /// Camera is right on top, comparison with light position.
-//    camPos = vec3(0.0, 0.0, 5.0);
-//    camLookAt = vec3(0.0, 0.0, 0.0);
-//    camUp = vec3(1.0, 0.0, 0.0);
+    //camPos = vec3(0.0, 0.0, 5.0);
+    //camLookAt = vec3(0.0, 0.0, 0.0);
+    //camUp = vec3(1.0, 0.0, 0.0);
     /// Camera is in a corner, looking down to the terrain.
     //vec3 camPos(2.0f, -2.0f, 2.5f);
-    //vec3 camPos(0.7f, -0.7f, 0.3f); // Close texture view.
+//    vec3 camPos(0.9f, -0.8f, 0.7f); // Close texture view.
     //vec3 camPos(0.8f, 1.2f, 2.0f);
     /// View from center.
 //    vec3 camPos(0.9f, -0.8f, 1.0f);
