@@ -35,7 +35,7 @@ layout(location = 0) out vec3 color;
 
 
 // Different levels of height for texture mapping.
-const float ground = 0.011f;
+const float ground = 0.018f;
 const float sandMax = 0.02f;
 const float forestMin = 0.025f;
 const float forestMax = 0.25f;

@@ -39,10 +39,10 @@ void main() {
     float height = texture2D(heightMapTex, UV).r;
 
     // Generate waves : modulate the water height.
-    if(height <= 0.01f) {
-        height = min((texture2D(riverSurfaceMap, UV+time*0.0007).r)/50.0, 0.01);
+    //if(height <= 0.01f) {
+        //height = min((texture2D(riverSurfaceMap, UV+time*0.0007).r)/50.0, 0.01);
         //sin(-6.28*vertexPosition2DModel.x - 6.28*vertexPosition2DModel.y+time*0.07) * 0.008;
-    }
+    //}
 
     // 3D vertex position : X and Y from vertex array, Z from heightmap texture.
     vertexPosition3DModel = vec3(vertexPosition2DModel.xy, height);

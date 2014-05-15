@@ -6,6 +6,7 @@
 #include "common.h"
 #include "heightmap.h"
 #include "shadowmap.h"
+#include "watermap.h"
 #include "skybox.h"
 #include "terrain.h"
 #include "vertices.h"
@@ -25,6 +26,7 @@ const int textureHeight(768);
 Shadowmap shadowmap(textureWidth, textureHeight);
 Skybox skybox(windowWidth, windowHeight);
 Terrain terrain(windowWidth, windowHeight);
+Watermap water(windowWidth, windowHeight);
 
 /// Instanciate the vertices.
 Vertices* verticesGrid = new VerticesGrid();
@@ -57,7 +59,7 @@ void update_matrix_stack(const mat4& model) {
 
     /// View matrix (camera extrinsics) (position in world space).
     /// Camera is in the sky, looking down.
-    vec3 camPos(0.0f, -3.0f, 4.0f);
+    //vec3 camPos(0.0f, -3.0f, 4.0f);
     vec3 camLookAt(0.0f, 0.0f, 0.0f);
     vec3 camUp(0.0f, 0.0f, 1.0f);
     /// Camera is right on top, comparison with light position.
@@ -66,12 +68,11 @@ void update_matrix_stack(const mat4& model) {
     //camUp = vec3(1.0, 0.0, 0.0);
     /// Camera is in a corner, looking down to the terrain.
     //vec3 camPos(2.0f, -2.0f, 2.5f);
-<<<<<<< HEAD
-    vec3 camPos(0.9f, -0.8f,3.0f); // Close texture view.
-=======
+
+    vec3 camPos(0.9f, -0.8f,1.0f); // Close texture view.
+
 //    vec3 camPos(0.9f, -0.8f, 0.7f); // Close texture view.
->>>>>>> 867c6b48df6df6ef0dbc5d433d41c29481dca5ca
-    //vec3 camPos(0.8f, 1.2f, 2.0f);
+
     /// View from center.
 //    vec3 camPos(0.9f, -0.8f, 1.0f);
 //    vec3 camLookAt(-0.3f, 0.1f, 0.5f);
@@ -157,6 +158,7 @@ void init() {
     GLuint shadowMapTexID = shadowmap.init(verticesGrid, heightMapTexID);
     terrain.init(verticesGrid, heightMapTexID, shadowMapTexID);
     skybox.init(verticesSkybox);
+	water.init(verticesGrid);
 
     /// Initialize the matrix stack.  	
 	update_matrix_stack(mat4::Identity());
@@ -186,6 +188,7 @@ void display() {
     /// Render shadowmap, terrain and skybox.
     shadowmap.draw(lightMVP);
     terrain.draw(cameraProjection, cameraModelview, lightMVP, lightPositionModel);
+	water.draw(cameraProjection, cameraModelview, lightMVP, lightPositionModel);
     skybox.draw(cameraProjection, cameraModelview);
 //    shadowmap.draw(lightMVP);
 
