@@ -35,18 +35,11 @@ void Terrain::init(Vertices* vertices, GLuint heightMapTexID, GLuint shadowMapTe
     load_texture("../../textures/forest.tga");
     set_texture(5, -1, "stoneTex", GL_TEXTURE_2D);
     load_texture("../../textures/stone_2.tga");
-    set_texture(6, -1, "waterTex", GL_TEXTURE_2D);
-    load_texture("../../textures/water.tga");
+    set_texture(6, -1, "underWaterTex", GL_TEXTURE_2D);
+    load_texture("../../textures/under_water.tga");
     set_texture(7, -1, "snowTex", GL_TEXTURE_2D);
-
-    /// Load the normal map for water lightning to texture 8.
-    set_texture(8, -1, "waterNormalMap", GL_TEXTURE_2D);
-    load_texture("../../textures/water_normal_map_2.tga");
-
-    /// Load river texture and bind it to texture 9.
-    set_texture(9, -1, "riverSurfaceMap", GL_TEXTURE_2D);
-    load_texture("../../textures/river.tga");
-
+	load_texture("../../textures/snow.tga");
+  
     /// Define light properties and pass them to the shaders.
     vec3 Ia(1.0f, 1.0f, 1.0f);
     vec3 Id(1.0f, 1.0f, 1.0f);

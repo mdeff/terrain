@@ -26,14 +26,12 @@ out vec3 lightDir, viewDir;
 
 
 void main() {
-
-    // World (triangle grid) coordinates are (-1,-1) x (1,1).
-    // Texture (height map) coordinates are (0,0) x (1,1).
-    vec2 UV = (vertexPosition2DModel + 1.0) / 2.0;
-    float height = 0.018; //fixed height of the water surface
-
+	
+	//fixed height of water surface
+	float waterSurfaceHeight = 0.018;  
+    float height = waterSurfaceHeight; 
   
-    // 3D vertex position : X and Y from vertex array, Z from heightmap texture.
+    // 3D vertex position : X and Y from vertex array, Z is fixed water surface height
     vertexPosition3DModel = vec3(vertexPosition2DModel.xy, height);
 
     // Model matrix transforms from model space to world space.

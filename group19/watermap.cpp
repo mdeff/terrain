@@ -22,6 +22,13 @@ void Watermap::init(Vertices* vertices/*, GLuint heightMapTexID, GLuint shadowMa
 	RenderingContext::init(vertices, watermap_vshader, watermap_fshader, "vertexPosition2DModel");
 
     
+	/* Load texture for water surface */
+	set_texture(0, -1, "waterNormalMap", GL_TEXTURE_2D);
+    load_texture("../../textures/water_normal_map_2.tga");
+  
+    set_texture(1, -1, "riverSurfaceMap", GL_TEXTURE_2D);
+    load_texture("../../textures/water.tga");
+
 
     /// Define light properties and pass them to the shaders.
     vec3 Ia(1.0f, 1.0f, 1.0f);
@@ -72,5 +79,23 @@ void Watermap::draw(const mat4& projection, const mat4& modelview,
 
     /// Render the terrain from camera point of view to default framebuffer.
     _vertices->draw(_vertexAttribID);
+
+}
+
+
+GLuint Watermap::load_texture(const char * imagepath) const {
+
+    // Read the file, call glTexImage2D with the right parameters
+    if (glfwLoadTexture2D(imagepath, 0)) {
+        // Nice trilinear filtering.
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    } else {
+        std::cout << "Cannot load texture file : " << imagepath << std::endl;
+        exit(EXIT_FAILURE);
+    }
 
 }

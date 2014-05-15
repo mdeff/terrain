@@ -10,10 +10,8 @@ uniform float time;
 uniform sampler2D heightMapTex;
 
 // Environmental textures 1-6. Defined by glActiveTexture and passed by glUniform1i.
-uniform sampler2D sandTex, iceMoutainTex, treeTex, stoneTex, waterTex, snowTex;
+uniform sampler2D sandTex, iceMoutainTex, treeTex, stoneTex, underWaterTex, snowTex;
 
-// Texture 7. Defined by glActiveTexture and passed by glUniform1i.
-uniform sampler2D waterNormalMap;
 
 // Texture 8. Defined by glActiveTexture and passed by glUniform1i.
 // Shadow sampler for percentage closer filtering (PCF).
@@ -49,27 +47,20 @@ vec3 compute_normal(vec3 position) {
     const vec2 size = vec2(2.0/1024.0, 0.0);   //1024 is the size of the generated height map
 
     //current UV coordinate
-    vec2 UV = vec2((position.xy +1.0)/2.0);
+    vec2 UV = vec2((position.xy +1.0)/2.0);  
+  
+    //first calculate the normal vector using finite difference
+    float s11 = texture(heightMapTex, UV).r;
+    float s01 = textureOffset(heightMapTex, UV, off.xy).r;
+    float s21 = textureOffset(heightMapTex, UV, off.zy).r;
+    float s10 = textureOffset(heightMapTex, UV, off.yx).r;
+    float s12 = textureOffset(heightMapTex, UV, off.yz).r;
 
-    // if it is water region, use normal from normal map
-    // otherwise need to calculate it
-    vec3 normal;
-    if (position.z < ground) {
-        normal = texture(waterNormalMap,UV).rgb;
-        //normal = vec3(0.0, 0.0, 1.0);
-    } else {
-        //first calculate the normal vector using finite difference
-        float s11 = texture(heightMapTex, UV).r;
-        float s01 = textureOffset(heightMapTex, UV, off.xy).r;
-        float s21 = textureOffset(heightMapTex, UV, off.zy).r;
-        float s10 = textureOffset(heightMapTex, UV, off.yx).r;
-        float s12 = textureOffset(heightMapTex, UV, off.yz).r;
-
-        vec3 va = normalize(vec3(size.xy, s21 - s01));
-        vec3 vb = normalize(vec3(0.0, size.x,  s12 - s10));
-        vec3 tmp = cross(va,vb);
-        normal = vec3(tmp.xy, 2*tmp.z);
-    }
+    vec3 va = normalize(vec3(size.xy, s21 - s01));
+    vec3 vb = normalize(vec3(0.0, size.x,  s12 - s10));
+    vec3 tmp = cross(va,vb);
+    vec3 normal = vec3(tmp.xy, 2*tmp.z);
+    
     return normalize(normal);
 }
 
@@ -82,7 +73,7 @@ vec3 texture_mapping(vec3 position, vec3 normal) {
     float slope = smoothstep(0.35, 0.65 , normal.z);
 
     if(position.z < ground) {
-        mapped = texture2D(waterTex, position.xy).rgb;//texture2D(waterTex, 0.2*vec2(position.x+ (time/2000.0),position.y+(time/2000.0))).rgb;
+        mapped = texture2D(underWaterTex, 60*position.xy).rgb;
     } else if (position.z < sandMax) {
         mapped = texture2D(sandTex, position.xy).rgb;
     } else if (position.z < forestMin) {  //mix between sand, rock
@@ -127,26 +118,17 @@ void main() {
 
     // Specular lightning only relevant for water surfaces.
     float power = 60.0f;
-    float ka, kd, ks;
-    if(vertexPosition3DModel.z < ground) {
-        ka = 0.6f;
-        kd = 0.3f;
-        ks = 0.5f;
-    } else {
-        ka = 0.3f;
-        kd = 0.7f;
-        ks = 0.0f;
-    }
+    float ka, kd, ks;   
+    ka = 0.3f;
+    kd = 0.7f;
+    ks = 0.0f;
+  
 
     // Compute the ambient color component based on texture mapping.
     vec3 ambient = Ia * ka * material;
 
     // Compute the diffuse color component.
     vec3 diffuse = Id * kd * material * max(dot(normal,L),0.0);
-
-    // Hack : water is normal mapped for diffuse lightning and flat for specular.
-    if(vertexPosition3DModel.z < ground)
-        normal = vec3(0.0, 0.0, 1.0);
 
     // Compute the specular color component.
     vec3 specular = Is * ks * material * pow(max(dot(V,reflect(L,normal)),0.0),power);
