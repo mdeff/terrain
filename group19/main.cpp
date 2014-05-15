@@ -59,8 +59,8 @@ void update_matrix_stack(const mat4& model) {
 
     /// View matrix (camera extrinsics) (position in world space).
     /// Camera is in the sky, looking down.
-    //vec3 camPos(0.0f, -3.0f, 4.0f);
-    vec3 camLookAt(0.0f, 0.0f, 0.2f);
+    vec3 camPos(0.0f, -3.0f, 4.0f);
+    vec3 camLookAt(0.0f, 0.0f, 0.0f);
     vec3 camUp(0.0f, 0.0f, 1.0f);
     /// Camera is right on top, comparison with light position.
     //camPos = vec3(0.0, 0.0, 5.0);
@@ -69,10 +69,8 @@ void update_matrix_stack(const mat4& model) {
     //camUp = vec3(1.0, 0.0, 0.0);
     /// Camera is in a corner, looking down to the terrain.
     //vec3 camPos(2.0f, -2.0f, 2.5f);
-
     //vec3 camPos(1.0f, 0.0f,0.7f); // Close texture view.
-
-    vec3 camPos(0.9f, -0.8f, 0.7f); // Close texture view.
+//    vec3 camPos(0.9f, -0.8f, 0.7f); // Close texture view.
 
     /// View from center.
 //    vec3 camPos(0.9f, -0.8f, 1.0f);
@@ -90,7 +88,7 @@ void update_matrix_stack(const mat4& model) {
 void GLFWCALL keyboard_callback(int key, int action) {
 
     /// Distance from center (0,0,0) to sun.
-    const float r = 2.0f;
+    const float r = 3.0f;
 
     if(action == GLFW_PRESS) {
 
@@ -100,7 +98,7 @@ void GLFWCALL keyboard_callback(int key, int action) {
         if(key >= 49 && key <= 57) {
 
             /// Angle from 0° (key 1) to 90° (key 9).
-            float theta = M_PI / 16.0f * float(key-49);
+            float theta = M_PI / 8.0f * float(key-49);
 //            float theta = M_PI/4.0f + M_PI / 16.0f * float(key-49);
 
             /// Position from sunrise (-r,0,0) to noon (0,0,r).

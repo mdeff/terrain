@@ -12,14 +12,14 @@ uniform sampler2D sandTex, iceMoutainTex, treeTex, stoneTex, underWaterTex, snow
 
 // Texture 8. Defined by glActiveTexture and passed by glUniform1i.
 // Shadow sampler for percentage closer filtering (PCF).
-//uniform sampler2D shadowMapTex;
-uniform sampler2DShadow shadowMapTex;
+uniform sampler2D shadowMapTex;
+//uniform sampler2DShadow shadowMapTex;
 
 // Vertices 3D position (after heightmap displacement) in model space.
 in vec3 vertexPosition3DModel;
 
 // Vertex position in light source clip space.
-in vec4 ShadowCoord;
+in vec3 ShadowCoord;
 
 // Light and view directions.
 in vec3 lightDir, viewDir;
@@ -101,6 +101,27 @@ vec3 texture_mapping(vec3 position, vec3 normal) {
 }
 
 
+// Useful for screenshots to be included in report.
+vec3 shadowmap_screenshots(vec3 shadowPos, float visibility) {
+
+    vec3 output;
+
+    // Observe the shadow map.
+    output = vec3(texture(shadowMapTex, shadowPos.xy).r) * 10.0f - 8.8f;
+
+    // Observe distance from light (nice for screenshots).
+//    output = vec3(shadowPos.x);
+//    output = vec3(shadowPos.y);
+//    output = vec3(shadowPos.z) * 10.0f - 8.8f;
+
+    // Observe the shadow.
+    output = vec3(visibility);
+
+    return output;
+
+}
+
+
 void main() {
 
     // Normalize the vectors.
@@ -119,7 +140,6 @@ void main() {
     ka = 0.3f;
     kd = 0.7f;
     ks = 0.0f;
-  
 
     // Compute the ambient color component based on texture mapping.
     vec3 ambient = Ia * ka * material;
@@ -135,13 +155,14 @@ void main() {
 
 
     // small epsilon to avoid Z-fighting
-    const float bias = 0.001;  // 0.001  0.00001
+    const float bias = 0.00001; //00001;  // 0.001  0.00001
 
-//    vec3 UVC = vec3(ShadowCoord.xy/ShadowCoord.w, ShadowCoord.z/ShadowCoord.w + bias);
-    vec3 tmp1 = ShadowCoord.xyz / ShadowCoord.w;
-    vec3 tmp2 = ShadowCoord.xyz * 0.5 + 0.5;
-    vec3 UVC = vec3(tmp2.xy, ShadowCoord.z + bias);
-    float visibility = texture(shadowMapTex, UVC);
+
+    // percentage closer filtering (PCF).
+//    vec3 tmp1 = ShadowCoord.xyz / ShadowCoord.w;
+//    vec3 tmp2 = tmp1 * 0.5 + 0.5;
+//    vec3 UVC = vec3(tmp2.xy, tmp2.z + bias);
+//    float visibility = texture(shadowMapTex, UVC);
 
     //Shadow / visibility
 
@@ -155,13 +176,17 @@ void main() {
     // The texture only stores one component : r (red).
     // Z is the distance to the camera in camera space.
     // A perspective transformation is not affine, and as such, can't be represented entirely by a matrix. After beeing multiplied by the ProjectionMatrix, homogeneous coordinates are divided by their own W component. This W component happens to be -Z (because the projection matrix has been crafted this way). This way, points that are far away from the origin are divided by a big Z; their X and Y coordinates become smaller; points become more close to each other, objects seem smaller; and this is what gives the perspective.
-//    float visibility = 1.0;
+    float visibility = 1.0;
+//    vec3 tmp1 = ShadowCoord.xyz / ShadowCoord.w;
+//    vec3 tmp2 = tmp1 * 0.5 + 0.5;
 //    if(texture(shadowMapTex, ShadowCoord.xy).r  <  ShadowCoord.z) {
 //    if(texture(shadowMapTex, ShadowCoord.xy).r < ShadowCoord.z - bias) {
-//    if(texture(shadowMapTex, ShadowCoord.xy/ShadowCoord.w).r  <  (ShadowCoord.z-bias)/ShadowCoord.w) {
 //    if(textureProj(shadowMapTex, ShadowCoord.xyw).r < (ShadowCoord.z-bias)/ShadowCoord.w) {
-//        visibility = 0.5;
-//    }
+//    if(texture(shadowMapTex, ShadowCoord.xy/ShadowCoord.w).r  <  (ShadowCoord.z)/ShadowCoord.w) {
+//    if(texture(shadowMapTex, tmp2.xy).r  <  (tmp2.z-bias)) {
+        if(texture(shadowMapTex, ShadowCoord.xy).r  <  (ShadowCoord.z-bias)) {
+        visibility = 0.0;
+    }
 
 //    color =
 //     // Ambient : simulates indirect lighting
@@ -174,17 +199,8 @@ void main() {
     color = ambient + visibility * diffuse + visibility * specular;
 //    color = visibility * ambient;
 
-//    color = vec3(visibility);
-    // Observe the shadow map.
-//    color = vec3(texture2D(shadowMapTex, ShadowCoord.xy).r);
-//    color = vec3(texture2D(shadowMapTex, ShadowCoord.xy).r) * 10.0f - 8.8f;
-//    color = vec3(texture(shadowMapTex, ShadowCoord.xy/ShadowCoord.w).r);
-//    color = vec3(texture(shadowMapTex, vertexPosition3DModel.xy).r);
 
-    // Observe distance from light : should not be divided by w !
-//    color = vec3(ShadowCoord.x*0.5+0.5);
-//    color = vec3(ShadowCoord.y*0.5+0.5);
-//    color = vec3(ShadowCoord.z);
-//    color = vec3(ShadowCoord.z/ShadowCoord.w);
-//    color = vec3(tmp2.x);
+//    color = shadowmap_screenshots(tmp2, visibility);
+//    color = shadowmap_screenshots(ShadowCoord, visibility);
+
 }

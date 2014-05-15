@@ -25,7 +25,8 @@ layout(location = 0) in vec2 vertexPosition2DModel;
 out vec3 vertexPosition3DModel;
 
 // Vertex position in light source clip space.
-out vec4 ShadowCoord;
+//out vec4
+out vec3 ShadowCoord;
 
 // Light and view directions.
 out vec3 lightDir, viewDir;
@@ -48,7 +49,9 @@ void main() {
     gl_Position = projection * vertexPositionCamera;
 
     // Vertex position in light source clip space.
-    ShadowCoord = lightOffsetMVP * vec4(vertexPosition3DModel, 1.0);
+    vec4 vertexPositionShadow = lightOffsetMVP * vec4(vertexPosition3DModel, 1.0);
+    // Shadow map texture coordinates with w division for perspective.
+    ShadowCoord = vertexPositionShadow.xyz / vertexPositionShadow.w * 0.5 + 0.5;
 
     // Light and view directions : subtraction of 2 points gives vector.
     // Camera space --> camera position at origin --> subtraction by [0,0,0].
