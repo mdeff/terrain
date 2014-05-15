@@ -34,17 +34,19 @@ GLuint Shadowmap::init(Vertices* vertices, GLuint heightMapTexID) {
     glGenTextures(1, &shadowMapTexID);
     glBindTexture(GL_TEXTURE_2D, shadowMapTexID);
 //goto test;
-    /// Depth format is unsigned integer, not float. We set it to 16 bits.
-    /// Can also be 32 bits : GL_DEPTH_COMPONENT32.
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, _width, _height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, 0);
+    /// Depth format is unsigned integer, not float. Set the number of bits.
+    // 16 bits : GL_DEPTH_COMPONENT16 & GL_UNSIGNED_SHORT
+    // 32 bits : GL_DEPTH_COMPONENT32 & GL_UNSIGNED_INT
+    // 16 bits is too low and create some artifacts.
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, _width, _height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, 0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     /// Texture comparison mode and operator for percentage closer filtering (PCF).
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 
     /// Attach the created texture to the depth attachment point.
     /// Hardware will copy pixel depth to the texture.

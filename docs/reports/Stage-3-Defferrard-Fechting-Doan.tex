@@ -48,6 +48,15 @@ The light direction was defined in stage 2 to be the same for all the vertices. 
 \subsection{Water animation}
 
 
+\subsection{Shadowmap}
+
+Divide by w for projection should be done before coordinates change from (-1,-1)x(1,1) to (0,0)x(1,1). It can thus not be integrated in the \texttt{lightMVP} matrix and should be computed by the shader.
+To save computations and GPU memory bandwidth (passing a \texttt{vec3} instead of a \texttt{vec4}), this can also be computed by the vertex shader.
+
+Or in vertex shader !
+
+16 bits is too low to store the depth value and creates some artifacts. Switching to 32 bits did remove these artifacts.
+
 \subsection{Vertices object}
 
 To achieve better modulation, we have separated the vertices creation code into a class hierarchy. The \texttt{Vertices} base class is an abstract class, declaring only virtual methods, which defines the interface. The \texttt{VerticesQuad}, \texttt{VerticesGrid} and \texttt{VerticesSkybox} inherit from it and implement the \texttt{generate} \texttt{draw} and \texttt{clean} methods which are specific to them. This design allows more than one \text{RenderingContext} object to share a \texttt{Vertices} object. The \texttt{Terrain} and \texttt{Shadowmap} makes use of this. It also offers better source code modularity.
