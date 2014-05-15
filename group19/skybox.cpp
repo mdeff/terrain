@@ -33,7 +33,7 @@ void Skybox::init(Vertices* vertices) {
 }
 
 
-void Skybox::draw(mat4& projection, mat4& modelview) const {
+void Skybox::draw(const mat4& projection, const mat4& modelview) const {
 
     /// Common drawing.
     RenderingContext::draw();
