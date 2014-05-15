@@ -27,7 +27,7 @@ void Watermap::init(Vertices* vertices/*, GLuint heightMapTexID, GLuint shadowMa
     load_texture("../../textures/water_normal_map_2.tga");
   
     set_texture(1, -1, "riverSurfaceMap", GL_TEXTURE_2D);
-    load_texture("../../textures/water.tga");
+    load_texture("../../textures/water_2.tga");
 
 
     /// Define light properties and pass them to the shaders.
@@ -62,6 +62,9 @@ void Watermap::draw(const mat4& projection, const mat4& modelview,
     glUniformMatrix4fv(_projectionID, 1, GL_FALSE, projection.data());
     glUniform3fv(_lightPositionModelID, 1, lightPositionModel.data());
   
+	/// Time value which animates water
+    static float time = 0;
+    glUniform1f(_timeID, int(time++)%5000);
 
     /// Map from light-coordinates in (-1,-1)x(1,1) to texture
     /// coordinates in (0,0)x(1,1).

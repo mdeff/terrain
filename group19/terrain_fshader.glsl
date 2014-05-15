@@ -3,9 +3,6 @@
 // Light properties.
 uniform vec3 Ia, Id, Is;
 
-// Time for water animation.
-uniform float time;
-
 // Texture 0. Defined by glActiveTexture and passed by glUniform1i.
 uniform sampler2D heightMapTex;
 

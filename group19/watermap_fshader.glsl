@@ -3,6 +3,9 @@
 //Light properties
 uniform vec3 Ia, Id, Is;
 
+//Time for water animation
+uniform float time;
+
 // Vertices 3D position (after heightmap displacement) in model space.
 in vec3 vertexPosition3DModel;
 
@@ -33,11 +36,12 @@ void main()
 	float power = 60.0f;
 	float ka, kd, ks;
 	ka = 0.6f;
-    kd = 0.3f;
-    ks = 0.5f;
+    kd = 0.4f;
+    ks = 0.6f;
 
 	//Get the texture value from texture map
-	vec3 material = texture2D(riverSurfaceMap, UV).rgb;
+	float time_tmp = time * 0.0002;
+	vec3 material = texture2D(riverSurfaceMap, vec2(UV.x + cos(time_tmp), UV.y + sin(time_tmp))).rgb;
 
 	 // Compute the ambient color component based on texture mapping.
     vec3 ambient = Ia * ka * material;

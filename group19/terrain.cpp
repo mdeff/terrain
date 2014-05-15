@@ -71,11 +71,7 @@ void Terrain::draw(const mat4& projection, const mat4& modelview,
     glUniformMatrix4fv(_modelviewID, 1, GL_FALSE, modelview.data());
     glUniformMatrix4fv(_projectionID, 1, GL_FALSE, projection.data());
     glUniform3fv(_lightPositionModelID, 1, lightPositionModel.data());
-
-    /// Time value which animates water.
-    // TODO: implement rollover ?
-    static float time = 0;
-    glUniform1f(_timeID, int(time++)%5000);
+ 
 
     /// Map from light-coordinates in (-1,-1)x(1,1) to texture
     /// coordinates in (0,0)x(1,1).
