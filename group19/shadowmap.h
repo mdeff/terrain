@@ -12,7 +12,7 @@ public:
     /// Common methods of all RenderingContext.
     Shadowmap(unsigned int width, unsigned int height);
     unsigned int init(Vertices* vertices, unsigned int heightMapTexID);
-    void draw(mat4& lightMVP) const;
+    void draw(const mat4& lightMVP) const;
 
 private:
 
