@@ -21,6 +21,7 @@ GLuint Shadowmap::init(Vertices* vertices, GLuint heightMapTexID) {
 
     /// Common initialization.
     RenderingContext::init(vertices, shadowmap_vshader, shadowmap_fshader, "vertexPosition2DModel", -1);
+//    RenderingContext::init(vertices, shadowmap_vshader, shadowmap_fshader, "vertexPosition2DModel");
 
     /// Bind the heightmap to texture 0.
     set_texture(0, heightMapTexID, "heightMapTex");
@@ -30,22 +31,25 @@ GLuint Shadowmap::init(Vertices* vertices, GLuint heightMapTexID) {
     /// slower than a depth buffer, but can be sampled later. No need to be
     /// binded to a texture index, but it is simpler to use the framework.
     GLuint shadowMapTexID = set_texture(1);
-
+//goto test;
     /// Depth format is unsigned integer, not float. We set it to 16 bits.
     /// Can also be 32 bits : GL_DEPTH_COMPONENT32.
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, _width, _height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, 0);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, _width, _height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, 0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+
+    /// Texture comparison mode and operator for percentage closer filtering (PCF).
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 
     /// Attach the created texture to the depth attachment point.
     /// Hardware will copy pixel depth to the texture.
     glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, shadowMapTexID, 0);
 
-    /// No (color) output buffer. Only depth is saved (by hardware).
+    /// Disable reads and writes from / to the color buffer as there is none.
+    glReadBuffer(GL_NONE);
     glDrawBuffer(GL_NONE);
 
     /// Check that our framebuffer is complete.
@@ -53,7 +57,7 @@ GLuint Shadowmap::init(Vertices* vertices, GLuint heightMapTexID) {
         std::cerr << "Shadowmap framebuffer not complete." << std::endl;
         exit(EXIT_FAILURE);
     }
-
+test:
     /// Set uniform IDs.
     _lightMatrixID = glGetUniformLocation(_programID, "lightMVP");
 
@@ -63,7 +67,7 @@ GLuint Shadowmap::init(Vertices* vertices, GLuint heightMapTexID) {
 }
 
 
-void Shadowmap::draw(mat4& lightMVP) const {
+void Shadowmap::draw(const mat4& lightMVP) const {
 
     /// Common drawing.
     RenderingContext::draw();
@@ -73,6 +77,7 @@ void Shadowmap::draw(mat4& lightMVP) const {
 
     /// Clear the framebuffer object.
     glClear(GL_DEPTH_BUFFER_BIT);
+//    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     /// Render the terrain from light source point of view to FBO.
     _vertices->draw(_vertexAttribID);

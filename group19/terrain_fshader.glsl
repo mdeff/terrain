@@ -16,8 +16,9 @@ uniform sampler2D sandTex, iceMoutainTex, treeTex, stoneTex, waterTex, snowTex;
 uniform sampler2D waterNormalMap;
 
 // Texture 8. Defined by glActiveTexture and passed by glUniform1i.
-uniform sampler2D shadowMapTex;
-//uniform sampler2DShadow shadowMapTex;
+// Shadow sampler for percentage closer filtering (PCF).
+//uniform sampler2D shadowMapTex;
+uniform sampler2DShadow shadowMapTex;
 
 // Vertices 3D position (after heightmap displacement) in model space.
 in vec3 vertexPosition3DModel;
@@ -151,11 +152,21 @@ void main() {
     vec3 specular = Is * ks * material * pow(max(dot(V,reflect(L,normal)),0.0),power);
 
     // Assemble the colors.
-    color = ambient + diffuse + specular;
+//    color = ambient + diffuse + specular;
 
+
+    // small epsilon to avoid Z-fighting
+    const float bias = 0.001;  // 0.001  0.00001
+
+//    vec3 UVC = vec3(ShadowCoord.xy/ShadowCoord.w, ShadowCoord.z/ShadowCoord.w + bias);
+    vec3 tmp1 = ShadowCoord.xyz / ShadowCoord.w;
+    vec3 tmp2 = ShadowCoord.xyz * 0.5 + 0.5;
+    vec3 UVC = vec3(tmp2.xy, ShadowCoord.z + bias);
+    float visibility = texture(shadowMapTex, UVC);
 
     //Shadow / visibility
-    float bias = 0.001;  // 0.001
+
+
     ///>>>>>>>>>> TODO >>>>>>>>>>>
     /// TODO: Practical 6.
     /// 2) query the visibility of ShadowCoord in shadowMap, bias the query by subtracting bias. What happens without bias?
@@ -165,14 +176,13 @@ void main() {
     // The texture only stores one component : r (red).
     // Z is the distance to the camera in camera space.
     // A perspective transformation is not affine, and as such, can't be represented entirely by a matrix. After beeing multiplied by the ProjectionMatrix, homogeneous coordinates are divided by their own W component. This W component happens to be -Z (because the projection matrix has been crafted this way). This way, points that are far away from the origin are divided by a big Z; their X and Y coordinates become smaller; points become more close to each other, objects seem smaller; and this is what gives the perspective.
-    float visibility = 1.0;
-    //if(texture(shadowMapTex, ShadowCoord.xy).r  <  ShadowCoord.z) {
-    //if(texture(shadowMapTex, ShadowCoord.xy).r < ShadowCoord.z - bias) {
-    //if(textureProj(shadowMapTex, ShadowCoord.xy).r < ShadowCoord.z - bias) {
-    if(texture(shadowMapTex, ShadowCoord.xy/ShadowCoord.w).r  <  (ShadowCoord.z-bias)/ShadowCoord.w) {
-    //if(textureProj(shadowMapTex, ShadowCoord.xyw).r  <  (ShadowCoord.z-bias)/ShadowCoord.w) {
-        visibility = 0.5;
-    }
+//    float visibility = 1.0;
+//    if(texture(shadowMapTex, ShadowCoord.xy).r  <  ShadowCoord.z) {
+//    if(texture(shadowMapTex, ShadowCoord.xy).r < ShadowCoord.z - bias) {
+//    if(texture(shadowMapTex, ShadowCoord.xy/ShadowCoord.w).r  <  (ShadowCoord.z-bias)/ShadowCoord.w) {
+//    if(textureProj(shadowMapTex, ShadowCoord.xyw).r < (ShadowCoord.z-bias)/ShadowCoord.w) {
+//        visibility = 0.5;
+//    }
 
 //    color =
 //     // Ambient : simulates indirect lighting
@@ -183,16 +193,19 @@ void main() {
 //     visibility * MaterialSpecularColor * LightColor * LightPower * pow(cosAlpha,5);
 
     color = ambient + visibility * diffuse + visibility * specular;
-//    color = visibility * diffuse + visibility * specular;
-//    color = visibility * diffuse;
+//    color = visibility * ambient;
 
+//    color = vec3(visibility);
     // Observe the shadow map.
-    //color = vec3(texture(shadowMapTex, ShadowCoord.xy).r);
-    //color = vec3(texture2D(shadowMapTex, ShadowCoord.xy).r);
-//    color = vec3(textureProj(shadowMapTex, ShadowCoord.xy).r);
+//    color = vec3(texture2D(shadowMapTex, ShadowCoord.xy).r);
+//    color = vec3(texture2D(shadowMapTex, ShadowCoord.xy).r) * 10.0f - 8.8f;
 //    color = vec3(texture(shadowMapTex, ShadowCoord.xy/ShadowCoord.w).r);
 //    color = vec3(texture(shadowMapTex, vertexPosition3DModel.xy).r);
 
-    // Observe distance from light.
-    //color = vec3(ShadowCoord.x);
+    // Observe distance from light : should not be divided by w !
+//    color = vec3(ShadowCoord.x*0.5+0.5);
+//    color = vec3(ShadowCoord.y*0.5+0.5);
+//    color = vec3(ShadowCoord.z);
+//    color = vec3(ShadowCoord.z/ShadowCoord.w);
+//    color = vec3(tmp2.x);
 }

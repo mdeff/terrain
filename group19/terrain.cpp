@@ -65,7 +65,8 @@ void Terrain::init(Vertices* vertices, GLuint heightMapTexID, GLuint shadowMapTe
 }
 
 
-void Terrain::draw(mat4& projection, mat4& modelview, mat4& lightMVP, vec3& lightPositionModel) const {
+void Terrain::draw(const mat4& projection, const mat4& modelview,
+                   const mat4& lightMVP, const vec3& lightPositionModel) const {
 
     /// Common drawing.
     RenderingContext::draw();
@@ -80,8 +81,8 @@ void Terrain::draw(mat4& projection, mat4& modelview, mat4& lightMVP, vec3& ligh
     static float time = 0;
     glUniform1f(_timeID, time++);
 
-    /// Map from light-coordinates in (-1,1)x(-1,1) to texture
-    /// coordinates in (0,1)x(0,1).
+    /// Map from light-coordinates in (-1,-1)x(1,1) to texture
+    /// coordinates in (0,0)x(1,1).
     mat4 offsetMatrix;
     offsetMatrix <<
             0.5f, 0.0f, 0.0f, 0.0f,
@@ -89,7 +90,7 @@ void Terrain::draw(mat4& projection, mat4& modelview, mat4& lightMVP, vec3& ligh
             0.0f, 0.0f, 0.5f, 0.0f,
             0.5f, 0.5f, 0.5f, 1.0f;
     mat4 lightOffsetMVP = offsetMatrix * lightMVP;
-    glUniformMatrix4fv(_lightOffsetMVPID, 1, GL_FALSE, lightOffsetMVP.data());
+    glUniformMatrix4fv(_lightOffsetMVPID, 1, GL_FALSE, lightMVP.data());
 
     /// Clear the screen framebuffer.
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

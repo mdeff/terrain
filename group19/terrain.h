@@ -12,7 +12,8 @@ public:
     /// Common methods of all RenderingContext.
     Terrain(unsigned int width, unsigned int height);
     void init(Vertices* vertices, unsigned int heightMapTexID, unsigned int shadowMapTexID);
-    void draw(mat4& projection, mat4& modelview, mat4& lightMVP, vec3& lightPositionModel) const;
+    void draw(const mat4& projection, const mat4& modelview,
+              const mat4& lightMVP, const vec3& lightPositionModel) const;
 
 private:
 
