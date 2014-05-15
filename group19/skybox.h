@@ -3,6 +3,7 @@
 #define __skybox_h__
 
 #include "rendering_context.h"
+#include <GL/glew.h>
 #include "opengp.h"
 
 class Skybox : public RenderingContext {

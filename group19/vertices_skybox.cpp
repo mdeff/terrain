@@ -55,7 +55,7 @@ void VerticesSkybox::generate() {
     /// Copy the vertices to GPU in a vertex buffer (VBO).
     glGenBuffers(1, &_vertexBufferID);
     glBindBuffer(GL_ARRAY_BUFFER, _vertexBufferID);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
 }
 
@@ -81,6 +81,7 @@ void VerticesSkybox::draw(GLuint vertexAttribID) const {
 
     /// No need to disable the vertex attribute as the array is only pointed
     /// by one attribute.
+    glDisableVertexAttribArray(vertexAttribID);
 
 }
 

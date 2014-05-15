@@ -4,16 +4,14 @@
 #include <sstream>
 
 #include "common.h"
-#include "terrain.h"
+#include "heightmap.h"
 #include "shadowmap.h"
 #include "skybox.h"
+#include "terrain.h"
 #include "vertices.h"
+#include "vertices_quad.h"
 #include "vertices_grid.h"
 #include "vertices_skybox.h"
-
-/// No need to put only this declaration in a separate header.
-extern GLuint gen_heightmap();
-//extern GLuint gen_test_heightmap();
 
 /// Screen size.
 const int windowWidth(1024);
@@ -24,9 +22,9 @@ const int textureWidth(1024);
 const int textureHeight(768);
 
 /// Instanciate the rendering contexts.
-Terrain terrain(windowWidth, windowHeight);
-Skybox skybox(windowWidth, windowHeight);
 Shadowmap shadowmap(textureWidth, textureHeight);
+Skybox skybox(windowWidth, windowHeight);
+Terrain terrain(windowWidth, windowHeight);
 
 /// Instanciate the vertices.
 Vertices* verticesGrid = new VerticesGrid();
@@ -59,22 +57,20 @@ void update_matrix_stack(const mat4& model) {
 
     /// View matrix (camera extrinsics) (position in world space).
     /// Camera is in the sky, looking down.
-    //vec3 camPos(0.0f, -3.0f, 4.0f);
-    vec3 camLookAt(-0.3f, 0.1f, 0.5f);
+    vec3 camPos(0.0f, -3.0f, 4.0f);
+    vec3 camLookAt(0.0f, 0.0f, 0.0f);
     vec3 camUp(0.0f, 0.0f, 1.0f);
     /// Camera is right on top, comparison with light position.
-
     //camPos = vec3(0.0, 0.0, 5.0);
     //camLookAt = vec3(0.0, 0.0, 0.0);
     //camUp = vec3(1.0, 0.0, 0.0);
-
-//    camPos = vec3(0.0, 0.0, 5.0);
-//    camLookAt = vec3(0.0, 0.0, 0.0);
-//    camUp = vec3(1.0, 0.0, 0.0);
-
     /// Camera is in a corner, looking down to the terrain.
     //vec3 camPos(2.0f, -2.0f, 2.5f);
+<<<<<<< HEAD
     vec3 camPos(0.9f, -0.8f,3.0f); // Close texture view.
+=======
+//    vec3 camPos(0.9f, -0.8f, 0.7f); // Close texture view.
+>>>>>>> 867c6b48df6df6ef0dbc5d433d41c29481dca5ca
     //vec3 camPos(0.8f, 1.2f, 2.0f);
     /// View from center.
 //    vec3 camPos(0.9f, -0.8f, 1.0f);
@@ -144,13 +140,14 @@ void init() {
     //glEnable(GL_CULL_FACE);
 
     /// Generate the heightmap texture.
-    //GLuint heightMapTexID = gen_test_heightmap();
-    GLuint heightMapTexID = gen_heightmap();
-
-    /// Set the screen framebuffer back as the rendering target and specify
-    /// the transformation from normalized device coordinates to window coordinates.
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glViewport(0, 0, windowWidth, windowHeight);
+    Vertices* verticesQuad = new VerticesQuad();
+    verticesQuad->generate();
+    Heightmap heightmap(textureWidth, textureHeight);
+    GLuint heightMapTexID = heightmap.init(verticesQuad);
+    heightmap.draw();
+    heightmap.clean();
+    verticesQuad->clean();
+    delete verticesQuad;
 
     /// Generate the vertices.
     verticesGrid->generate();
@@ -160,8 +157,6 @@ void init() {
     GLuint shadowMapTexID = shadowmap.init(verticesGrid, heightMapTexID);
     terrain.init(verticesGrid, heightMapTexID, shadowMapTexID);
     skybox.init(verticesSkybox);
-
-    std::cerr << heightMapTexID << " " << shadowMapTexID << std::endl;
 
     /// Initialize the matrix stack.  	
 	update_matrix_stack(mat4::Identity());

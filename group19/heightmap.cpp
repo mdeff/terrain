@@ -1,21 +1,103 @@
 
+#include "heightmap.h"
+#include "vertices.h"
+
 #include <cstdlib>
 #include <iostream>
 
 #include <GL/glew.h>
+#include <GL/glfw.h>
 #include "opengp.h"
 
 #include "heightmap_vshader.h"
 #include "heightmap_fshader.h"
 
 
-/// Generate a simple height map texture for test purpose.
-GLuint gen_test_heightmap() {
+Heightmap::Heightmap(unsigned int width, unsigned int height) :
+    RenderingContext(width, height) {
+}
+
+
+GLuint Heightmap::init(Vertices* vertices) {
+
+    /// Common initialization.
+    RenderingContext::init(vertices, heightmap_vshader, heightmap_fshader, "vertexPosition2D", -1);
+
+    /// Create and bind the permutation table to texture 0.
+    GLuint permTableTexID = gen_permutation_table();
+    set_texture(0, permTableTexID, "permTableTex", GL_TEXTURE_1D);
+
+    /// Create and bind the gradient vectors to texture 1.
+    GLuint gradVectTexID = gen_gradient_vectors();
+    set_texture(1, gradVectTexID, "gradVectTex", GL_TEXTURE_1D);
+
+    /// Create and bind to texture 2 the texture which will contain the
+    /// color output (the actual height map) of our shader. No need to be
+    /// binded to a texture index, but it is simpler to use the framework.
+    GLuint heightMapTexID;
+    glGenTextures(1, &heightMapTexID);
+    glBindTexture(GL_TEXTURE_2D, heightMapTexID);
+
+    /// Empty image (no data), one color component, unclamped 32 bits float.
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, _width, _height, 0, GL_RED, GL_FLOAT, 0);
+
+    /// Clamp texture coordinates to the [0,1] range. It is wrapped by default
+    /// (GL_REPEAT), which creates artifacts at the terrain borders.
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    /// Simple filtering (needed).
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    // Filtering
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    //// Nice trilinear filtering.
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+//    glGenerateMipmap(GL_TEXTURE_2D);
+
+    /// Attach the created texture to the first color attachment point.
+    /// The texture becomes the fragment shader first output buffer.
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, heightMapTexID, 0);
+    GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0};
+    glDrawBuffers(sizeof(drawBuffers)/sizeof(GLenum), drawBuffers);
+
+    /// Check that our framebuffer is complete.
+    if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        std::cerr << "Heightmap framebuffer not complete." << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    /// Return the heightmap texture ID (for the terrain).
+    return heightMapTexID;
+
+}
+
+
+void Heightmap::draw() const {
+
+    /// Common drawing.
+    RenderingContext::draw();
+
+    /// Update the content of the uniforms.
+
+    /// Clear the framebuffer object.
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    /// Render the height map to FBO.
+    _vertices->draw(_vertexAttribID);
+
+}
+
+
+
+GLuint Heightmap::test() const {
 
     /// Create and bind the texture.
-    GLuint textureID;
-    glGenTextures(1, &textureID);
-    glBindTexture(GL_TEXTURE_2D, textureID);
+    GLuint heightMapTexID;
+    glGenTextures(1, &heightMapTexID);
+    glBindTexture(GL_TEXTURE_2D, heightMapTexID);
 
     /// Flat terrain.
     //GLfloat pixels[] = {1.0f};
@@ -38,46 +120,43 @@ GLuint gen_test_heightmap() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
     /// Return the height map texture ID.
-    return textureID;
+    return heightMapTexID;
 
 }
 
 
-GLuint gen_permutation_table(GLuint programID) {
+GLuint Heightmap::gen_permutation_table() const {
 
     /// Pseudo-randomly generate the permutation table.
     const int size(256);
-//    GLubyte permutationTable[size];
+    // GLubyte permutationTable[size];
     GLfloat permutationTable[size];
     for(int k=0; k<size; ++k)
         permutationTable[k] = k;
 
-    // Seed the pseudo-random generator for reproductability.
+    /// Seed the pseudo-random generator for reproductability.
     std::srand(10);
 
-    // Fisher-Yates / Knuth shuffle.
-//    GLubyte tmp;
-    GLfloat tmp;
+    /// Fisher-Yates / Knuth shuffle.
+    // GLubyte tmp;
     for(int k=size-1; k>0; --k) {
         // Random number with 0 <= rnd <= k.
         GLuint idx = int(float(k) * std::rand() / RAND_MAX);
-        tmp = permutationTable[k];
+        GLfloat tmp = permutationTable[k];
         permutationTable[k] = permutationTable[idx];
         permutationTable[idx] = tmp;
     }
 
-    // Print the permutation table.
-    //for(int k=0; k<size; ++k)
-    //    cout << permutationTable[k] << " ";
+    /// Print the permutation table.
+    // for(int k=0; k<size; ++k)
+    //     cout << permutationTable[k] << " ";
 
-    /// Bind the permutation table to texture 0.
-    const GLuint permTableTex = 0;
-    glActiveTexture(GL_TEXTURE0+permTableTex);
-    GLuint uniformID = glGetUniformLocation(programID, "permTableTex");
-    glUniform1i(uniformID, permTableTex);
+    /// Create the texture.
     GLuint permTableTexID;
     glGenTextures(1, &permTableTexID);
     glBindTexture(GL_TEXTURE_1D, permTableTexID);
+
+    /// Copy the permutation table to GPU.
     //glBindSampler(0, linearFiltering);
     // Filled image, one color component, unclamped 32 bits float.
     // GL_R8UI or GL_R32I does not work on my machine.
@@ -99,11 +178,11 @@ GLuint gen_permutation_table(GLuint programID) {
 }
 
 
-GLuint gen_gradient_vectors(GLuint programID) {
+GLuint Heightmap::gen_gradient_vectors() const {
 
     /// Gradients for 2D noise.
-    //static GLbyte gradients[nVectors*dim] = {
-    static GLfloat gradients[] = {
+    // const GLbyte gradients[nVectors*dim] = {
+    const GLfloat gradients[] = {
         1.0f,  1.0f,
        -1.0f,  1.0f,
         1.0f, -1.0f,
@@ -113,19 +192,18 @@ GLuint gen_gradient_vectors(GLuint programID) {
         1.0f,  0.0f,
        -1.0f,  0.0f,
     };
+    const int nGradients = sizeof(gradients) / sizeof(GLfloat) / 2;
 
-    /// Bind the gradient vectors to texture 1.
-    const GLuint gradVectTex = 1;
-    glActiveTexture(GL_TEXTURE0+gradVectTex);
-    GLuint uniformID = glGetUniformLocation(programID, "gradVectTex");
-    glUniform1i(uniformID, gradVectTex);
+    /// Create the texture.
     GLuint gradVectTexID;
     glGenTextures(1, &gradVectTexID);
     glBindTexture(GL_TEXTURE_1D, gradVectTexID);
+
+    /// Copy the gradient vectors to GPU.
     // Filled image, two color components, unclamped 32 bits float.
     // GL_RG8I does not work on my machine.
     //glTexImage1D(GL_TEXTURE_1D, 0, GL_RG8I, nVectors, 0, GL_RG, GL_BYTE, gradients);
-    glTexImage1D(GL_TEXTURE_1D, 0, GL_RG32F, 8, 0, GL_RG, GL_FLOAT, gradients);
+    glTexImage1D(GL_TEXTURE_1D, 0, GL_RG32F, nGradients, 0, GL_RG, GL_FLOAT, gradients);
 
     /// Set the texture addressing to wrap (or repeat) mode, so we don't have to
     /// worry about extending the table to avoid indexing past the end of the array.
@@ -138,110 +216,5 @@ GLuint gen_gradient_vectors(GLuint programID) {
     glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
     return gradVectTexID;
-
-}
-
-
-/// Generate the heightmap texture.
-GLuint gen_heightmap() {
-
-    /// Height map texture size.
-    const int texWidth(1024);
-    const int texHeight(1024);
-
-    /// Vertex array.
-    GLuint vertexArrayID;
-    glGenVertexArrays(1, &vertexArrayID);
-    glBindVertexArray(vertexArrayID);
-
-    /// Compile and install the heightmap shaders.
-    GLuint programID = opengp::compile_shaders(heightmap_vshader, heightmap_fshader, 0, 0, 0);
-    if(!programID)
-        exit(EXIT_FAILURE);
-    glUseProgram(programID);
-
-    /// Create a framebuffer (container for textures, and an optional depth buffer).
-    /// The height map will be rendered to this FBO instead of the screen.
-    /// Specify the transformation from normalized device coordinates to texture coordinates.
-    GLuint frameBufferID;
-    glGenFramebuffers(1, &frameBufferID);
-    glBindFramebuffer(GL_FRAMEBUFFER, frameBufferID);
-    glViewport(0, 0, texWidth, texHeight);
-
-    /// Create the two input textures.
-    GLuint permTableTexID = gen_permutation_table(programID);
-    GLuint gradVectTexID = gen_gradient_vectors(programID);
-
-    /// Create the texture which will contain the color output
-    /// (the actual height map) of our shader.
-    GLuint heightMapTexID;
-    glGenTextures(1, &heightMapTexID);
-    glBindTexture(GL_TEXTURE_2D, heightMapTexID);
-    // Empty image (no data), one color component, unclamped 32 bits float.
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, texWidth, texHeight, 0, GL_RED, GL_FLOAT, 0);
-
-    /// Clamp texture coordinates to the [0,1] range. It is wrapped by default
-    /// (GL_REPEAT), which creates artifacts at the terrain borders.
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    // Simple filtering (needed).
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    // Filtering
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    //// Nice trilinear filtering.
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-//    glGenerateMipmap(GL_TEXTURE_2D);
-
-    /// Attach the created texture to the first color attachment point.
-    /// The texture becomes the fragment shader first output buffer.
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, heightMapTexID, 0);
-//    GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0};
-//    glDrawBuffers(1, drawBuffers);
-
-    /// Check that our framebuffer is complete.
-    if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        std::cerr << "Heightmap framebuffer not complete." << std::endl;
-        exit(EXIT_FAILURE);
-    }
-
-    /// Fullscreen quad : fragment shader is executed on evey pixel of the texture.
-    const GLfloat vertices[] = {
-        -1.0f, -1.0f, 0.0f,
-         1.0f, -1.0f, 0.0f,
-        -1.0f,  1.0f, 0.0f,
-        -1.0f,  1.0f, 0.0f,
-         1.0f, -1.0f, 0.0f,
-         1.0f,  1.0f, 0.0f,
-    };
-    GLuint vertexBufferID;
-    glGenBuffers(1, &vertexBufferID);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    /// Vertex attribute "position" points to the binded buffer.
-    GLuint positionID = glGetAttribLocation(programID, "position");
-    glEnableVertexAttribArray(positionID);
-    // vec3: 3 floats per vertex for the position attribute.
-    glVertexAttribPointer(positionID, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
-    /// Render the 2 triangles (6 vertices).
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glDrawArrays(GL_TRIANGLES, 0, sizeof(vertices)/3);
-
-    /// Clean up the now useless objects to free GPU memory.
-    glDisableVertexAttribArray(positionID);
-    glDeleteBuffers(1, &vertexBufferID);
-    glDeleteTextures(1, &gradVectTexID);
-    glDeleteTextures(1, &permTableTexID);
-    glDeleteFramebuffers(1, &frameBufferID);
-    glDeleteProgram(programID);
-    glDeleteVertexArrays(1, &vertexArrayID);
-
-    /// Return the height map texture ID.
-    return heightMapTexID;
 
 }

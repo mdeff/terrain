@@ -2,9 +2,6 @@
 #ifndef __rendering_context_h__
 #define __rendering_context_h__
 
-#include <string>
-#include <GL/glew.h>
-
 /// Forward declarations (no header includes) (namespace pollution, build time).
 class Vertices;
 
@@ -24,7 +21,7 @@ protected:
     void draw() const;
 
     /// Helper function.
-    unsigned int set_texture(unsigned int textureIndex, int textureID = -1, std::string uniformName = "", unsigned int target = GL_TEXTURE_2D);
+    void set_texture(unsigned int textureIndex, int textureID, const char* uniformName, unsigned int target);
 
     /// Common properties of all RenderingContext.
     unsigned int _width, _height;
@@ -40,8 +37,12 @@ private:
     unsigned int _frameBufferID;
 
     /// Textures.
+    struct texture {
+        int ID;
+        unsigned int target;
+    };
     static const int _nTextures = 20;
-    unsigned int _textureIDs[_nTextures];
+    struct texture _textures[_nTextures];
 
 };
 
