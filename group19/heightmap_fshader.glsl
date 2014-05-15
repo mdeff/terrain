@@ -359,8 +359,8 @@ void main() {
     else
         height = (hybridMultifractal2(position2.xy, 0.5f, 0.2f, 5, 0.2f));
     // Ground floor (lake).
-    if (height < 0.0f)
-        height = 0.0f;
+    //if (height < 0.0f)
+        //height = 0.0f;
 
 	//height = (multifractal(position2.xy, 0.25f, 4.0f, 5, 0.75f) / 4.0f)-0.15f;
 

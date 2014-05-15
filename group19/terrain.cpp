@@ -72,7 +72,7 @@ void Terrain::init(Vertices* vertices, GLuint heightMapTexID, GLuint shadowMapTe
 void Terrain::draw(const mat4& projection, const mat4& modelview,
                    const mat4& lightMVP, const vec3& lightPositionModel) const {
 
-    /// Common drawing.
+    /// Common drawing. 
     RenderingContext::draw();
 
     /// Update the content of the uniforms.
