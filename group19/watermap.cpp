@@ -1,6 +1,7 @@
 #include "watermap.h"
 #include "vertices.h"
 
+
 #include <cstdlib>
 #include <iostream>
 
@@ -12,21 +13,25 @@
 #include "watermap_fshader.h"
 
 Watermap::Watermap(unsigned int width, unsigned int height) :
-    RenderingContext(width, height) {
+    RenderingContext(width, height), reflection(width, height) {
+	 //initialization the reflection class as well
+	
 }
 
 	
-void Watermap::init(Vertices* vertices/*, GLuint heightMapTexID, GLuint shadowMapTexID*/) {
+void Watermap::init(Vertices* vertices , GLuint heightMapTexID) {
 
     /// Common initialization.
 	RenderingContext::init(vertices, watermap_vshader, watermap_fshader, "vertexPosition2DModel");
 
+	//init the reflection context as well
+	//reflectionID = reflection.init(vertices, heightMapTexID);
     
 	/* Load texture for water surface */
-	set_texture(0, -1, "waterNormalMap", GL_TEXTURE_2D);
+	set_texture(2, -1, "waterNormalMap", GL_TEXTURE_2D);
     load_texture("../../textures/water_normal_map_2.tga");
   
-    set_texture(1, -1, "riverSurfaceMap", GL_TEXTURE_2D);
+    set_texture(3, -1, "riverSurfaceMap", GL_TEXTURE_2D);
     load_texture("../../textures/water_2.tga");
 
 
@@ -53,6 +58,8 @@ void Watermap::init(Vertices* vertices/*, GLuint heightMapTexID, GLuint shadowMa
 
 void Watermap::draw(const mat4& projection, const mat4& modelview,
                    const mat4& lightMVP, const vec3& lightPositionModel) const {
+	//First draw the reflection
+	//reflection.draw(lightMVP);
 
     /// Common drawing. 
     RenderingContext::draw();

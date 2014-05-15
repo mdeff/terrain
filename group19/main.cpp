@@ -159,7 +159,7 @@ void init() {
     GLuint shadowMapTexID = shadowmap.init(verticesGrid, heightMapTexID);
     terrain.init(verticesGrid, heightMapTexID, shadowMapTexID);
     skybox.init(verticesSkybox);
-	water.init(verticesGrid);
+	water.init(verticesGrid, heightMapTexID);
 
     /// Initialize the matrix stack.  	
 	update_matrix_stack(mat4::Identity());

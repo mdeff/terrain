@@ -116,7 +116,7 @@ void main() {
     // Specular lightning only relevant for water surfaces.
     float power = 60.0f;
     float ka, kd, ks;   
-    ka = 0.3f;
+    ka = 0.4f;
     kd = 0.7f;
     ks = 0.0f;
   
