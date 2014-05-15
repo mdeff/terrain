@@ -36,13 +36,17 @@ void Terrain::init(Vertices* vertices, GLuint heightMapTexID, GLuint shadowMapTe
     set_texture(5, -1, "stoneTex");
     load_texture("../../textures/stone_2.tga");
     set_texture(6, -1, "waterTex");
-    load_texture("../../textures/water.tga");
+    load_texture("../../textures/water_2.tga");
     set_texture(7, -1, "snowTex");
     load_texture("../../textures/snow.tga");
+
 
     /// Load the normal map for water lightning to texture 8.
     set_texture(8, -1, "waterNormalMap");
     load_texture("../../textures/water_normal_map_2.tga");
+
+	set_texture(9,-1, "riverSurfaceMap");
+	load_texture("../../textures/river.tga");
 
     /// Define light properties and pass them to the shaders.
     vec3 Ia(1.0f, 1.0f, 1.0f);
@@ -78,7 +82,7 @@ void Terrain::draw(mat4& projection, mat4& modelview, mat4& lightMVP, vec3& ligh
     /// Time value which animates water.
     // TODO: implement rollover ?
     static float time = 0;
-    glUniform1f(_timeID, time++);
+    glUniform1f(_timeID, int(time++)%5000);
 
     /// Map from light-coordinates in (-1,1)x(-1,1) to texture
     /// coordinates in (0,1)x(0,1).

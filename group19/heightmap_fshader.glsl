@@ -362,6 +362,8 @@ void main() {
     if (height < 0.0f)
         height = 0.0f;
 
+	//height = (multifractal(position2.xy, 0.25f, 4.0f, 5, 0.75f) / 4.0f)-0.15f;
+
 }
 
 
