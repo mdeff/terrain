@@ -21,7 +21,7 @@ private:
     /// Uniform IDs.
     unsigned int _modelviewID;
     unsigned int _projectionID;
-    unsigned int _lightOffsetMVPID;
+    unsigned int _lightMVPID;
     unsigned int _lightPositionModelID;
     unsigned int _timeID;
 

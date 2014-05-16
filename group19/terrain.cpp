@@ -54,7 +54,7 @@ void Terrain::init(Vertices* vertices, GLuint heightMapTexID, GLuint shadowMapTe
     /// Set uniform IDs.
     _modelviewID = glGetUniformLocation(_programID, "modelview");
     _projectionID = glGetUniformLocation(_programID, "projection");
-    _lightOffsetMVPID = glGetUniformLocation(_programID, "lightOffsetMVP");
+    _lightMVPID = glGetUniformLocation(_programID, "lightMVP");
     _lightPositionModelID = glGetUniformLocation(_programID, "lightPositionModel");
     _timeID = glGetUniformLocation(_programID, "time");
 
@@ -70,19 +70,8 @@ void Terrain::draw(const mat4& projection, const mat4& modelview,
     /// Update the content of the uniforms.
     glUniformMatrix4fv(_modelviewID, 1, GL_FALSE, modelview.data());
     glUniformMatrix4fv(_projectionID, 1, GL_FALSE, projection.data());
+    glUniformMatrix4fv(_lightMVPID, 1, GL_FALSE, lightMVP.data());
     glUniform3fv(_lightPositionModelID, 1, lightPositionModel.data());
- 
-
-    /// Map from light-coordinates in (-1,-1)x(1,1) to texture
-    /// coordinates in (0,0)x(1,1).
-    mat4 offsetMatrix;
-    offsetMatrix <<
-            0.5f, 0.0f, 0.0f, 0.0f,
-            0.0f, 0.5f, 0.0f, 0.0f,
-            0.0f, 0.0f, 0.5f, 0.0f,
-            0.5f, 0.5f, 0.5f, 1.0f;
-    mat4 lightOffsetMVP = offsetMatrix * lightMVP;
-    glUniformMatrix4fv(_lightOffsetMVPID, 1, GL_FALSE, lightMVP.data());
 
     /// Clear the screen framebuffer.
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

@@ -9,7 +9,7 @@ uniform sampler2D heightMapTex;
 // Texture 1. Defined by glActiveTexture and passed by glUniform1i.
 // Shadow sampler for percentage closer filtering (PCF).
 uniform sampler2D shadowMapTex;
-uniform sampler2DShadow shadowMapTex;
+//uniform sampler2DShadow shadowMapTex;
 
 // Environmental textures 2-7. Defined by glActiveTexture and passed by glUniform1i.
 uniform sampler2D sandTex, iceMoutainTex, treeTex, stoneTex, underWaterTex, snowTex;
@@ -40,7 +40,7 @@ const float snowMax = 0.425;
 vec3 compute_normal(vec3 position) {
 
     const ivec3 off = ivec3(-1, 0, 1);
-    int width = textureSize(heightMapTex).x;
+//    int width = textureSize(heightMapTex).x;
     const vec2 size = vec2(2.0/1024.0, 0.0);   //1024 is the size of the generated height map
 
     //current UV coordinate
