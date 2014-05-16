@@ -57,6 +57,26 @@ Or in vertex shader !
 
 16 bits is too low to store the depth value and creates some artifacts. Switching to 32 bits did remove these artifacts.
 
+The choice of the bias, used when comparing the distance to light with the one stored in the shadowmap has an impact. A too low value will result in Z-buffer fighting (fig.~\ref{shadowmap_bias_no}) while a too big value will result in shadow errors (fig.~\ref{shadowmap_bias_big}). A good compromise should be found (fig.~\ref{shadowmap_bias_ok}).
+
+\begin{figure}[ht]
+	\centering
+	\subfloat[No bias]{
+		\label{shadowmap_bias_no}
+		\includegraphics[height=3cm]{{{img_stage3/shadowmap_bias_no}}}
+	} \quad
+	\subfloat[Good value]{
+		\label{shadowmap_bias_ok}
+		\includegraphics[height=3cm]{{{img_stage3/shadowmap_bias_ok}}}
+	} \quad
+	\subfloat[Too big value]{
+		\label{shadowmap_bias_big}
+		\includegraphics[height=3cm]{{{img_stage3/shadowmap_bias_big}}}
+	}
+	\caption{Shadowmap with different bias values}
+	\label{shadowmap_bias}
+\end{figure}
+
 \subsection{Vertices object}
 
 To achieve better modulation, we have separated the vertices creation code into a class hierarchy. The \texttt{Vertices} base class is an abstract class, declaring only virtual methods, which defines the interface. The \texttt{VerticesQuad}, \texttt{VerticesGrid} and \texttt{VerticesSkybox} inherit from it and implement the \texttt{generate} \texttt{draw} and \texttt{clean} methods which are specific to them. This design allows more than one \text{RenderingContext} object to share a \texttt{Vertices} object. The \texttt{Terrain} and \texttt{Shadowmap} makes use of this. It also offers better source code modularity.
