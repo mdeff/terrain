@@ -8,7 +8,7 @@ uniform sampler2D heightMapTex;
 
 // Texture 1. Defined by glActiveTexture and passed by glUniform1i.
 // Shadow sampler for percentage closer filtering (PCF).
-uniform sampler2D shadowMapTex;
+//uniform sampler2D shadowMapTex;
 uniform sampler2DShadow shadowMapTex;
 
 // Environmental textures 2-7. Defined by glActiveTexture and passed by glUniform1i.
@@ -23,8 +23,7 @@ in vec3 ShadowCoord;
 // Light and view directions.
 in vec3 lightDir, viewDir;
 
-// First output buffer is pixel color.
-// gl_FragColor
+// First output buffer is pixel color (gl_FragColor).
 layout(location = 0) out vec3 color;
 
 
@@ -40,7 +39,7 @@ const float snowMax = 0.425;
 vec3 compute_normal(vec3 position) {
 
     const ivec3 off = ivec3(-1, 0, 1);
-    int width = textureSize(heightMapTex).x;
+//    int width = textureSize(heightMapTex).x;
     const vec2 size = vec2(2.0/1024.0, 0.0);   //1024 is the size of the generated height map
 
     //current UV coordinate
@@ -59,6 +58,7 @@ vec3 compute_normal(vec3 position) {
     vec3 normal = vec3(tmp.xy, 2*tmp.z);
     
     return normalize(normal);
+
 }
 
 
@@ -98,26 +98,6 @@ vec3 texture_mapping(vec3 position, vec3 normal) {
     }
 
     return mapped;
-}
-
-
-// Useful for screenshots to be included in report.
-vec3 shadowmap_screenshots(vec3 coord, float visibility) {
-
-    vec3 output;
-
-    // Observe the shadow map.
-//    output = vec3(texture(shadowMapTex, coord.xy).r) * 10.0f - 8.8f;
-
-    // Observe distance from light (nice for screenshots).
-//    output = vec3(coord.x);
-//    output = vec3(coord.y);
-//    output = vec3(coord.z) * 10.0f - 8.8f;
-
-    // Observe the shadow.
-    output = vec3(visibility);
-
-    return output;
 
 }
 
@@ -130,16 +110,16 @@ float shadowmap(vec3 coord) {
     // The texture only stores one component : r (red).
     // Z is the distance to the camera in camera space.
 
-    // Basic shadow test.
-    float visibility = 1.0;
-    if(texture(shadowMapTex, coord.xy).r  <  (coord.z-bias)) {
-        visibility = 0.0;
-    }
+    // Simple binary shadow test.
+//    float visibility = 1.0;
+//    if(texture(shadowMapTex, coord.xy).r  <  (coord.z-bias)) {
+//        visibility = 0.0;
+//    }
 
     // Percentage closer filtering (PCF).
     // Need sampler2DShadow and compare function in texture parameters.
-//    vec3 UVC = vec3(ShadowCoord.xy, ShadowCoord.z-bias);
-//    float visibility = texture(shadowMapTex, UVC);
+    vec3 UVC = vec3(coord.xy, coord.z-bias);
+    float visibility = texture(shadowMapTex, UVC);
 
     return visibility;
 
@@ -179,8 +159,5 @@ void main() {
 
     // Assemble the colors.
     color = ambient + visibility * diffuse + visibility * specular;
-
-    // For shadowmap screenshots.
-//    color = shadowmap_screenshots(ShadowCoord, visibility);
 
 }

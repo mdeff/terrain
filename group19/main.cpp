@@ -20,7 +20,7 @@ const int windowHeight(768);
 
 /// Textures (heightmap and shadowmap) sizes.
 const int textureWidth(1024);
-const int textureHeight(768);
+const int textureHeight(1024);
 
 /// Instanciate the rendering contexts.
 Shadowmap shadowmap(textureWidth, textureHeight);
@@ -58,24 +58,23 @@ const mat4 lightProjection = Eigen::perspective(fieldOfView, float(textureWidth)
 void update_matrix_stack(const mat4& model) {
 
     /// View matrix (camera extrinsics) (position in world space).
-    /// Camera is in the sky, looking down.
+
+    /// Global view from outside.
     vec3 camPos(0.0f, -3.0f, 4.0f);
     vec3 camLookAt(0.0f, 0.0f, 0.0f);
     vec3 camUp(0.0f, 0.0f, 1.0f);
-    /// Camera is right on top, comparison with light position.
-    //camPos = vec3(0.0, 0.0, 5.0);
-    //camLookAt = vec3(0.0, 0.0, 0.0);
 
-    //camUp = vec3(1.0, 0.0, 0.0);
-    /// Camera is in a corner, looking down to the terrain.
-    //vec3 camPos(2.0f, -2.0f, 2.5f);
-    //vec3 camPos(1.0f, 0.0f,0.7f); // Close texture view.
-//    vec3 camPos(0.9f, -0.8f, 0.7f); // Close texture view.
-
-    /// View from center.
+    /// Internal view from center.
 //    vec3 camPos(0.9f, -0.8f, 1.0f);
 //    vec3 camLookAt(-0.3f, 0.1f, 0.5f);
 //    vec3 camUp(0.0f, 0.0f, 1.0f);
+
+    /// Close texture view, for screenshots.
+//    vec3 camPos(0.2f, -0.1f, 0.5f);
+//    vec3 camLookAt(-0.3f, 0.1f, 0.2f);
+//    vec3 camUp(0.0f, 0.0f, 1.0f);
+
+    /// Assemble the view matrix.
     mat4 view = Eigen::lookAt(camPos, camLookAt, camUp);
 
     /// Assemble the "Model View" matrix.
@@ -94,12 +93,11 @@ void GLFWCALL keyboard_callback(int key, int action) {
 
         //std::cout << "Pressed key : " << key << std::endl;
 
-        /// 49 corressponds to 1 (keyboard top), 57 to 9.
+        /// 49 corressponds to 1, 57 to 9 (keyboard top keys).
         if(key >= 49 && key <= 57) {
 
             /// Angle from 0° (key 1) to 90° (key 9).
             float theta = M_PI / 8.0f * float(key-49);
-//            float theta = M_PI/4.0f + M_PI / 16.0f * float(key-49);
 
             /// Position from sunrise (-r,0,0) to noon (0,0,r).
             lightPositionModel = vec3(-std::cos(theta)*r, 0.0, std::sin(theta)*r);
@@ -109,21 +107,8 @@ void GLFWCALL keyboard_callback(int key, int action) {
             const vec3 lightUp(0.0, 1.0, 0.0);
             mat4 lightView = Eigen::lookAt(lightPositionModel, lightLookAt, lightUp);
 
-            /// Moving light source position (model coordinates).
-        //    static float t = 0.0f;
-        //    t += 0.01f;
-        //    lightPositionModel = vec3(3.0*std::sin(t), 3.0, 3.0*std::cos(t));
-        //    vec3 lightLookAt(0.0, 0.0, 0.0);
-        //    vec3 lightUp(0.0, 1.0, 0.0);
-        //    mat4 lightView = Eigen::lookAt(lightPositionModel, lightLookAt, lightUp);
-
             /// Assemble the lightMVP matrix for a spotlight source.
             lightMVP = lightProjection * lightView;
-
-
-
-            /// Assemble the "Model View" matrix.
-//            cameraModelview = lightView;
         }
     }
 }
@@ -166,6 +151,8 @@ void init() {
     keyboard_callback(49, GLFW_PRESS);
 
 }
+
+
 void handleKeyboard(){
 	
 	static double posX = 1.0f;
@@ -405,6 +392,7 @@ void handleKeyboard(){
 
 }
 
+
 void display() {
 
     /// Measure and print FPS (every second).
@@ -425,9 +413,8 @@ void display() {
     /// Render shadowmap, terrain and skybox.
     shadowmap.draw(lightMVP);
     terrain.draw(cameraProjection, cameraModelview, lightMVP, lightPositionModel);
-	water.draw(cameraProjection, cameraModelview, lightMVP, lightPositionModel);
+    water.draw(cameraProjection, cameraModelview, lightMVP, lightPositionModel);
     skybox.draw(cameraProjection, cameraModelview);
-//    shadowmap.draw(lightMVP);
 
 }
 
