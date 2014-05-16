@@ -39,8 +39,9 @@ const float snowMax = 0.425;
 vec3 compute_normal(vec3 position) {
 
     const ivec3 off = ivec3(-1, 0, 1);
-//    int width = textureSize(heightMapTex).x;
-    const vec2 size = vec2(2.0/1024.0, 0.0);   //1024 is the size of the generated height map
+    // Retrieve the size of the generated height map texture.
+    int width = textureSize(heightMapTex, 0).x;
+    vec2 size = vec2(2.0/width, 0.0);
 
     //current UV coordinate
     vec2 UV = vec2((position.xy +1.0)/2.0);  
