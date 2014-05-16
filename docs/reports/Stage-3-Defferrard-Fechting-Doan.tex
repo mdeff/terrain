@@ -39,23 +39,77 @@ We did implement all the basic
 
 As this hand-in is the last opportunity to modify our code, we put great effort in improving its quality by cleaning it up, including comments. A great job was done to functionalize shader code. As a side effect, we did also discover some little mistakes. We did also refactor most of the code to encompass our new object oriented architecture introduced in stage 2. In overall, code quality has greatly improved.
 
+\subsection{Vertices object}
+
+To achieve better modulation, we have separated the vertices creation code into a class hierarchy. The \texttt{Vertices} base class is an abstract class, declaring only virtual methods, which defines the interface. The \texttt{VerticesQuad}, \texttt{VerticesGrid} and \texttt{VerticesSkybox} inherit from it and implement the \texttt{generate} \texttt{draw} and \texttt{clean} methods which are specific to them. This design allows more than one \text{RenderingContext} object to share a \texttt{Vertices} object. The \texttt{Terrain} and \texttt{Shadowmap} makes use of this. It also offers better source code modularity.
+
 \subsection{Lightning}
 
 Phong shading was improperly implemented at stage 2. The material texture was only used to compute the ambient color. The diffuse and specular colors were fixed for all the terrain. Probably a reminiscent of stage 1. This is now fixed. We first retrieve material color properties from textures. The retrieved color is then split across the three lightnings (ambient, diffuse and specular) with the help of coefficients which some up to 1. The specular lightning coefficient is non-zero for water only. The water uses two normals : a normalmap for diffuse lightning (this is used to create the impression of water movement) and a (0,0,1) normal for specular lightning (this is used to create the impression of sun light reflection).
 
 The light direction was defined in stage 2 to be the same for all the vertices. This defines it as a directional light. It was changed to a spot light (or point light in the lightning context), to be coherent with shadowing. The shadowmap is indeed computed using perspective projection, not orthographic.
 
-\subsection{Water animation}
-
-
 \subsection{Shadowmap}
 
-Divide by w for projection should be done before coordinates change from (-1,-1)x(1,1) to (0,0)x(1,1). It can thus not be integrated in the \texttt{lightMVP} matrix and should be computed by the shader.
-To save computations and GPU memory bandwidth (passing a \texttt{vec3} instead of a \texttt{vec4}), this can also be computed by the vertex shader.
+We have improved a lot the shadowmap, as it was not yet working properly at Stage 2. Figure~\ref{shadowmap} shows how it works by showing the shadowmap, the distance to light and the rendered terrain for three different light positions. While we were at shadowmap, we also took the time to test some parameters.
 
-Or in vertex shader !
+\begin{figure}[ht]
+	\centering
+	\subfloat[Shadowmap at position 2]{
+		\label{shadowmap_depth_2}
+		\includegraphics[height=3cm]{{{img_stage3/shadowmap_depth_2}}}
+	} \quad
+	\subfloat[Shadowmap at position 5]{
+		\label{shadowmap_depth_5}
+		\includegraphics[height=3cm]{{{img_stage3/shadowmap_depth_5}}}
+	} \quad
+	\subfloat[Shadowmap at position 7]{
+		\label{shadowmap_depth_7}
+		\includegraphics[height=3cm]{{{img_stage3/shadowmap_depth_7}}}
+	} \\
+	\subfloat[Distance at position 2]{
+		\label{shadowmap_distance_2}
+		\includegraphics[height=3cm]{{{img_stage3/shadowmap_distance_2}}}
+	} \quad
+	\subfloat[Distance at position 5]{
+		\label{shadowmap_distance_5}
+		\includegraphics[height=3cm]{{{img_stage3/shadowmap_distance_5}}}
+	} \quad
+	\subfloat[Distance at position 7]{
+		\label{shadowmap_distance_7}
+		\includegraphics[height=3cm]{{{img_stage3/shadowmap_distance_7}}}
+	} \\
+	\subfloat[Terrain at position 2]{
+		\label{shadowmap_terrain_2}
+		\includegraphics[height=3cm]{{{img_stage3/shadowmap_terrain_2}}}
+	} \quad
+	\subfloat[Terrain at position 5]{
+		\label{shadowmap_terrain_5}
+		\includegraphics[height=3cm]{{{img_stage3/shadowmap_terrain_5}}}
+	} \quad
+	\subfloat[Terrain at position 7]{
+		\label{shadowmap_terrain_7}
+		\includegraphics[height=3cm]{{{img_stage3/shadowmap_terrain_7}}}
+	}
+	\caption{Shadowmap construction}
+	\label{shadowmap}
+\end{figure}
 
-16 bits is too low to store the depth value and creates some artifacts. Switching to 32 bits did remove these artifacts.
+The division by the w component to apply projection should be done before the coordinates change from (-1,-1)x(1,1) to (0,0)x(1,1). It can thus not be integrated in the \texttt{lightMVP} matrix and should be computed by the shader. To save computations and GPU memory bandwidth (passing a \texttt{vec3} instead of a \texttt{vec4}), this can also be computed by the vertex shader. The result is then interpolated and passed to the fragment shader. The differences are very small, as shown by figures~\ref{shadowmap_coord_fshader} and~\ref{shadowmap_coord_vshader}.
+
+\begin{figure}[ht]
+	\centering
+	\subfloat[In fragment shader]{
+		\label{shadowmap_coord_fshader}
+		\includegraphics[height=4cm]{{{img_stage3/shadowmap_coord_fshader}}}
+	} \quad
+	\subfloat[In vertex shader]{
+		\label{shadowmap_coord_vshader}
+		\includegraphics[height=4cm]{{{img_stage3/shadowmap_coord_vshader}}}
+	}
+	\caption{Coordinates transform}
+	\label{shadowmap_coord}
+\end{figure}
 
 The choice of the bias, used when comparing the distance to light with the one stored in the shadowmap has an impact. A too low value will result in Z-buffer fighting (fig.~\ref{shadowmap_bias_no}) while a too big value will result in shadow errors (fig.~\ref{shadowmap_bias_big}). A good compromise should be found (fig.~\ref{shadowmap_bias_ok}).
 
@@ -77,9 +131,27 @@ The choice of the bias, used when comparing the distance to light with the one s
 	\label{shadowmap_bias}
 \end{figure}
 
-\subsection{Vertices object}
+Percentage closer filtering (PCF), a method which sample four neighboring pixels and return an average of the tests, greatly smooth the transition between shadow and light regions. Figures~\ref{shadowmap_32bits_PCFwith} and~\ref{shadowmap_32bits_PCFwithout} show the same scene with and without PCF. The effect on transitions is clear.
 
-To achieve better modulation, we have separated the vertices creation code into a class hierarchy. The \texttt{Vertices} base class is an abstract class, declaring only virtual methods, which defines the interface. The \texttt{VerticesQuad}, \texttt{VerticesGrid} and \texttt{VerticesSkybox} inherit from it and implement the \texttt{generate} \texttt{draw} and \texttt{clean} methods which are specific to them. This design allows more than one \text{RenderingContext} object to share a \texttt{Vertices} object. The \texttt{Terrain} and \texttt{Shadowmap} makes use of this. It also offers better source code modularity.
+\begin{figure}[ht]
+	\centering
+	\subfloat[32 bits depth without PCF]{
+		\label{shadowmap_32bits_PCFwithout}
+		\includegraphics[height=3cm]{{{img_stage3/shadowmap_32bits_PCFwithout}}}
+	} \quad
+	\subfloat[32 bits depth with PCF]{
+		\label{shadowmap_32bits_PCFwith}
+		\includegraphics[height=3cm]{{{img_stage3/shadowmap_32bits_PCFwith}}}
+	} \quad
+	\subfloat[16 bits depth with PCF]{
+		\label{shadowmap_16bits_PCFwith}
+		\includegraphics[height=3cm]{{{img_stage3/shadowmap_16bits_PCFwith}}}
+	}
+	\caption{Shadowmap}
+	\label{shadowmap_bits_PCF}
+\end{figure}
+
+The differences between a 32 bits depth buffer (fig.~\ref{shadowmap_32bits_PCFwith}) or a 16 bits (fig.~\ref{shadowmap_16bits_PCFwith}) depth buffer is very little. We have thus chosen 16 bits to save computation time and memory space.
 
 \subsection{Heightmap}
 
@@ -101,7 +173,7 @@ The heightmap texture was configured with the default heuristic for out-of-range
 
 The heightmap code was also refactored to accommodate our new object oriented architecture. This resulted in a cleaner design and better readability as well as some improvements of the generic code.
 
-Another improvement of the heightmap code is that the \texttt{position} vector is now a \texttt{vec2} instead of a \texttt{vec3} as the vertex z position on a quad is 0 anyway. This saves some GPU memory bandwidth.
+Another improvement of the heightmap code is that the \texttt{position} vector is now a \texttt{vec2} instead of a \texttt{vec3} as the vertex z position of a quad is 0 anyway. This saves some GPU memory bandwidth.
 
 \section{Results}
 
