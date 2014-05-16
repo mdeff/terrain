@@ -11,8 +11,11 @@ public:
     /// Generate the vertices.
     void generate();
 
-    /// Draw the scene after vertex array and vertex attribute binding.
-    void draw(unsigned int vertexAttribID) const;
+    /// Bind the vertex attribute to the VBO (retained in VAO state).
+    void bind(unsigned int vertexAttribID) const;
+
+    /// Draw the scene.
+    void draw() const;
 
     /// Delete the buffers.
     void clean();

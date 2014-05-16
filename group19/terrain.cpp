@@ -73,11 +73,11 @@ void Terrain::draw(const mat4& projection, const mat4& modelview,
     glUniformMatrix4fv(_lightMVPID, 1, GL_FALSE, lightMVP.data());
     glUniform3fv(_lightPositionModelID, 1, lightPositionModel.data());
 
-    /// Clear the screen framebuffer.
+    /// Clear the default framebuffer (screen).
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     /// Render the terrain from camera point of view to default framebuffer.
-    _vertices->draw(_vertexAttribID);
+    _vertices->draw();
 
 }
 

@@ -2,7 +2,7 @@
 #ifndef __vertices_h__
 #define __vertices_h__
 
-/// Abstract class that implement the interface.
+/// Abstract class that implements the interface.
 
 class Vertices {
 
@@ -11,8 +11,11 @@ public:
     /// Generate the vertices.
     virtual void generate() = 0;
 
-    /// Draw the scene after vertex array and vertex attribute binding.
-    virtual void draw(unsigned int vertexAttribID) const = 0;
+    /// Bind the vertex attribute to the VBO (retained in VAO state).
+    virtual void bind(unsigned int vertexAttribID) const = 0;
+
+    /// Draw the scene.
+    virtual void draw() const = 0;
 
     /// Delete the buffers.
     virtual void clean() = 0;

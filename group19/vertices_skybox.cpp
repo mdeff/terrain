@@ -48,7 +48,7 @@ const unsigned int nVertices = sizeof(vertices) / sizeof(float) / 3;
 /// Copy box vertices to GPU.
 void VerticesSkybox::generate() {
 
-    /// Vertex array object.
+    /// Vertex array object (VAO).
     glGenVertexArrays(1, &_vertexArrayID);
     glBindVertexArray(_vertexArrayID);
 
@@ -60,28 +60,28 @@ void VerticesSkybox::generate() {
 }
 
 
-void VerticesSkybox::draw(GLuint vertexAttribID) const {
-
-    /*
-     * Bind vertex array
-     * A vertex array object holds references to the vertex buffers, the index
-     * buffer and the layout specification of the vertex itself. At runtime,
-     * you can just glBindVertexArray to recall all of these information.
-     */
-    glBindVertexArray(_vertexArrayID);
+void VerticesSkybox::bind(GLuint vertexAttribID) const {
 
     /// Vertex attribute points to data from the currently binded array buffer.
+    /// The binding is part of the binded VAO state.
+    glBindVertexArray(_vertexArrayID);
     glBindBuffer(GL_ARRAY_BUFFER, _vertexBufferID);
     glEnableVertexAttribArray(vertexAttribID);
     // vec3: 3 floats per vertex for the attribute.
     glVertexAttribPointer(vertexAttribID, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
+}
+
+
+void VerticesSkybox::draw() const {
+
+    /// The GL_ELEMENT_ARRAY_BUFFER binding is stored within the VAO.
+    /// The GL_ARRAY_BUFFER​ binding is NOT part of the VAO state.
+    /// But the vertex attribute binding to the VBO is retained.
+    glBindVertexArray(_vertexArrayID);
+
     /// Draw the Skybox vertices.
     glDrawArrays(GL_TRIANGLES, 0, nVertices);
-
-    /// No need to disable the vertex attribute as the array is only pointed
-    /// by one attribute.
-    glDisableVertexAttribArray(vertexAttribID);
 
 }
 

@@ -81,7 +81,7 @@ void Watermap::draw(const mat4& projection, const mat4& modelview,
     //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     /// Render the terrain from camera point of view to default framebuffer.
-    _vertices->draw(_vertexAttribID);
+    _vertices->draw();
 
 }
 

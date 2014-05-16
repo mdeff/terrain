@@ -26,7 +26,6 @@ protected:
     /// Common properties of all RenderingContext.
     unsigned int _width, _height;
     unsigned int _programID;
-    unsigned int _vertexAttribID;
 
     /// Pointer : vertices object can be shared between RenderingContext.
     Vertices* _vertices;

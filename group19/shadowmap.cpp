@@ -80,11 +80,10 @@ void Shadowmap::draw(const mat4& lightMVP) const {
     /// Update the content of the uniforms.
     glUniformMatrix4fv(_lightMatrixID, 1, GL_FALSE, lightMVP.data());
 
-    /// Clear the framebuffer object.
+    /// Clear the FBO.
     glClear(GL_DEPTH_BUFFER_BIT);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     /// Render the terrain from light source point of view to FBO.
-    _vertices->draw(_vertexAttribID);
+    _vertices->draw();
 
 }
