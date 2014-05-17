@@ -152,20 +152,24 @@ void init() {
 
 }
 
+		
+void rotate2D(double pos1, double pos2, double& look1, double& look2, double angle){
+	double tmp1 = (look1-pos1)*cos(angle) - (look2-pos2)*sin(angle) + pos1;
+	double tmp2 = (look1-pos1)*sin(angle) + (look2-pos2)*cos(angle) + pos2;
+	look1=tmp1;
+	look2=tmp2;
+}
 
 void handleKeyboard(){
 	
-	static double posX = 1.0f;
-	static double posY = 0.0f;
-	static double posZ = 0.7f;
+	static double posX =  1.0f;
+	static double posY =  -0.25f;
+	static double posZ =  0.061f;
 
 	static double lookX = 0.0f;
-	static double lookY = 0.0f;
-	static double lookZ = 0.7f;
+	static double lookY = -0.25f;
+	static double lookZ = 0.061f;
 
-	//double Dist = sqrt((posX-lookX)*(posX-lookX) + (posY-lookY)*(posY-lookY) + (posZ-lookZ)*(posZ-lookZ));
-	//std::cout << 100*(posX-lookX)*(posX-lookX)/Dist <<"% "<< 100*(posY-lookY)*(posY-lookY) /Dist<<"% "<<100* (posZ-lookZ)*(posZ-lookZ)/Dist<<"% "<< Dist <<endl;
-	
 
 	static bool dirtyBit = false;  
 
@@ -173,15 +177,19 @@ void handleKeyboard(){
 	static double velocityBackward = 0;
 	static double velocityLeft = 0;
 	static double velocityRight = 0;
-	
+
+	static double recordRotZ = 0;
+	static double recordRotY = 0;
+
+	//std::cout<<recordRotY<<endl;
 	//std::cout<<velocityForward<<endl;
 
 	if (glfwGetKey(87)==1 | velocityForward != 0.0f){//W pressed => go forward 
-		if(glfwGetKey(87)==1 & velocityForward<0.05f){
-				velocityForward = velocityForward + 0.001f;
+		if(glfwGetKey(87)==1 & velocityForward<0.01f){
+				velocityForward = velocityForward + 0.0005f;
 		}
 		else{
-			velocityForward = velocityForward - 0.001f;
+			velocityForward = velocityForward - 0.0005f;
 		}
 		
 		double dispX = (posX - lookX)*velocityForward;
@@ -200,11 +208,11 @@ void handleKeyboard(){
 		std::cout <<sqrt(((posX-lookX)*(posX-lookX))+((posY-lookY)*(posY-lookY))+((posZ-lookZ)*(posZ-lookZ)))<<endl;
 	}
 	if  (glfwGetKey(83)==1 | velocityBackward != 0.0f){//S pressed => go backward 
-		if(glfwGetKey(83)==1 & velocityBackward<0.05f){
-				velocityBackward = velocityBackward + 0.001f;
+		if(glfwGetKey(83)==1 & velocityBackward<0.01f){
+				velocityBackward = velocityBackward + 0.0005f;
 		}
 		else{
-			velocityBackward = velocityBackward - 0.001f;
+			velocityBackward = velocityBackward - 0.0005f;
 		}
 		//std::cout<<"S pressed"<<endl;
 
@@ -232,13 +240,33 @@ void handleKeyboard(){
 		}
 		//std::cout <<sqrt(((posX-lookX)*(posX-lookX))+((posY-lookY)*(posY-lookY))+((posZ-lookZ)*(posZ-lookZ)))<<endl;
 	
+		//1 cancel Y rotation
+		//double tmpX = (lookX-posX)*cos(fmod((6.2831-recordRotY),6.2831)) - (lookZ-posZ)*sin(fmod((6.2831-recordRotY),6.2831)) + posX;
+		//double tmpZ = (lookX-posX)*sin(fmod((6.2831-recordRotY),6.2831)) + (lookZ-posZ)*cos(fmod((6.2831-recordRotY),6.2831)) + posZ;
+		double tmpX =lookX;
+		double tmpZ =lookZ;
+		rotate2D(posX,posZ,tmpX,tmpZ, fmod((6.2831-recordRotY),6.2831));
+	
+		//2 rotate on Z axis
 		double Angle = 0.0174f*velocityLeft; // more or less 1 degree
+		double tmpY  = lookY;
+		rotate2D(posX,posY,tmpX,tmpY,Angle);
+	
+		//3 redo Z rotation
+		rotate2D(posX,posZ,tmpX,tmpZ,recordRotY);
+
+		/*double Angle = 0.0174f*velocityLeft; // more or less 1 degree
 		double tmpX = (lookX-posX)*cos(Angle) - (lookY-posY)*sin(Angle) + posX;
 		double tmpY = (lookX-posX)*sin(Angle) + (lookY-posY)*cos(Angle) + posY;
 
 		lookX = tmpX;
+		lookY = tmpY;*/
+		lookX = tmpX;
 		lookY = tmpY;
+		lookZ = tmpZ;
+
 		dirtyBit = true; 
+		recordRotZ = fmod((recordRotZ+Angle),6.2831); //save rotation done
 		/*
 		double tmpXZ = (lookZ-posZ)*cos(Angle) - (lookY-posY)*sin(Angle) + posZ;
 		double tmpXY = (lookZ-posZ)*sin(Angle) + (lookY-posY)*cos(Angle) + posY;
@@ -272,39 +300,90 @@ void handleKeyboard(){
 		}
 		//angleZ = angleZ - 0.001f;
 		//std::cout <<sqrt(((posX-lookX)*(posX-lookX))+((posY-lookY)*(posY-lookY))+((posZ-lookZ)*(posZ-lookZ)))<<endl;
-	
+		
+		//1 cancel Y rotation
+		double tmpX =lookX;
+		double tmpZ =lookZ;
+		rotate2D(posX,posZ,tmpX,tmpZ, fmod((6.2831-recordRotY),6.2831));
+
+		//2 rotate on Z axis
 		double Angle = -0.0174f*velocityRight; // more or less 1 degree
-		double tmpX = (lookX-posX)*cos(Angle) - (lookY-posY)*sin(Angle) + posX;
-		double tmpY = (lookX-posX)*sin(Angle) + (lookY-posY)*cos(Angle) + posY;
-		lookX = tmpX ; 
+		double tmpY  = lookY;
+		rotate2D(posX,posY,tmpX,tmpY,Angle);
+	
+		//3 redo Y rotation
+		rotate2D(posX,posZ,tmpX,tmpZ,recordRotY);
+		
+		lookX = tmpX;
+		lookY = tmpY;
+		lookZ = tmpZ;
+		
+		dirtyBit = true; 
+		recordRotZ = fmod((recordRotZ+Angle),6.2831); //save rotation done
+		//std::cout <<sqrt(((posX-lookX)*(posX-lookX))+((posY-lookY)*(posY-lookY))+((posZ-lookZ)*(posZ-lookZ)))<<endl;
+	}
+	if  (glfwGetKey(81)==1){//Q pressed turn up
+		//std::cout <<sqrt(((posX-lookX)*(posX-lookX))+((posY-lookY)*(posY-lookY))+((posZ-lookZ)*(posZ-lookZ)))<<endl;
+		
+		//1 cancel Z rotation
+		double tmpX = lookX;
+		double tmpY = lookY;
+		rotate2D(posX,posY,tmpX,tmpY, fmod((6.2831-recordRotZ),6.2831));
+		//2 rotate on Y axis
+		double Angle = 0.0174f; // more or less 1 degree
+		double tmpZ = lookZ;
+		rotate2D(posX,posZ,tmpX,tmpZ, Angle);
+		
+		//double tmpX2 = (tmpX-posX)*cos(Angle) - (lookZ-posZ)*sin(Angle) + posX;
+		//double tmpZ2 = (tmpX-posX)*sin(Angle) + (lookZ-posZ)*cos(Angle) + posZ;
+		//3 redo Z rotation
+		rotate2D(posX,posY,tmpX,tmpY, recordRotZ);
+		//double tmpX3 = (tmpX2-posX)*cos(recordRotY) - (tmpY-posY)*sin(recordRotY) + posX;
+		//double tmpY3 = (tmpX2-posX)*sin(recordRotY) + (tmpY-posY)*cos(recordRotY) + posY;
+		
+		recordRotY = fmod((recordRotY+Angle),6.2831); //save rotation done
+		
+		lookX = tmpX ;
 		lookY = tmpY ;
+		lookZ = tmpZ ;
+		
+		dirtyBit = true; 
+		
+		//std::cout <<sqrt(((posX-lookX)*(posX-lookX))+((posY-lookY)*(posY-lookY))+((posZ-lookZ)*(posZ-lookZ)))<<endl;
+	}
+	if  (glfwGetKey(69)==1){//E pressed 
+		//std::cout <<sqrt(((posX-lookX)*(posX-lookX))+((posY-lookY)*(posY-lookY))+((posZ-lookZ)*(posZ-lookZ)))<<endl;
+		
+		//1 cancel Z rotation
+		double tmpX = lookX;
+		double tmpY = lookY;
+		rotate2D(posX,posY,tmpX,tmpY, fmod((6.2831-recordRotZ),6.2831));
+		//2 rotate on Y axis
+		double Angle = -0.0174f; // more or less 1 degree
+		double tmpZ = lookZ;
+		rotate2D(posX,posZ,tmpX,tmpZ, Angle);
+		
+		//double tmpX2 = (tmpX-posX)*cos(Angle) - (lookZ-posZ)*sin(Angle) + posX;
+		//double tmpZ2 = (tmpX-posX)*sin(Angle) + (lookZ-posZ)*cos(Angle) + posZ;
+		//3 redo Z rotation
+		rotate2D(posX,posY,tmpX,tmpY, recordRotZ);
+		//double tmpX3 = (tmpX2-posX)*cos(recordRotY) - (tmpY-posY)*sin(recordRotY) + posX;
+		//double tmpY3 = (tmpX2-posX)*sin(recordRotY) + (tmpY-posY)*cos(recordRotY) + posY;
+		
+		recordRotY = fmod((recordRotY+Angle),6.2831); //save rotation done
+				
+		lookX = tmpX ;
+		lookY = tmpY ;
+		lookZ = tmpZ ;
+
 		dirtyBit = true; 
 		//std::cout <<sqrt(((posX-lookX)*(posX-lookX))+((posY-lookY)*(posY-lookY))+((posZ-lookZ)*(posZ-lookZ)))<<endl;
 	}
-	if  (glfwGetKey(81)==1){//Q pressed
-		std::cout <<sqrt(((posX-lookX)*(posX-lookX))+((posY-lookY)*(posY-lookY))+((posZ-lookZ)*(posZ-lookZ)))<<endl;
-	
-		double Angle = 0.0174f; // more or less 1 degree
-		double tmpX = (lookX-posX)*cos(Angle) - (lookZ-posZ)*sin(Angle) + posX;
-		double tmpZ = (lookX-posX)*sin(Angle) + (lookZ-posZ)*cos(Angle) + posZ;
-		lookX = tmpX ; 
-		lookZ = tmpZ ;
-		dirtyBit = true; 
-		std::cout <<sqrt(((posX-lookX)*(posX-lookX))+((posY-lookY)*(posY-lookY))+((posZ-lookZ)*(posZ-lookZ)))<<endl;
-	}
-	if  (glfwGetKey(69)==1){//E pressed 
-		std::cout <<sqrt(((posX-lookX)*(posX-lookX))+((posY-lookY)*(posY-lookY))+((posZ-lookZ)*(posZ-lookZ)))<<endl;
-	
-		double Angle = -0.0174f; // more or less 1 degree
-		double tmpX = (lookX-posX)*cos(Angle) - (lookZ-posZ)*sin(Angle) + posX;
-		double tmpZ = (lookX-posX)*sin(Angle) + (lookZ-posZ)*cos(Angle) + posZ;
-		lookX = tmpX ; 
-		lookZ = tmpZ ;
-		dirtyBit = true; 
-		std::cout <<sqrt(((posX-lookX)*(posX-lookX))+((posY-lookY)*(posY-lookY))+((posZ-lookZ)*(posZ-lookZ)))<<endl;
-	}
 	if (dirtyBit == true){ 
-
+		//double Dist = sqrt((posX-lookX)*(posX-lookX) + (posY-lookY)*(posY-lookY) + (posZ-lookZ)*(posZ-lookZ));
+		//std::cout << 100*(posX-lookX)*(posX-lookX)/Dist <<"% "<< 100*(posY-lookY)*(posY-lookY) /Dist<<"% "<<100* (posZ-lookZ)*(posZ-lookZ)/Dist<<"% "<< Dist <<endl;
+		
+		std::cout<<posX << " " <<posY << " " << posZ << endl;
 
 		/*
 		double A = cos(angleX);
@@ -321,10 +400,15 @@ void handleKeyboard(){
 		lookX = tmpX * C * E  - tmpY * C * F + tmpZ * D;
 		lookY = tmpX * (E * D * B + F * A) + tmpY * (E * A - F * D * B) - tmpZ * B * C;
 		lookZ = tmpX * (F* B - E * A * D ) + tmpY * (F * A * D + E * B) + tmpZ * A * C;
-		*/
+		
+		double camAngleX = (1-(posX-lookX)*(posX-lookX)/Dist);
+		double camAngleY = (1-(posY-lookY)*(posY-lookY)/Dist);
+		double camAngleZ = (1-(posZ-lookZ)*(posZ-lookZ)/Dist);*/
+
 		vec3 camPos(posX,posY,posZ);
 		vec3 camLookAt(lookX, lookY, lookZ);
-		vec3 camUp(0.0f, 0.0f, 1.0f);
+		//vec3 camUp(camAngleX, camAngleY, camAngleZ);
+		vec3 camUp(0.0f,0.0f,1.0f);
 
 		mat4 view = Eigen::lookAt(camPos, camLookAt, camUp);
 		cameraModelview = view;
