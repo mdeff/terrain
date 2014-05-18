@@ -59,9 +59,14 @@ void update_matrix_stack(const mat4& model) {
 
     /// View matrix (camera extrinsics) (position in world space).
 
-    /// Global view from outside.
-    vec3 camPos(0.0f, -3.0f, 4.0f);
-    vec3 camLookAt(0.0f, 0.0f, 0.0f);
+    //// Global view from outside.
+    //vec3 camPos(0.0f, -3.0f, 4.0f);
+    //vec3 camLookAt(0.0f, 0.0f, 0.0f);
+    //vec3 camUp(0.0f, 0.0f, 1.0f);
+
+	//fps exploration
+	vec3 camPos(0.78f, 0.42f, 0.30f);
+    vec3 camLookAt(-0.24f, 0.19f, 0.13f);
     vec3 camUp(0.0f, 0.0f, 1.0f);
 
     /// Internal view from center.
@@ -91,7 +96,7 @@ void GLFWCALL keyboard_callback(int key, int action) {
 
     if(action == GLFW_PRESS) {
 
-        //std::cout << "Pressed key : " << key << std::endl;
+        std::cout << "Pressed key : " << key << std::endl;
 
         /// 49 corressponds to 1, 57 to 9 (keyboard top keys).
         if(key >= 49 && key <= 57) {
@@ -113,6 +118,29 @@ void GLFWCALL keyboard_callback(int key, int action) {
     }
 }
 
+GLfloat *heightmapCPU = new GLfloat[1024*1024];
+void CopyHeightmapToCPU(GLuint heightMapTexID){
+	/*float test;
+	glReadPixels( 0, 0, textureWidth, textureHeight, GL_RED, GL_FLOAT, &test);
+	std::cout<<test<<endl;
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, _width, _height, 0, GL_RED, GL_FLOAT, 0);
+	*/
+	//GLubyte *pixels = new GLubyte[w*h*4];
+    glBindTexture(GL_TEXTURE_2D, heightMapTexID);
+	glGetTexImage(GL_TEXTURE_2D, 0, GL_RED, GL_FLOAT, heightmapCPU);
+ 	//glGetTexImage(GL_TEXTURE_2D,0,GL_R32F,GL_FLOAT,&Pixels);
+	/*float tmpMax =heightmapCPU[0];
+	float tmpMin =heightmapCPU[0];
+	for (int i=0; i<1024*1024 ; i++){
+		if (tmpMax<=heightmapCPU[i]){
+			tmpMax=heightmapCPU[i];
+		}
+		if (tmpMin>=heightmapCPU[i]){
+			tmpMin=heightmapCPU[i];
+		}
+	}
+	std::cout<<tmpMax<<" "<<tmpMin<<endl;*/
+}
 
 void init() {
 	
@@ -129,10 +157,14 @@ void init() {
     verticesQuad->generate();
     Heightmap heightmap(textureWidth, textureHeight);
     GLuint heightMapTexID = heightmap.init(verticesQuad);
-    heightmap.draw();
+	heightmap.draw();
     heightmap.clean();
     verticesQuad->clean();
     delete verticesQuad;
+
+	// write heightmap in CPU 
+	CopyHeightmapToCPU(heightMapTexID);
+    
 
     /// Generate the vertices.
     verticesGrid->generate();
@@ -149,10 +181,23 @@ void init() {
 
     /// Initialize the light position.
     keyboard_callback(49, GLFW_PRESS);
-
 }
 
-		
+void update_camera_modelview(double posX,double posY,double posZ,double lookX,double lookY,double lookZ){
+	vec3 camPos(posX,posY,posZ);
+	vec3 camLookAt(lookX, lookY, lookZ);
+	vec3 camUp(0.0f,0.0f,1.0f);
+
+	mat4 view = Eigen::lookAt(camPos, camLookAt, camUp);
+	cameraModelview = view;
+	/*
+	std::cout<<endl<<endl<<"update"<<endl<<endl;
+	std::cout<<posX-lookX<<" "<<posY-lookY<<" "<<posZ-lookZ<<endl;
+	std::cout<<powf(posX-lookX,2)<<" "<<powf(posY-lookY,2)<<" "<<powf(posZ-lookZ,2)<<endl;
+	std::cout<<powf(posX-lookX,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))<<" "<<powf(posY-lookY,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))<<endl;
+*/
+}
+
 void rotate2D(double pos1, double pos2, double& look1, double& look2, double angle){
 	double tmp1 = (look1-pos1)*cos(angle) - (look2-pos2)*sin(angle) + pos1;
 	double tmp2 = (look1-pos1)*sin(angle) + (look2-pos2)*cos(angle) + pos2;
@@ -160,146 +205,7 @@ void rotate2D(double pos1, double pos2, double& look1, double& look2, double ang
 	look2=tmp2;
 }
 
-void handleKeyboard(){
-	
-	static double posX =  1.0f;
-	static double posY =  -0.25f;
-	static double posZ =  0.061f;
-
-	static double lookX = 0.0f;
-	static double lookY = -0.25f;
-	static double lookZ = 0.061f;
-
-
-	static bool dirtyBit = false;  
-
-	static double velocityForward = 0;
-	static double velocityBackward = 0;
-	static double velocityLeft = 0;
-	static double velocityRight = 0;
-
-	static double recordRotZ = 0;
-	static double recordRotY = 0;
-
-	//std::cout<<recordRotY<<endl;
-	//std::cout<<velocityForward<<endl;
-
-	if (glfwGetKey(87)==1 | velocityForward != 0.0f){//W pressed => go forward 
-		if(glfwGetKey(87)==1 & velocityForward<0.01f){
-				velocityForward = velocityForward + 0.0005f;
-		}
-		else{
-			velocityForward = velocityForward - 0.0005f;
-		}
-		
-		double dispX = (posX - lookX)*velocityForward;
-		double dispY = (posY - lookY)*velocityForward;
-		double dispZ = (posZ - lookZ)*velocityForward;
-		//std::cout <<sqrt(((posX-lookX)*(posX-lookX))+((posY-lookY)*(posY-lookY))+((posZ-lookZ)*(posZ-lookZ)))<<endl;
-	
-		posX = posX - dispX; 
-		posY = posY - dispY; 
-		posZ = posZ - dispZ; 
-
-		lookX = lookX - dispX; 
-		lookY = lookY - dispY; 
-		lookZ = lookZ - dispZ;
-		dirtyBit = true; 
-		std::cout <<sqrt(((posX-lookX)*(posX-lookX))+((posY-lookY)*(posY-lookY))+((posZ-lookZ)*(posZ-lookZ)))<<endl;
-	}
-	if  (glfwGetKey(83)==1 | velocityBackward != 0.0f){//S pressed => go backward 
-		if(glfwGetKey(83)==1 & velocityBackward<0.01f){
-				velocityBackward = velocityBackward + 0.0005f;
-		}
-		else{
-			velocityBackward = velocityBackward - 0.0005f;
-		}
-		//std::cout<<"S pressed"<<endl;
-
-		double dispX = (posX - lookX)*velocityBackward;
-		double dispY = (posY - lookY)*velocityBackward;
-		double dispZ = (posZ - lookZ)*velocityBackward;
-		//std::cout <<sqrt(((posX-lookX)*(posX-lookX))+((posY-lookY)*(posY-lookY))+((posZ-lookZ)*(posZ-lookZ)))<<endl;
-	
-		posX = posX + dispX; 
-		posY = posY + dispY; 
-		posZ = posZ + dispZ; 
-
-		lookX = lookX + dispX; 
-		lookY = lookY + dispY; 
-		lookZ = lookZ + dispZ; 
-		dirtyBit = true; 
-		//std::cout <<sqrt(((posX-lookX)*(posX-lookX))+((posY-lookY)*(posY-lookY))+((posZ-lookZ)*(posZ-lookZ)))<<endl;
-	}
-	if (glfwGetKey(65)==1 | velocityLeft != 0.0f){//A pressed => turn left
-		if(glfwGetKey(65)==1 & velocityLeft<1.0f){
-				velocityLeft = velocityLeft + 0.01f;
-		}
-		else{
-			velocityLeft = velocityLeft - 0.01f;
-		}
-		//std::cout <<sqrt(((posX-lookX)*(posX-lookX))+((posY-lookY)*(posY-lookY))+((posZ-lookZ)*(posZ-lookZ)))<<endl;
-	
-		//1 cancel Y rotation
-		//double tmpX = (lookX-posX)*cos(fmod((6.2831-recordRotY),6.2831)) - (lookZ-posZ)*sin(fmod((6.2831-recordRotY),6.2831)) + posX;
-		//double tmpZ = (lookX-posX)*sin(fmod((6.2831-recordRotY),6.2831)) + (lookZ-posZ)*cos(fmod((6.2831-recordRotY),6.2831)) + posZ;
-		double tmpX =lookX;
-		double tmpZ =lookZ;
-		rotate2D(posX,posZ,tmpX,tmpZ, fmod((6.2831-recordRotY),6.2831));
-	
-		//2 rotate on Z axis
-		double Angle = 0.0174f*velocityLeft; // more or less 1 degree
-		double tmpY  = lookY;
-		rotate2D(posX,posY,tmpX,tmpY,Angle);
-	
-		//3 redo Z rotation
-		rotate2D(posX,posZ,tmpX,tmpZ,recordRotY);
-
-		/*double Angle = 0.0174f*velocityLeft; // more or less 1 degree
-		double tmpX = (lookX-posX)*cos(Angle) - (lookY-posY)*sin(Angle) + posX;
-		double tmpY = (lookX-posX)*sin(Angle) + (lookY-posY)*cos(Angle) + posY;
-
-		lookX = tmpX;
-		lookY = tmpY;*/
-		lookX = tmpX;
-		lookY = tmpY;
-		lookZ = tmpZ;
-
-		dirtyBit = true; 
-		recordRotZ = fmod((recordRotZ+Angle),6.2831); //save rotation done
-		/*
-		double tmpXZ = (lookZ-posZ)*cos(Angle) - (lookY-posY)*sin(Angle) + posZ;
-		double tmpXY = (lookZ-posZ)*sin(Angle) + (lookY-posY)*cos(Angle) + posY;
-		double tmpYX = (lookX-posX)*cos(Angle) - (lookZ-posZ)*sin(Angle) + posX;
-		double tmpYZ = (lookX-posX)*sin(Angle) + (lookZ-posZ)*cos(Angle) + posZ;
-		double tmpZX = (lookX-posX)*cos(Angle) - (lookY-posY)*sin(Angle) + posX;
-		double tmpZY = (lookX-posX)*sin(Angle) + (lookY-posY)*cos(Angle) + posY;
-
-		
-		double coefX = (posX-lookX)*(posX-lookX)/Dist;
-		double coefY = (posY-lookY)*(posY-lookY)/Dist;
-		double coefZ = (posZ-lookZ)*(posZ-lookZ)/Dist;
-
-
-		lookX = (coefY*tmpYX + coefZ*tmpZX)/2;
-		lookY = (coefX*tmpXY + coefZ*tmpZY)/2;
-		lookZ = (coefX*tmpXZ + coefY*tmpYZ)/2;
-		dirtyBit = true; 
-		*/
-		//std::cout << 100*(posX-lookX)*(posX-lookX)/Dist <<"% "<< 100*(posY-lookY)*(posY-lookY) /Dist<<"% "<<100* (posZ-lookZ)*(posZ-lookZ)/Dist<<"% "<< Dist <<endl;
-	
-		//std::cout <<sqrt(((posX-lookX)*(posX-lookX))+((posY-lookY)*(posY-lookY))+((posZ-lookZ)*(posZ-lookZ)))<<endl;
-	
-	}
-	if (glfwGetKey(68)==1 | velocityRight != 0.0f){//D pressed =turn right
-		if(glfwGetKey(68)==1 & velocityRight<1.0f){
-				velocityRight = velocityRight + 0.01f;
-		}
-		else{
-			velocityRight = velocityRight - 0.01f;
-		}
-		//angleZ = angleZ - 0.001f;
-		//std::cout <<sqrt(((posX-lookX)*(posX-lookX))+((posY-lookY)*(posY-lookY))+((posZ-lookZ)*(posZ-lookZ)))<<endl;
+void rotateLeftRight(double& posX, double& posY, double& posZ, double& lookX, double& lookY, double& lookZ,double& recordRotY,double velocity){
 		
 		//1 cancel Y rotation
 		double tmpX =lookX;
@@ -307,7 +213,7 @@ void handleKeyboard(){
 		rotate2D(posX,posZ,tmpX,tmpZ, fmod((6.2831-recordRotY),6.2831));
 
 		//2 rotate on Z axis
-		double Angle = -0.0174f*velocityRight; // more or less 1 degree
+		double Angle = 0.0174f*velocity; // more or less 1 degree
 		double tmpY  = lookY;
 		rotate2D(posX,posY,tmpX,tmpY,Angle);
 	
@@ -318,162 +224,184 @@ void handleKeyboard(){
 		lookY = tmpY;
 		lookZ = tmpZ;
 		
-		dirtyBit = true; 
-		recordRotZ = fmod((recordRotZ+Angle),6.2831); //save rotation done
-		//std::cout <<sqrt(((posX-lookX)*(posX-lookX))+((posY-lookY)*(posY-lookY))+((posZ-lookZ)*(posZ-lookZ)))<<endl;
-	}
-	if  (glfwGetKey(81)==1){//Q pressed turn up
-		//std::cout <<sqrt(((posX-lookX)*(posX-lookX))+((posY-lookY)*(posY-lookY))+((posZ-lookZ)*(posZ-lookZ)))<<endl;
-		
+		update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
+}
+void rotateUpDown(double& posX, double& posY, double& posZ, double& lookX, double& lookY, double& lookZ,double& recordRotZ,double velocity){
+
 		//1 cancel Z rotation
 		double tmpX = lookX;
 		double tmpY = lookY;
 		rotate2D(posX,posY,tmpX,tmpY, fmod((6.2831-recordRotZ),6.2831));
 		//2 rotate on Y axis
-		double Angle = 0.0174f; // more or less 1 degree
+		double Angle = 0.0174f*velocity; // more or less 1 degree
 		double tmpZ = lookZ;
 		rotate2D(posX,posZ,tmpX,tmpZ, Angle);
-		
-		//double tmpX2 = (tmpX-posX)*cos(Angle) - (lookZ-posZ)*sin(Angle) + posX;
-		//double tmpZ2 = (tmpX-posX)*sin(Angle) + (lookZ-posZ)*cos(Angle) + posZ;
 		//3 redo Z rotation
 		rotate2D(posX,posY,tmpX,tmpY, recordRotZ);
-		//double tmpX3 = (tmpX2-posX)*cos(recordRotY) - (tmpY-posY)*sin(recordRotY) + posX;
-		//double tmpY3 = (tmpX2-posX)*sin(recordRotY) + (tmpY-posY)*cos(recordRotY) + posY;
-		
-		recordRotY = fmod((recordRotY+Angle),6.2831); //save rotation done
 		
 		lookX = tmpX ;
 		lookY = tmpY ;
 		lookZ = tmpZ ;
 		
-		dirtyBit = true; 
+		update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
+}
+
+void moveAlongAxis(double& posX, double& posY, double& posZ, double& lookX, double& lookY, double& lookZ, double velocity){
 		
-		//std::cout <<sqrt(((posX-lookX)*(posX-lookX))+((posY-lookY)*(posY-lookY))+((posZ-lookZ)*(posZ-lookZ)))<<endl;
-	}
-	if  (glfwGetKey(69)==1){//E pressed 
-		//std::cout <<sqrt(((posX-lookX)*(posX-lookX))+((posY-lookY)*(posY-lookY))+((posZ-lookZ)*(posZ-lookZ)))<<endl;
+		double dispX = (posX - lookX)*velocity;
+		double dispY = (posY - lookY)*velocity;
+		double dispZ = (posZ - lookZ)*velocity;
 		
-		//1 cancel Z rotation
-		double tmpX = lookX;
-		double tmpY = lookY;
-		rotate2D(posX,posY,tmpX,tmpY, fmod((6.2831-recordRotZ),6.2831));
-		//2 rotate on Y axis
-		double Angle = -0.0174f; // more or less 1 degree
-		double tmpZ = lookZ;
-		rotate2D(posX,posZ,tmpX,tmpZ, Angle);
-		
-		//double tmpX2 = (tmpX-posX)*cos(Angle) - (lookZ-posZ)*sin(Angle) + posX;
-		//double tmpZ2 = (tmpX-posX)*sin(Angle) + (lookZ-posZ)*cos(Angle) + posZ;
-		//3 redo Z rotation
-		rotate2D(posX,posY,tmpX,tmpY, recordRotZ);
-		//double tmpX3 = (tmpX2-posX)*cos(recordRotY) - (tmpY-posY)*sin(recordRotY) + posX;
-		//double tmpY3 = (tmpX2-posX)*sin(recordRotY) + (tmpY-posY)*cos(recordRotY) + posY;
-		
-		recordRotY = fmod((recordRotY+Angle),6.2831); //save rotation done
-				
-		lookX = tmpX ;
-		lookY = tmpY ;
-		lookZ = tmpZ ;
+		posX = posX - dispX; 
+		posY = posY - dispY; 
+		posZ = posZ - dispZ; 
 
-		dirtyBit = true; 
-		//std::cout <<sqrt(((posX-lookX)*(posX-lookX))+((posY-lookY)*(posY-lookY))+((posZ-lookZ)*(posZ-lookZ)))<<endl;
-	}
-	if (dirtyBit == true){ 
-		//double Dist = sqrt((posX-lookX)*(posX-lookX) + (posY-lookY)*(posY-lookY) + (posZ-lookZ)*(posZ-lookZ));
-		//std::cout << 100*(posX-lookX)*(posX-lookX)/Dist <<"% "<< 100*(posY-lookY)*(posY-lookY) /Dist<<"% "<<100* (posZ-lookZ)*(posZ-lookZ)/Dist<<"% "<< Dist <<endl;
-		
-		std::cout<<posX << " " <<posY << " " << posZ << endl;
+		lookX = lookX - dispX; 
+		lookY = lookY - dispY; 
+		lookZ = lookZ - dispZ;
 
-		/*
-		double A = cos(angleX);
-		double B = sin(angleX);
-		double C = cos(angleY);
-		double D = sin(angleY);
-		double E = cos(angleZ);
-		double F = sin(angleZ);
-		
-		double tmpX = (posX-lookX);
-		double tmpY = (posY-lookY);
-		double tmpZ = (posZ-lookZ);
-/*
-		lookX = tmpX * C * E  - tmpY * C * F + tmpZ * D;
-		lookY = tmpX * (E * D * B + F * A) + tmpY * (E * A - F * D * B) - tmpZ * B * C;
-		lookZ = tmpX * (F* B - E * A * D ) + tmpY * (F * A * D + E * B) + tmpZ * A * C;
-		
-		double camAngleX = (1-(posX-lookX)*(posX-lookX)/Dist);
-		double camAngleY = (1-(posY-lookY)*(posY-lookY)/Dist);
-		double camAngleZ = (1-(posZ-lookZ)*(posZ-lookZ)/Dist);*/
+		update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
+}
 
-		vec3 camPos(posX,posY,posZ);
-		vec3 camLookAt(lookX, lookY, lookZ);
-		//vec3 camUp(camAngleX, camAngleY, camAngleZ);
-		vec3 camUp(0.0f,0.0f,1.0f);
+void fpsExplorationForwardBackward(double& posX, double& posY, double& posZ, double& lookX, double& lookY, double& lookZ,double dispX,double dispY){
+	posX = posX - dispX; 
+	posY = posY - dispY; 
+	lookX = lookX - dispX; 
+	lookY = lookY - dispY; 
+	if(posX>1){posX=1;}
+	else if(posX<-1){posX=-1;}
+	if(posY>1){posY=1;}
+	else if(posY<-1){posY=-1;}
 
-		mat4 view = Eigen::lookAt(camPos, camLookAt, camUp);
-		cameraModelview = view;
-		dirtyBit = false; 
-	}
-/*	switch (key)
-	{
-		case 87: //W pressed => go forward 
-		{ 
-			 
-			posX = posX - (posX - lookX)*0.05; 
-			posY = posY - (posY - lookY)*0.05; 
-			posZ = posZ - (posZ - lookZ)*0.05; 
-
-			lookX = lookX - (posX - lookX)*0.05; 
-			lookY = lookY - (posY - lookY)*0.05; 
-			lookZ = lookZ - (posZ - lookZ)*0.05;
-			std::cout <<sqrt(((posX-lookX)*(posX-lookX))+((posY-lookY)*(posY-lookY))+((posZ-lookZ)*(posZ-lookZ)))<<endl;
-
-			break;
-		}
-		case 83: //S pressed => go backward 
-		{
-			posX = posX + (posX - lookX)*0.05; 
-			posY = posY + (posY - lookY)*0.05; 
-			posZ = posZ + (posZ - lookZ)*0.05; 
-
-			lookX = lookX + (posX - lookX)*0.05; 
-			lookY = lookY + (posY - lookY)*0.05; 
-			lookZ = lookZ + (posZ - lookZ)*0.05; 
-
-			std::cout <<sqrt(((posX-lookX)*(posX-lookX))+((posY-lookY)*(posY-lookY))+((posZ-lookZ)*(posZ-lookZ)))<<endl;
-
-			break;
-		}
-		case 65:
-		{
-			std::cout <<"Distance befor rotation =" <<sqrt(((posX-lookX)*(posX-lookX))+((posY-lookY)*(posY-lookY))+((posZ-lookZ)*(posZ-lookZ)))<<endl;
-
-			double Angle = 0.0174f; // more or less 1 degree
-			lookX = (lookX-posX)*cos(Angle) - (lookY-posY)*sin(Angle) + posX;
-			lookY = (lookX-posX)*sin(Angle) + (lookY-posY)*cos(Angle) + posY;
-
-			std::cout  <<"Distance after rotation ="<<sqrt(((posX-lookX)*(posX-lookX))+((posY-lookY)*(posY-lookY))+((posZ-lookZ)*(posZ-lookZ)))<<endl;
-
-			break;
-		}
-		case 68:
-		{
-			std::cout <<"Distance befor rotation =" <<sqrt(((posX-lookX)*(posX-lookX))+((posY-lookY)*(posY-lookY))+((posZ-lookZ)*(posZ-lookZ)))<<endl;
-
-			double Angle = -0.0174f; // more or less 1 degree
-			lookX = (lookX-posX)*cos(Angle) - (lookY-posY)*sin(Angle) + posX;
-			lookY = (lookX-posX)*sin(Angle) + (lookY-posY)*cos(Angle) + posY;
-
-			std::cout  <<"Distance after rotation ="<<sqrt(((posX-lookX)*(posX-lookX))+((posY-lookY)*(posY-lookY))+((posZ-lookZ)*(posZ-lookZ)))<<endl;
-
-			break;
+	int tmpX = int((1+posX)*1024/2);
+	int tmpY = int((1+posY)*1024/2);
+	tmpX = tmpX -2;
+	tmpY = tmpY -2;
+	double tmpZ=0;
+	double AmountOfPoints = 0; 
+	for(int i=0;i<5;i++){//take in count 24 z values arround to have a smooth move 
+		for(int j=0;j<5;j++){
+			tmpX = tmpX + i;
+			tmpY = tmpY + j;
+			if (tmpX>0 & tmpX<1025 & tmpY>0 &tmpY<1025){
+				tmpZ = tmpZ + heightmapCPU[tmpX+1024*tmpY];
+				AmountOfPoints++;
+			}
 		}
 	}
-	/*if(action == GLFW_RELEASE){
-		std::cout << "GLFW_RELEASE key : " << key << std::endl;
-	}*/
+	//std::cout<<"AmountOfPoints ="<<AmountOfPoints<<endl;
+	tmpZ=tmpZ/AmountOfPoints;
+	posZ = tmpZ+0.06;
+	//lookZ = posZ+0.06;
+	update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
+}
 
+void handleKeyboard(){
+	
+	/*static double posX =  0.0f;
+	static double posY =  0.15f;
+	static double posZ =  0.5f;
 
+	static double lookX = 1.0f;
+	static double lookY = 0.1f;
+	static double lookZ = 0.5f;*/
+
+	//fps exploration
+	static double posX =  0.78f;
+	static double posY =  0.42f;
+	static double posZ =  0.30f;
+
+	static double lookX = -0.24f;
+	static double lookY = 0.19f;
+	static double lookZ = 0.13f;
+
+	static double velocityForward = 0;
+	static double velocityBackward = 0;
+	static double velocityLeft = 0;
+	static double velocityRight = 0;
+	static double velocityUp = 0;
+	static double velocityDown = 0;
+
+	static double recordRotZ = 0;
+	static double recordRotY = 0;
+
+	//std::cout<<posX<<" "<<posY<<" "<<posZ<<" "<<lookX<<" "<<lookY<<" "<<lookZ<<" "<<endl;
+	
+
+	if (glfwGetKey(87)==1 | velocityForward != 0.0f){//W pressed => go forward 
+		if(glfwGetKey(87)==1 & velocityForward<0.01f){
+				velocityForward = velocityForward + 0.0005f;
+		}
+		else{
+			velocityForward = velocityForward - 0.0005f;
+		}
+		//Flying exploration
+		//moveAlongAxis(posX,posY,posZ,lookX,lookY,lookZ,velocityForward);
+
+		//FPS exploration
+		if(posX<=1 & posX>=-1 & posY<=1 & posY>=-1){//stay on the map
+			double dispX = 0.2f*velocityForward*powf(posX-lookX,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posX-lookX)/abs(posX-lookX);
+			double dispY = 0.2f*velocityForward*powf(posY-lookY,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posY-lookY)/abs(posY-lookY);
+			fpsExplorationForwardBackward(posX,posY,posZ,lookX,lookY,lookZ,dispX,dispY);
+		}
+	}
+	if  (glfwGetKey(83)==1 | velocityBackward != 0.0f){//S pressed => go backward 
+		if(glfwGetKey(83)==1 & velocityBackward<0.01f){
+				velocityBackward = velocityBackward + 0.0005f;
+		}
+		else{
+			velocityBackward = velocityBackward - 0.0005f;
+		}
+		//flying exploration
+		//moveAlongAxis(posX,posY,posZ,lookX,lookY,lookZ,-velocityBackward);
+		
+		//fps exploration
+		if(posX<=1 & posX>=-1 & posY<=1 & posY>=-1){//stay on the map
+			double dispX = 0.2f*velocityBackward*powf(posX-lookX,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posX-lookX)/abs(posX-lookX);
+			double dispY = 0.2f*velocityBackward*powf(posY-lookY,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posY-lookY)/abs(posY-lookY);
+			fpsExplorationForwardBackward(posX,posY,posZ,lookX,lookY,lookZ,-dispX,-dispY);
+		}
+	}
+	if (glfwGetKey(65)==1 | velocityLeft != 0.0f){//A pressed => turn left
+		if(glfwGetKey(65)==1 & velocityLeft<1.0f){
+				velocityLeft = velocityLeft + 0.01f;
+		}
+		else{
+			velocityLeft = velocityLeft - 0.01f;
+		}
+		rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,velocityLeft);
+		recordRotZ = fmod((recordRotZ+0.0174f*velocityLeft),6.2831); //save rotation done
+	}
+	if (glfwGetKey(68)==1 | velocityRight != 0.0f){//D pressed =turn right
+		if(glfwGetKey(68)==1 & velocityRight<1.0f){
+				velocityRight = velocityRight + 0.01f;
+		}
+		else{
+			velocityRight = velocityRight - 0.01f;
+		}
+		rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,-velocityRight);
+		recordRotZ = fmod((recordRotZ-0.0174f*velocityRight),6.2831); //save rotation done
+	}
+	if  (glfwGetKey(81)==1  | velocityUp != 0.0f){//Q pressed turn up
+		if(glfwGetKey(81)==1 & velocityUp<1.0f){
+				velocityUp = velocityUp + 0.01f;
+		}
+		else{
+			velocityUp = velocityUp - 0.01f;
+		}
+		rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotZ,velocityUp);
+		recordRotY = fmod((recordRotY+0.0174f*velocityUp),6.2831); //save rotation done	
+	}
+	if  (glfwGetKey(69)==1  | velocityDown != 0.0f){//E pressed => down
+		if(glfwGetKey(69)==1 & velocityDown<1.0f){
+				velocityDown = velocityDown + 0.01f;
+		}
+		else{
+			velocityDown = velocityDown - 0.01f;
+		}
+		rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotZ,-velocityDown);
+		recordRotY = fmod((recordRotY-0.0174f*velocityDown),6.2831); //save rotation done
+	}
 }
 
 
