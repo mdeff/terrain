@@ -93,6 +93,7 @@ void GLFWCALL keyboard_callback(int key, int action) {
 
     /// Distance from center (0,0,0) to sun.
     const float r = 3.0f;
+	std::cout << "Pressed key : " << key << std::endl;
 
     if(action == GLFW_PRESS) {
 
@@ -190,6 +191,8 @@ void update_camera_modelview(double posX,double posY,double posZ,double lookX,do
 
 	mat4 view = Eigen::lookAt(camPos, camLookAt, camUp);
 	cameraModelview = view;
+	//std::cout<<(powf(posX-lookX,2)+powf(posY-lookY,2)+powf(posZ-lookZ,2))<<endl;
+
 	/*
 	std::cout<<endl<<endl<<"update"<<endl<<endl;
 	std::cout<<posX-lookX<<" "<<posY-lookY<<" "<<posZ-lookZ<<endl;
@@ -205,6 +208,88 @@ void rotate2D(double pos1, double pos2, double& look1, double& look2, double ang
 	look2=tmp2;
 }
 
+void rotate3D(double& posX, double& posY, double& posZ, double& lookX, double& lookY, double& lookZ,double& recordRotY,double& recordRotZ){
+	double tmpLookX = lookX ; 
+	double tmpLookY = lookY ; 
+	double tmpLookZ = lookZ ; 
+	//go back to origine
+	tmpLookX -=posX;
+	tmpLookY -=posY;
+	tmpLookZ -=posZ;
+	
+	//compute angle to return
+	double returnRecordedRotY = fmod((6.2831-recordRotY),6.2831);
+	double returnRecordedRotZ = fmod((6.2831-recordRotZ),6.2831);
+
+	double newLookX = tmpLookX*cos(returnRecordedRotY)+tmpLookY*sin(returnRecordedRotZ)*sin(returnRecordedRotY)+tmpLookZ*sin(returnRecordedRotY)*cos(returnRecordedRotZ);
+	double newLookY = tmpLookY*cos(returnRecordedRotZ)-tmpLookZ*sin(returnRecordedRotZ);
+	double newLookZ = -tmpLookX*sin(returnRecordedRotY)+tmpLookY*cos(returnRecordedRotY)*sin(returnRecordedRotZ)+tmpLookZ*cos(returnRecordedRotY)*cos(returnRecordedRotZ);
+	
+	double newLookX2 = newLookX*cos(recordRotY)+newLookY*sin(recordRotZ)*sin(recordRotY)+newLookZ*sin(recordRotY)*cos(recordRotZ);
+	double newLookY2 = newLookY*cos(recordRotZ)-newLookZ*sin(recordRotZ);
+	double newLookZ2 = -newLookX*sin(recordRotY)+newLookY*cos(recordRotY)*sin(recordRotZ)+newLookZ*cos(recordRotY)*cos(recordRotZ);
+	
+
+	lookX = newLookX2 + posX;
+	lookY = newLookY2 + posY;
+	lookZ = newLookZ2 + posZ;
+
+}
+void rotateLeftRight(double& posX, double& posY, double& posZ, double& lookX, double& lookY, double& lookZ,double& recordRotY,double& recordRotZ,double velocity){
+		
+		//1 cancel Y rotation
+		double tmpX =lookX;
+		double tmpZ =lookZ;
+		rotate2D(posX,posZ,tmpX,tmpZ, fmod((6.2831-recordRotY),6.2831));
+		
+		//2 cancel z rotation
+		double tmpY = lookY;
+		rotate2D(posX,posY,tmpX,tmpY, fmod((6.2831-recordRotZ),6.2831));
+
+		//3 rotate on Z axis
+		double Angle = 0.0174f*velocity; // more or less 1 degree
+		rotate2D(posX,posY,tmpX,tmpY,Angle);
+	
+		//4 redo Z rotation
+		rotate2D(posX,posY,tmpX,tmpY, recordRotZ);
+
+		//5 redo Y rotation
+		rotate2D(posX,posZ,tmpX,tmpZ,recordRotY);
+		
+		lookX = tmpX;
+		lookY = tmpY;
+		lookZ = tmpZ;
+		
+		update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
+}
+void rotateUpDown(double& posX, double& posY, double& posZ, double& lookX, double& lookY, double& lookZ,double& recordRotY,double& recordRotZ,double velocity){
+		
+		//1 cancel Y rotation
+		double tmpX =lookX;
+		double tmpZ =lookZ;
+		rotate2D(posX,posZ,tmpX,tmpZ, fmod((6.2831-recordRotY),6.2831));
+		
+		//2 cancel z rotation
+		double tmpY = lookY;
+		rotate2D(posX,posY,tmpX,tmpY, fmod((6.2831-recordRotZ),6.2831));
+
+		//3 aply rotation arround Y
+		double Angle = 0.0174f*velocity; // more or less 1 degree
+		rotate2D(posX,posZ,tmpX,tmpZ, Angle);
+
+		//4 redo Z rotation
+		rotate2D(posX,posY,tmpX,tmpY, recordRotZ);
+
+		//5 redo Y rotation
+		rotate2D(posX,posZ,tmpX,tmpZ,recordRotY);
+		
+		lookX = tmpX;
+		lookY = tmpY;
+		lookZ = tmpZ;
+		
+		update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
+}
+/*
 void rotateLeftRight(double& posX, double& posY, double& posZ, double& lookX, double& lookY, double& lookZ,double& recordRotY,double velocity){
 		
 		//1 cancel Y rotation
@@ -225,7 +310,8 @@ void rotateLeftRight(double& posX, double& posY, double& posZ, double& lookX, do
 		lookZ = tmpZ;
 		
 		update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
-}
+}*/
+/*
 void rotateUpDown(double& posX, double& posY, double& posZ, double& lookX, double& lookY, double& lookZ,double& recordRotZ,double velocity){
 
 		//1 cancel Z rotation
@@ -244,7 +330,7 @@ void rotateUpDown(double& posX, double& posY, double& posZ, double& lookX, doubl
 		lookZ = tmpZ ;
 		
 		update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
-}
+}*/
 
 void moveAlongAxis(double& posX, double& posY, double& posZ, double& lookX, double& lookY, double& lookZ, double velocity){
 		
@@ -291,14 +377,14 @@ void fpsExplorationForwardBackward(double& posX, double& posY, double& posZ, dou
 	}
 	//std::cout<<"AmountOfPoints ="<<AmountOfPoints<<endl;
 	tmpZ=tmpZ/AmountOfPoints;
-	posZ = tmpZ+0.06;
+	posZ = tmpZ+0.06; //fps person height
 	//lookZ = posZ+0.06;
 	update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
 }
 
 void handleKeyboard(){
 	
-	/*static double posX =  0.0f;
+	/*static double posX =  0.0f; 
 	static double posY =  0.15f;
 	static double posZ =  0.5f;
 
@@ -325,25 +411,105 @@ void handleKeyboard(){
 	static double recordRotZ = 0;
 	static double recordRotY = 0;
 
+	static bool jumping = false;
+	static double initJumpPosZ = 0;
+	static double initJumpLookZ = 0;
+	static double jumpLevel =0;
+
+//	std::cout<<fmod((6.2831-recordRotY),6.2831)<<endl;
+	//std::cout<<(recordRotY)<<" "<<(recordRotZ)<<endl;
 	//std::cout<<posX<<" "<<posY<<" "<<posZ<<" "<<lookX<<" "<<lookY<<" "<<lookZ<<" "<<endl;
 	
+	if(glfwGetKey(32)==1 & jumping==false){//space => jump
+			jumping = true;
+			initJumpPosZ = posZ;
+			initJumpLookZ = lookZ;
+	}
+	if (jumping ==true ){
 
-	if (glfwGetKey(87)==1 | velocityForward != 0.0f){//W pressed => go forward 
+		if(jumpLevel>80 & jumpLevel<100){
+			jumpLevel +=1;
+		}
+		else if ((jumpLevel>60 & jumpLevel<=80)|(jumpLevel>=100 & jumpLevel<120)){
+			jumpLevel +=1.5;
+		}
+		else{
+			jumpLevel +=2.5;
+		}
+		//jumpLevel += 1;
+		
+		//estimate floor level 8only if mooving while jumping
+		int tmpX = int((1+posX)*1024/2);
+		int tmpY = int((1+posY)*1024/2);
+		tmpX = tmpX -2;
+		tmpY = tmpY -2;
+		double tmpZ=0;
+		double AmountOfPoints = 0; 
+		for(int i=0;i<5;i++){//take in count 24 z values arround to have a smooth move 
+			for(int j=0;j<5;j++){
+				tmpX = tmpX + i;
+				tmpY = tmpY + j;
+				if (tmpX>0 & tmpX<1025 & tmpY>0 &tmpY<1025){
+					tmpZ = tmpZ + heightmapCPU[tmpX+1024*tmpY];
+					AmountOfPoints++;
+				}
+			}
+		}
+		//std::cout<<"AmountOfPoints ="<<AmountOfPoints<<endl;
+		tmpZ=tmpZ/AmountOfPoints;
+		double floorLevel = tmpZ+0.06; //fps person height
+
+		if (jumpLevel >= 90 & posZ<=floorLevel){ //reach floor =>jump finished
+			jumping = false;
+			jumpLevel = 0;
+			posZ = floorLevel;// 0.06 person height
+			std::cout<<"jump end"<<endl;
+		}
+		else if(jumpLevel > 180 ){// falling ! 
+			posZ -= 0.005f; 
+		}
+		else{
+			posZ = initJumpPosZ + 0.1 * sin(0.0174f*jumpLevel);
+			lookZ = initJumpLookZ + 0.1 * sin(0.0174f*jumpLevel);
+		}
+
+		update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
+	}
+	if (glfwGetKey(87)==1 | velocityForward > 0.0f){//W pressed => go forward 
 		if(glfwGetKey(87)==1 & velocityForward<0.01f){
 				velocityForward = velocityForward + 0.0005f;
 		}
 		else{
 			velocityForward = velocityForward - 0.0005f;
 		}
+
+		if(glfwGetKey(287) ==1 & glfwGetKey(87)==1 & velocityForward<0.02f){ // press shift => running
+			velocityForward +=0.01;
+		}
+		
 		//Flying exploration
 		//moveAlongAxis(posX,posY,posZ,lookX,lookY,lookZ,velocityForward);
 
 		//FPS exploration
-		if(posX<=1 & posX>=-1 & posY<=1 & posY>=-1){//stay on the map
+		if(posX<=1 & posX>=-1 & posY<=1 & posY>=-1 & jumping == false){//stay on the map
 			double dispX = 0.2f*velocityForward*powf(posX-lookX,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posX-lookX)/abs(posX-lookX);
 			double dispY = 0.2f*velocityForward*powf(posY-lookY,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posY-lookY)/abs(posY-lookY);
 			fpsExplorationForwardBackward(posX,posY,posZ,lookX,lookY,lookZ,dispX,dispY);
 		}
+		else if(posX<=1 & posX>=-1 & posY<=1 & posY>=-1 & jumping == true){//stay on the map jumping forward
+			double dispX = 0.2f*velocityForward*powf(posX-lookX,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posX-lookX)/abs(posX-lookX);
+			double dispY = 0.2f*velocityForward*powf(posY-lookY,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posY-lookY)/abs(posY-lookY);
+			posX = posX - dispX; 
+			posY = posY - dispY; 
+			lookX = lookX - dispX; 
+			lookY = lookY - dispY; 
+			if(posX>1){posX=1;}
+			else if(posX<-1){posX=-1;}
+			if(posY>1){posY=1;}
+			else if(posY<-1){posY=-1;}
+			update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
+		}
+		
 	}
 	if  (glfwGetKey(83)==1 | velocityBackward != 0.0f){//S pressed => go backward 
 		if(glfwGetKey(83)==1 & velocityBackward<0.01f){
@@ -369,7 +535,9 @@ void handleKeyboard(){
 		else{
 			velocityLeft = velocityLeft - 0.01f;
 		}
-		rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,velocityLeft);
+		rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,recordRotZ,velocityLeft);
+	
+		//rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,velocityLeft);
 		recordRotZ = fmod((recordRotZ+0.0174f*velocityLeft),6.2831); //save rotation done
 	}
 	if (glfwGetKey(68)==1 | velocityRight != 0.0f){//D pressed =turn right
@@ -379,7 +547,9 @@ void handleKeyboard(){
 		else{
 			velocityRight = velocityRight - 0.01f;
 		}
-		rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,-velocityRight);
+		rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,recordRotZ,-velocityRight);
+	
+		//rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,-velocityRight);
 		recordRotZ = fmod((recordRotZ-0.0174f*velocityRight),6.2831); //save rotation done
 	}
 	if  (glfwGetKey(81)==1  | velocityUp != 0.0f){//Q pressed turn up
@@ -389,7 +559,9 @@ void handleKeyboard(){
 		else{
 			velocityUp = velocityUp - 0.01f;
 		}
-		rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotZ,velocityUp);
+		//rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotZ,velocityUp);
+		rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,recordRotZ,velocityUp);
+	
 		recordRotY = fmod((recordRotY+0.0174f*velocityUp),6.2831); //save rotation done	
 	}
 	if  (glfwGetKey(69)==1  | velocityDown != 0.0f){//E pressed => down
@@ -399,7 +571,9 @@ void handleKeyboard(){
 		else{
 			velocityDown = velocityDown - 0.01f;
 		}
-		rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotZ,-velocityDown);
+		//rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotZ,-velocityDown);
+		rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,recordRotZ,-velocityDown);
+	
 		recordRotY = fmod((recordRotY-0.0174f*velocityDown),6.2831); //save rotation done
 	}
 }
