@@ -382,6 +382,79 @@ void fpsExplorationForwardBackward(double& posX, double& posY, double& posZ, dou
 	update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
 }
 
+void deCasteljauTest3Points(){
+
+	static double t=0;
+
+	if(t<=1){
+		//set control points
+		double b0X = 1.0f;
+		double b0Y = 1.0f;
+		double b0Z = 0.4f;
+
+		double b1X = 1.0f;
+		double b1Y = -1.0f;
+		double b1Z = 0.4f;
+
+		double b2X = -1.0f;
+		double b2Y = -1.0f;
+		double b2Z = 0.4f;
+
+		double posX = powf((1-t),2) * b0X + 2*t*(1-t) * b1X + powf(t,2) *b2X;
+		double posY = powf((1-t),2) * b0Y + 2*t*(1-t) * b1Y + powf(t,2) *b2Y;
+		double posZ = powf((1-t),2) * b0Z + 2*t*(1-t) * b1Z + powf(t,2) *b2Z;
+	
+		double lookX = 0.0f;
+		double lookY = 0.0f;
+		double lookZ = 0.3f;
+		t = t+0.001;
+		update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
+	}
+	else{
+		t=0;
+	}
+
+}
+
+void deCasteljauTest4Points(){
+
+	static double t=0;
+
+	if(t<=1){
+		//set control points
+		double b0X = -1.10f;
+		double b0Y =  0.97f;
+		double b0Z =  0.40f;
+
+		double b1X = -0.58f;
+		double b1Y =  1.43f;
+		double b1Z =  0.40f;
+
+		double b2X = 0.65f;
+		double b2Y = 1.37f;
+		double b2Z = 0.40f;
+
+		double b3X = 1.11f;
+		double b3Y = 0.97f;
+		double b3Z = 0.40f;
+
+		double posX = powf((1-t),3) * b0X + 3*t*powf((1-t),2) * b1X + 3*powf(t,2)*(1-t) *b2X+powf(t,3)*b3X;
+		double posY = powf((1-t),3) * b0Y + 3*t*powf((1-t),2) * b1Y + 3*powf(t,2)*(1-t) *b2Y+powf(t,3)*b3Y;
+		double posZ = powf((1-t),3) * b0Z + 3*t*powf((1-t),2) * b1Z + 3*powf(t,2)*(1-t) *b2Z+powf(t,3)*b3Z;
+		
+	
+		double lookX = 0.0f;
+		double lookY = 0.0f;
+		double lookZ = 0.3f;
+		t = t+0.001;
+		update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
+	}
+	else{
+		t=0;
+	}
+
+}
+
 void handleKeyboard(){
 	
 	/*static double posX =  0.0f; 
@@ -415,7 +488,7 @@ void handleKeyboard(){
 	static double initJumpPosZ = 0;
 	static double initJumpLookZ = 0;
 	static double jumpLevel =0;
-
+	deCasteljauTest4Points();
 //	std::cout<<fmod((6.2831-recordRotY),6.2831)<<endl;
 	//std::cout<<(recordRotY)<<" "<<(recordRotZ)<<endl;
 	//std::cout<<posX<<" "<<posY<<" "<<posZ<<" "<<lookX<<" "<<lookY<<" "<<lookZ<<" "<<endl;
