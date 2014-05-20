@@ -2,6 +2,7 @@
 #include "vertices.h"
 
 
+
 #include <cstdlib>
 #include <iostream>
 
@@ -21,17 +22,18 @@ Watermap::Watermap(unsigned int width, unsigned int height) :
 	
 void Watermap::init(Vertices* vertices , GLuint heightMapTexID) {
 
-    /// Common initialization.
-	RenderingContext::init(vertices, watermap_vshader, watermap_fshader, "vertexPosition2DModel");
-
+  		
 	//init the reflection context as well
-	//reflectionID = reflection.init(vertices, heightMapTexID);
-    
+	reflectionID = reflection.init(vertices, heightMapTexID);
+	set_texture(0, reflectionID, "reflectionTex", GL_TEXTURE_2D);
+  
+	 /// Common initialization.
+	RenderingContext::init(vertices, watermap_vshader, watermap_fshader, "vertexPosition2DModel");
 	/* Load texture for water surface */
-	set_texture(2, -1, "waterNormalMap", GL_TEXTURE_2D);
+	set_texture(1, -1, "waterNormalMap", GL_TEXTURE_2D);
     load_texture("../../textures/water_normal_map_2.tga");
   
-    set_texture(3, -1, "riverSurfaceMap", GL_TEXTURE_2D);
+    set_texture(2, -1, "riverSurfaceMap", GL_TEXTURE_2D);
     load_texture("../../textures/water_2.tga");
 
 
@@ -56,11 +58,13 @@ void Watermap::init(Vertices* vertices , GLuint heightMapTexID) {
 }
 
 
-void Watermap::draw(const mat4& projection, const mat4& modelview,
+void Watermap::draw(const mat4& projection, const mat4& modelview, const mat4& flippedModelview,
                    const mat4& lightMVP, const vec3& lightPositionModel) const {
-	//First draw the reflection
-	//reflection.draw(lightMVP);
-
+	 // Enable blending
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	
+	reflection.draw(projection, flippedModelview, lightMVP, lightPositionModel);
     /// Common drawing. 
     RenderingContext::draw();
 
@@ -90,6 +94,8 @@ void Watermap::draw(const mat4& projection, const mat4& modelview,
     /// Render the terrain from camera point of view to default framebuffer.
     _vertices->draw(_vertexAttribID);
 
+
+	glDisable(GL_BLEND);
 }
 
 

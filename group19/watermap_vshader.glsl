@@ -19,7 +19,7 @@ layout(location = 0) in vec2 vertexPosition2DModel;
 out vec3 vertexPosition3DModel;
 
 // Vertex position in light source clip space.
-//out vec4 ShadowCoord;
+out vec3 reflectionCoord;
 
 // Light and view directions.
 out vec3 lightDir, viewDir;
@@ -28,7 +28,7 @@ out vec3 lightDir, viewDir;
 void main() {
 	
 	//fixed height of water surface
-	float waterSurfaceHeight = 0.018;  
+	float waterSurfaceHeight = 0.018f;  
     float height = waterSurfaceHeight; 
   
     // 3D vertex position : X and Y from vertex array, Z is fixed water surface height
@@ -41,7 +41,10 @@ void main() {
     gl_Position = projection * vertexPositionCamera;
 
     // Vertex position in light source clip space.
-    //ShadowCoord = lightOffsetMVP * vec4(vertexPosition3DModel, 1.0);
+    vec4 vertexPositionReflection = lightOffsetMVP * vec4(vertexPosition3DModel, 1.0);
+    // Reflection map texture coordinates with w division for perspective.
+    reflectionCoord = vertexPositionReflection.xyz / vertexPositionReflection.w * 0.5 + 0.5;
+
 
     // Light and view directions : subtraction of 2 points gives vector.
     // Camera space --> camera position at origin --> subtraction by [0,0,0].

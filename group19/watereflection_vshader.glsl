@@ -7,6 +7,9 @@ uniform mat4 modelview;
 // Transformation matrix from model space to light clip space.
 uniform mat4 lightOffsetMVP;
 
+// Clip plane
+uniform vec4 clipPlane;
+
 // Light source position in model space.
 uniform vec3 lightPositionModel;
 
@@ -28,6 +31,9 @@ out vec3 vertexPosition3DModel;
 out vec3 lightDir, viewDir;
 
 
+out float gl_ClipDistance[1];
+
+
 void main() {
 
     // World (triangle grid) coordinates are (-1,-1) x (1,1).
@@ -43,7 +49,10 @@ void main() {
     // Projection matrix transforms from camera space to clip space (homogeneous space).
     vec4 vertexPositionCamera = modelview * vec4(vertexPosition3DModel, 1.0);
     gl_Position = projection * vertexPositionCamera;
-  
+
+	//Calculate clip distance
+	gl_ClipDistance[0] = dot(vec4(vertexPosition3DModel,1.0), clipPlane);
+
     // Light and view directions : subtraction of 2 points gives vector.
     // Camera space --> camera position at origin --> subtraction by [0,0,0].
     // No need to normalize as interpolation will not preserve vector lengths.

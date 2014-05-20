@@ -13,6 +13,7 @@
 #include "vertices_quad.h"
 #include "vertices_grid.h"
 #include "vertices_skybox.h"
+#include "waterReflection.h"
 
 /// Screen size.
 const int windowWidth(1024);
@@ -27,6 +28,7 @@ Shadowmap shadowmap(textureWidth, textureHeight);
 Skybox skybox(windowWidth, windowHeight);
 Terrain terrain(windowWidth, windowHeight);
 Watermap water(windowWidth, windowHeight);
+WaterReflection reflection(windowWidth, windowHeight);
 
 /// Instanciate the vertices.
 Vertices* verticesGrid = new VerticesGrid();
@@ -36,6 +38,8 @@ Vertices* verticesSkybox = new VerticesSkybox();
 static mat4 cameraModelview;
 static mat4 lightMVP;
 static vec3 lightPositionModel;
+//flip the camera for reflection effect
+static mat4 flippedCameraModelview;
 
 /// Projection parameters.
 // Horizontal field of view in degrees : amount of "zoom" ("camera lens").
@@ -59,7 +63,7 @@ void update_matrix_stack(const mat4& model) {
 
     /// View matrix (camera extrinsics) (position in world space).
     /// Camera is in the sky, looking down.
-    vec3 camPos(0.0f, -3.0f, 4.0f);
+    vec3 camPos(0.0f, -1.5f, 2.0f);
     vec3 camLookAt(0.0f, 0.0f, 0.0f);
     vec3 camUp(0.0f, 0.0f, 1.0f);
     /// Camera is right on top, comparison with light position.
@@ -70,16 +74,19 @@ void update_matrix_stack(const mat4& model) {
     /// Camera is in a corner, looking down to the terrain.
     //vec3 camPos(2.0f, -2.0f, 2.5f);
     //vec3 camPos(1.0f, 0.0f,0.7f); // Close texture view.
-//    vec3 camPos(0.9f, -0.8f, 0.7f); // Close texture view.
-
+    
+	vec3 flippedCamPos = vec3(camPos[0], camPos[1],  2*GROUND_HEIGHT - camPos[2]);
     /// View from center.
 //    vec3 camPos(0.9f, -0.8f, 1.0f);
 //    vec3 camLookAt(-0.3f, 0.1f, 0.5f);
 //    vec3 camUp(0.0f, 0.0f, 1.0f);
     mat4 view = Eigen::lookAt(camPos, camLookAt, camUp);
+	mat4 flippedView = Eigen::lookAt(flippedCamPos, camLookAt, camUp);
 
     /// Assemble the "Model View" matrix.
     cameraModelview = view * model;
+	// Calculate the Model View matrix of flipped camera
+	flippedCameraModelview = flippedView * model;
 
 }
 
@@ -137,6 +144,10 @@ void init() {
     glEnable(GL_MULTISAMPLE);
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+	glEnable(GL_CLIP_DISTANCE0);
+
+	//glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable (GL_BLEND);
     //glEnable(GL_CULL_FACE);
 
     /// Generate the heightmap texture.
@@ -158,7 +169,7 @@ void init() {
     terrain.init(verticesGrid, heightMapTexID, shadowMapTexID);
     skybox.init(verticesSkybox);
 	water.init(verticesGrid, heightMapTexID);
-
+	//reflection.init(verticesGrid, heightMapTexID);
     /// Initialize the matrix stack.  	
 	update_matrix_stack(mat4::Identity());
 
@@ -425,8 +436,9 @@ void display() {
     /// Render shadowmap, terrain and skybox.
     shadowmap.draw(lightMVP);
     terrain.draw(cameraProjection, cameraModelview, lightMVP, lightPositionModel);
-	water.draw(cameraProjection, cameraModelview, lightMVP, lightPositionModel);
+	water.draw(cameraProjection, cameraModelview, flippedCameraModelview, lightMVP, lightPositionModel);
     skybox.draw(cameraProjection, cameraModelview);
+	//reflection.draw(cameraProjection, flippedCameraModelview, lightMVP, lightPositionModel);
 //    shadowmap.draw(lightMVP);
 
 }

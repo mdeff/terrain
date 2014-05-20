@@ -16,7 +16,7 @@ public:
     Watermap(unsigned int width, unsigned int height);
     //void init(Vertices* vertices, unsigned int heightMapTexID, unsigned int shadowMapTexID);
     void init(Vertices* vertices, GLuint heightMapTexID);
-	void draw(const mat4& projection, const mat4& modelview,
+	void draw(const mat4& projection, const mat4& modelview, const mat4& flippedModelview,
               const mat4& lightMVP, const vec3& lightPositionModel) const;
 
 private:
