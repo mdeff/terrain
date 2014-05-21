@@ -1,5 +1,6 @@
 
 #include "camera.h"
+#include "vertices.h"
 
 #include <iostream>
 
@@ -7,8 +8,9 @@
 #include <GL/glfw.h>
 #include "opengp.h"
 
-//camera movement according to bezier curve
-static vec3 bezierCurve[1000];
+#include "camera_vshader.h"
+#include "camera_fshader.h"
+
 
 //save heightmap to cpu to read for fps exploration
 GLfloat *heightmapCPU = new GLfloat[1024*1024];
@@ -25,6 +27,32 @@ static bool KeySPACE = false;
 
 Camera::Camera(unsigned int width, unsigned int height) :
     RenderingContext(width, height) {
+}
+
+
+void Camera::init(Vertices* vertices) {
+
+    /// Common initialization.
+    RenderingContext::init(vertices, camera_vshader, camera_fshader, "vertexPosition3DModel");
+
+}
+
+
+void Camera::draw(const mat4& projection, const mat4& modelview) const {
+
+    /// Common drawing.
+    RenderingContext::draw();
+
+    /// Update the content of the uniforms.
+    glUniformMatrix4fv(_modelviewID, 1, GL_FALSE, modelview.data());
+    glUniformMatrix4fv(_projectionID, 1, GL_FALSE, projection.data());
+
+    /// Do not clear the default framebuffer (screen) : done by Terrain.
+    /// Otherwise already drawn pixels will be cleared.
+
+    /// Render the Bézier curve from camera point of view to default framebuffer.
+    _vertices->draw();
+
 }
 
 
@@ -49,52 +77,6 @@ void Camera::CopyHeightmapToCPU(GLuint heightMapTexID){
 		}
 	}
 	std::cout<<tmpMax<<" "<<tmpMin<<endl;*/
-}
-
-void Camera::deCasteljau4PointsInit(){
-	int i = 0;
-	for(double t=0 ; t<=1 ; t = t + 0.001){
-		//set control points
-		/* control from project subject
-		double b0X = -1.10f;
-		double b0Y =  0.97f;
-		double b0Z =  0.40f;
-
-		double b1X = -0.58f;
-		double b1Y =  1.43f;
-		double b1Z =  0.40f;
-
-		double b2X = 0.65f;
-		double b2Y = 1.37f;
-		double b2Z = 0.40f;
-
-		double b3X = 1.11f;
-		double b3Y = 0.97f;
-		double b3Z = 0.40f;*/
-
-		//new control
-		double b0X = -0.51f;
-		double b0Y =  1.09f;
-		double b0Z =  0.40f;
-
-		double b1X =  0.57f;
-		double b1Y =  1.26f;
-		double b1Z =  0.40f;
-
-		double b2X = 1.31f;
-		double b2Y = 0.92f;
-		double b2Z = 0.40f;
-
-		double b3X = 1.25f;
-		double b3Y = -0.41f;
-		double b3Z = 0.40f;
-
-		double posX = powf((1-t),3) * b0X + 3*t*powf((1-t),2) * b1X + 3*powf(t,2)*(1-t) *b2X+powf(t,3)*b3X;
-		double posY = powf((1-t),3) * b0Y + 3*t*powf((1-t),2) * b1Y + 3*powf(t,2)*(1-t) *b2Y+powf(t,3)*b3Y;
-		double posZ = powf((1-t),3) * b0Z + 3*t*powf((1-t),2) * b1Z + 3*powf(t,2)*(1-t) *b2Z+powf(t,3)*b3Z;
-
-		bezierCurve[i]=vec3(posX,posY,posZ);
-	}
 }
 
 void Camera::update_camera_modelview(double posX,double posY,double posZ,double lookX,double lookY,double lookZ){

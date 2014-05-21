@@ -13,8 +13,11 @@ class Camera : public RenderingContext {
 public:
 
     /// Common methods of all RenderingContext.
-	Camera::Camera(unsigned int width, unsigned int height);
-	void deCasteljau4PointsInit();
+    Camera(unsigned int width, unsigned int height);
+    void init(Vertices* vertices);
+    void draw(const mat4& projection, const mat4& modelview) const;
+
+    /// Common methods of all RenderingContext.
 	void handleCamera();
 	void handleCameraControls(int key, int action);
 	void update_camera_modelview(double posX,double posY,double posZ,double lookX,double lookY,double lookZ);
@@ -28,11 +31,13 @@ public:
 	void fpsExplorationForwardBackward(double& posX, double& posY, double& posZ, double& lookX, double& lookY, double& lookZ,double dispX,double dispY);
 	void deCasteljauTest3Points();
 	void deCasteljauTest4Points();
+
 private:
 
-
     /// Uniform IDs.
+    unsigned int _modelviewID;
+    unsigned int _projectionID;
 
 };
 
-#endif 
+#endif /* __camera_h__ */

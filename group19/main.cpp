@@ -13,6 +13,7 @@
 #include "vertices_quad.h"
 #include "vertices_grid.h"
 #include "vertices_skybox.h"
+#include "vertices_bezier.h"
 #include "camera.h"
 
 /// Screen size.
@@ -33,6 +34,7 @@ Camera camera(windowWidth, windowHeight);
 /// Instanciate the vertices.
 Vertices* verticesGrid = new VerticesGrid();
 Vertices* verticesSkybox = new VerticesSkybox();
+Vertices* verticesBezier = new VerticesBezier();
 
 /// Matrices that have to be shared between functions.
 mat4 cameraModelview;
@@ -63,15 +65,15 @@ void update_matrix_stack(const mat4& model) {
 
     /// View matrix (camera extrinsics) (position in world space).
 
-    //// Global view from outside.
-    //vec3 camPos(0.0f, -3.0f, 4.0f);
-    //vec3 camLookAt(0.0f, 0.0f, 0.0f);
-    //vec3 camUp(0.0f, 0.0f, 1.0f);
-
-	//fps exploration
-	vec3 camPos(0.78f, 0.42f, 0.30f);
-    vec3 camLookAt(-0.24f, 0.19f, 0.13f);
+    /// Global view from outside.
+    vec3 camPos(0.0f, -3.0f, 4.0f);
+    vec3 camLookAt(0.0f, 0.0f, 0.0f);
     vec3 camUp(0.0f, 0.0f, 1.0f);
+
+    /// FPS exploration.
+//	  vec3 camPos(0.78f, 0.42f, 0.30f);
+//    vec3 camLookAt(-0.24f, 0.19f, 0.13f);
+//    vec3 camUp(0.0f, 0.0f, 1.0f);
 
     /// Internal view from center.
 //    vec3 camPos(0.9f, -0.8f, 1.0f);
@@ -151,12 +153,14 @@ void init() {
     /// Generate the vertices.
     verticesGrid->generate();
     verticesSkybox->generate();
+    verticesBezier->generate();
 
     /// Initialize the rendering contexts.
     GLuint shadowMapTexID = shadowmap.init(verticesGrid, heightMapTexID);
     terrain.init(verticesGrid, heightMapTexID, shadowMapTexID);
     skybox.init(verticesSkybox);
-	water.init(verticesGrid);
+    water.init(verticesGrid);
+    camera.init(verticesBezier);
 
     /// Initialize the matrix stack.  	
 	update_matrix_stack(mat4::Identity());
@@ -164,8 +168,6 @@ void init() {
     /// Initialize the light position.
     keyboard_callback(49, GLFW_PRESS);
 
-	//create beziercurve
-	camera.deCasteljau4PointsInit();
 }
 
 
@@ -182,15 +184,16 @@ void display() {
         lastTime += 1.0;
     }
 
-    camera.handleCamera();
+//    camera.handleCamera();
     /// Uncomment to render only the boundary (not full triangles).
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-    /// Render shadowmap, terrain and skybox.
+    /// Render everything.
     shadowmap.draw(lightMVP);
     terrain.draw(cameraProjection, cameraModelview, lightMVP, lightPositionModel);
     water.draw(cameraProjection, cameraModelview, lightMVP, lightPositionModel);
     skybox.draw(cameraProjection, cameraModelview);
+    camera.draw(cameraProjection, cameraModelview);
 
 }
 
