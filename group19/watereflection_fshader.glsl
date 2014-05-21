@@ -1,22 +1,27 @@
 #version 330 core
 
 // Light properties.
-uniform vec3 Ia, Id, Is;
+uniform vec3 Ia;
+uniform vec3 Id;
+uniform vec3 Is;
 
 // Texture 0. Defined by glActiveTexture and passed by glUniform1i.
 uniform sampler2D heightMapTex;
 
 // Environmental textures 1-6. Defined by glActiveTexture and passed by glUniform1i.
-uniform sampler2D sandTex, iceMoutainTex, treeTex, stoneTex, underWaterTex, snowTex;
-
-
+uniform sampler2D sandTex;
+uniform sampler2D iceMoutainTex;
+uniform sampler2D treeTex;
+uniform sampler2D stoneTex;
+uniform sampler2D underWaterTex;
+uniform sampler2D snowTex;
 
 // Vertices 3D position (after heightmap displacement) in model space.
 in vec3 vertexPosition3DModel;
 
-
 // Light and view directions.
-in vec3 lightDir, viewDir;
+in vec3 lightDir;
+in vec3 viewDir;
 
 // First output buffer is pixel color.
 // gl_FragColor

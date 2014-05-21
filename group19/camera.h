@@ -31,7 +31,9 @@ public:
 	void fpsExplorationForwardBackward(double& posX, double& posY, double& posZ, double& lookX, double& lookY, double& lookZ,double dispX,double dispY);
 	void deCasteljauTest3Points();
 	void deCasteljauTest4Points();
-
+	void InitdeCasteljau4Points();
+	void flyingExploration();
+	void fpsExploration();
 private:
 
     /// Uniform IDs.

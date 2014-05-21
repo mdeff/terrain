@@ -131,11 +131,11 @@ void GLFWCALL keyboard_callback(int key, int action) {
 
     /// Distance from center (0,0,0) to sun.
     const float r = 3.0f;
-	std::cout << "Pressed key : " << key << std::endl;
+	//std::cout << "Pressed key : " << key << std::endl;
 
     if(action == GLFW_PRESS) {
 
-        std::cout << "Pressed key : " << key << std::endl;
+       // std::cout << "Pressed key : " << key << std::endl;
 
         /// 49 corressponds to 1, 57 to 9 (keyboard top keys).
         if(key >= 49 && key <= 57) {

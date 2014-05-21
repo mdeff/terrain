@@ -1,7 +1,9 @@
 #version 330 core
 
 //Light properties
-uniform vec3 Ia, Id, Is;
+uniform vec3 Ia;
+uniform vec3 Id;
+uniform vec3 Is;
 
 //Time for water animation
 uniform float time;
@@ -9,10 +11,11 @@ uniform float time;
 // Vertices 3D position (after heightmap displacement) in model space.
 in vec3 vertexPosition3DModel;
 
-in vec4 reflectionCoord;
+in vec3 reflectionCoord;
 
 // Light and view directions.
-in vec3 lightDir, viewDir;
+in vec3 lightDir;
+in vec3 viewDir;
 
 // First output buffer is pixel color.
 // gl_FragColor

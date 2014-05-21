@@ -13,7 +13,6 @@ uniform mat4 lightOffsetMVP;
 // Light source position in model space.
 uniform vec3 lightPositionModel;
 
-
 // Vertices 2D position in model space.
 // First input buffer. Defined here, retrieved in C++ by glGetAttribLocation.
 layout(location = 0) in vec2 vertexPosition2DModel;
@@ -25,7 +24,8 @@ out vec3 vertexPosition3DModel;
 out vec3 reflectionCoord;
 
 // Light and view directions.
-out vec3 lightDir, viewDir;
+out vec3 lightDir;
+out vec3 viewDir;
 
 
 void main() {

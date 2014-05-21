@@ -24,6 +24,12 @@ static bool KeyE = false;
 static bool KeyQ = false; 
 static bool KeySHIFT = false; 
 static bool KeySPACE = false; 
+static bool ModeFlying = false;
+static bool ModeFps = false;
+static bool ModeBCurve = true;
+
+//Bezier curve 
+static double bezierCurve[1000*3];
 
 Camera::Camera(unsigned int width, unsigned int height) :
     RenderingContext(width, height) {
@@ -34,7 +40,7 @@ void Camera::init(Vertices* vertices) {
 
     /// Common initialization.
     RenderingContext::init(vertices, camera_vshader, camera_fshader, "vertexPosition3DModel");
-
+	Camera::InitdeCasteljau4Points();
 }
 
 
@@ -312,8 +318,24 @@ void Camera::deCasteljauTest3Points(){
 }
 
 void Camera::deCasteljauTest4Points(){
+	static int i =0;
 
-	static double t=0;
+	if(i<1000){
+
+		double posX	= bezierCurve[i*3+0];
+		double posY	= bezierCurve[i*3+1];
+		double posZ	= bezierCurve[i*3+2];
+
+		double lookX = 0.0f;
+		double lookY = 0.0f;
+		double lookZ = 0.3f;
+		i++;
+		update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
+	}
+	else{
+		i=0;
+	}
+	/*static double t=0;
 
 	if(t<=1){
 		//set control points
@@ -332,7 +354,7 @@ void Camera::deCasteljauTest4Points(){
 
 		double b3X = 1.11f;
 		double b3Y = 0.97f;
-		double b3Z = 0.40f;*/
+		double b3Z = 0.40f;
 
 		//new control
 		double b0X = -0.51f;
@@ -364,21 +386,44 @@ void Camera::deCasteljauTest4Points(){
 	}
 	else{
 		t=0;
-	}
+	}*/
 
 }
 
-void Camera::handleKeyboard(){
-	
-	/*static double posX =  0.0f; 
-	static double posY =  0.15f;
-	static double posZ =  0.5f;
+void Camera::InitdeCasteljau4Points(){
 
-	static double lookX = 1.0f;
-	static double lookY = 0.1f;
-	static double lookZ = 0.5f;*/
-	/*
-	//fps exploration
+	double t=0;
+	for (int i=0; i<1000; i++){
+		//set control points
+		double b0X = -0.51f;
+		double b0Y =  1.09f;
+		double b0Z =  0.40f;
+
+		double b1X =  0.57f;
+		double b1Y =  1.26f;
+		double b1Z =  0.40f;
+
+		double b2X = 1.31f;
+		double b2Y = 0.92f;
+		double b2Z = 0.40f;
+
+		double b3X = 1.25f;
+		double b3Y = -0.41f;
+		double b3Z = 0.40f;
+
+		double posX = powf((1-t),3) * b0X + 3*t*powf((1-t),2) * b1X + 3*powf(t,2)*(1-t) *b2X+powf(t,3)*b3X;
+		double posY = powf((1-t),3) * b0Y + 3*t*powf((1-t),2) * b1Y + 3*powf(t,2)*(1-t) *b2Y+powf(t,3)*b3Y;
+		double posZ = powf((1-t),3) * b0Z + 3*t*powf((1-t),2) * b1Z + 3*powf(t,2)*(1-t) *b2Z+powf(t,3)*b3Z;
+		
+		bezierCurve[i*3+0] = posX;
+		bezierCurve[i*3+1] = posY;
+		bezierCurve[i*3+2] = posZ;
+		t = t+0.001;
+	}
+}
+
+void Camera::flyingExploration(){
+	
 	static double posX =  0.78f;
 	static double posY =  0.42f;
 	static double posZ =  0.30f;
@@ -386,7 +431,7 @@ void Camera::handleKeyboard(){
 	static double lookX = -0.24f;
 	static double lookY = 0.19f;
 	static double lookZ = 0.13f;
-
+	//std::cout<<posX<<"  "<<posY<<"  "<<posZ<<std::endl;
 	static double velocityForward = 0;
 	static double velocityBackward = 0;
 	static double velocityLeft = 0;
@@ -397,125 +442,36 @@ void Camera::handleKeyboard(){
 	static double recordRotZ = 0;
 	static double recordRotY = 0;
 
-	static bool jumping = false;
-	static double initJumpPosZ = 0;
-	static double initJumpLookZ = 0;
-	static double jumpLevel =0;
-
-	deCasteljauTest4Points();
-//	std::cout<<fmod((6.2831-recordRotY),6.2831)<<endl;
-	//std::cout<<(recordRotY)<<" "<<(recordRotZ)<<endl;
-	//std::cout<<posX<<" "<<posY<<" "<<posZ<<" "<<lookX<<" "<<lookY<<" "<<lookZ<<" "<<endl;
-	
-	if(glfwGetKey(32)==1 & jumping==false){//space => jump
-			jumping = true;
-			initJumpPosZ = posZ;
-			initJumpLookZ = lookZ;
-	}
-	if (jumping ==true ){
-
-		if(jumpLevel>80 & jumpLevel<100){
-			jumpLevel +=1;
-		}
-		else if ((jumpLevel>60 & jumpLevel<=80)|(jumpLevel>=100 & jumpLevel<120)){
-			jumpLevel +=1.5;
-		}
-		else{
-			jumpLevel +=2.5;
-		}
-		//jumpLevel += 1;
-		
-		//estimate floor level 8only if mooving while jumping
-		int tmpX = int((1+posX)*1024/2);
-		int tmpY = int((1+posY)*1024/2);
-		tmpX = tmpX -2;
-		tmpY = tmpY -2;
-		double tmpZ=0;
-		double AmountOfPoints = 0; 
-		for(int i=0;i<5;i++){//take in count 24 z values arround to have a smooth move 
-			for(int j=0;j<5;j++){
-				tmpX = tmpX + i;
-				tmpY = tmpY + j;
-				if (tmpX>0 & tmpX<1025 & tmpY>0 &tmpY<1025){
-					tmpZ = tmpZ + heightmapCPU[tmpX+1024*tmpY];
-					AmountOfPoints++;
-				}
-			}
-		}
-		//std::cout<<"AmountOfPoints ="<<AmountOfPoints<<endl;
-		tmpZ=tmpZ/AmountOfPoints;
-		double floorLevel = tmpZ+0.06; //fps person height
-
-		if (jumpLevel >= 90 & posZ<=floorLevel){ //reach floor =>jump finished
-			jumping = false;
-			jumpLevel = 0;
-			posZ = floorLevel;// 0.06 person height
-		}
-		else if(jumpLevel > 180 ){// falling ! 
-			posZ -= 0.005f; 
-		}
-		else{
-			posZ = initJumpPosZ + 0.1 * sin(0.0174f*jumpLevel);
-			lookZ = initJumpLookZ + 0.1 * sin(0.0174f*jumpLevel);
-		}
-
-		update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
-	}
-	if (glfwGetKey(87)==1 | velocityForward > 0.0f){//W pressed => go forward 
-		if(glfwGetKey(87)==1 & velocityForward<0.01f){
+	if ((KeyW==true) | (velocityForward > 0.0f)){//W pressed => go forward 
+		if((KeyW==1) & (velocityForward<0.01f)){
 				velocityForward = velocityForward + 0.0005f;
 		}
 		else{
 			velocityForward = velocityForward - 0.0005f;
 		}
 
-		if(glfwGetKey(287) ==1 & glfwGetKey(87)==1 & velocityForward<0.02f){ // press shift => running
+		if((KeySHIFT==true) & (KeyW==true) & (velocityForward<0.02f)){ // press shift => running
 			velocityForward +=0.01;
 		}
 		
 		//Flying exploration
-		//moveAlongAxis(posX,posY,posZ,lookX,lookY,lookZ,velocityForward);
+		moveAlongAxis(posX,posY,posZ,lookX,lookY,lookZ,velocityForward);
 
-		//FPS exploration
-		if(posX<=1 & posX>=-1 & posY<=1 & posY>=-1 & jumping == false){//stay on the map
-			double dispX = 0.2f*velocityForward*powf(posX-lookX,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posX-lookX)/abs(posX-lookX);
-			double dispY = 0.2f*velocityForward*powf(posY-lookY,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posY-lookY)/abs(posY-lookY);
-			fpsExplorationForwardBackward(posX,posY,posZ,lookX,lookY,lookZ,dispX,dispY);
-		}
-		else if(posX<=1 & posX>=-1 & posY<=1 & posY>=-1 & jumping == true){//stay on the map jumping forward
-			double dispX = 0.2f*velocityForward*powf(posX-lookX,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posX-lookX)/abs(posX-lookX);
-			double dispY = 0.2f*velocityForward*powf(posY-lookY,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posY-lookY)/abs(posY-lookY);
-			posX = posX - dispX; 
-			posY = posY - dispY; 
-			lookX = lookX - dispX; 
-			lookY = lookY - dispY; 
-			if(posX>1){posX=1;}
-			else if(posX<-1){posX=-1;}
-			if(posY>1){posY=1;}
-			else if(posY<-1){posY=-1;}
-			update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
-		}
 		
 	}
-	if  (glfwGetKey(83)==1 | velocityBackward != 0.0f){//S pressed => go backward 
-		if(glfwGetKey(83)==1 & velocityBackward<0.01f){
+	if  ((KeyS==true)| (velocityBackward != 0.0f)){//S pressed => go backward 
+		if((KeyS==true) & (velocityBackward<0.01f)){
 				velocityBackward = velocityBackward + 0.0005f;
 		}
 		else{
 			velocityBackward = velocityBackward - 0.0005f;
 		}
 		//flying exploration
-		//moveAlongAxis(posX,posY,posZ,lookX,lookY,lookZ,-velocityBackward);
+		moveAlongAxis(posX,posY,posZ,lookX,lookY,lookZ,-velocityBackward);
 		
-		//fps exploration
-		if(posX<=1 & posX>=-1 & posY<=1 & posY>=-1){//stay on the map
-			double dispX = 0.2f*velocityBackward*powf(posX-lookX,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posX-lookX)/abs(posX-lookX);
-			double dispY = 0.2f*velocityBackward*powf(posY-lookY,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posY-lookY)/abs(posY-lookY);
-			fpsExplorationForwardBackward(posX,posY,posZ,lookX,lookY,lookZ,-dispX,-dispY);
-		}
 	}
-	if (glfwGetKey(65)==1 | velocityLeft != 0.0f){//A pressed => turn left
-		if(glfwGetKey(65)==1 & velocityLeft<1.0f){
+	if ((KeyA==true) | (velocityLeft != 0.0f)){//A pressed => turn left
+		if((KeyA==true) & (velocityLeft<1.0f)){
 				velocityLeft = velocityLeft + 0.01f;
 		}
 		else{
@@ -526,8 +482,8 @@ void Camera::handleKeyboard(){
 		//rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,velocityLeft);
 		recordRotZ = fmod((recordRotZ+0.0174f*velocityLeft),6.2831); //save rotation done
 	}
-	if (glfwGetKey(68)==1 | velocityRight != 0.0f){//D pressed =turn right
-		if(glfwGetKey(68)==1 & velocityRight<1.0f){
+	if ((KeyD==true) | (velocityRight != 0.0f)){//D pressed =turn right
+		if((KeyD==true) & (velocityRight<1.0f)){
 				velocityRight = velocityRight + 0.01f;
 		}
 		else{
@@ -538,8 +494,8 @@ void Camera::handleKeyboard(){
 		//rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,-velocityRight);
 		recordRotZ = fmod((recordRotZ-0.0174f*velocityRight),6.2831); //save rotation done
 	}
-	if  (glfwGetKey(81)==1  | velocityUp != 0.0f){//Q pressed turn up
-		if(glfwGetKey(81)==1 & velocityUp<1.0f){
+	if  ((KeyQ==true)  | (velocityUp != 0.0f)){//Q pressed turn up
+		if((KeyQ==true) & (velocityUp<1.0f)){
 				velocityUp = velocityUp + 0.01f;
 		}
 		else{
@@ -550,8 +506,8 @@ void Camera::handleKeyboard(){
 	
 		recordRotY = fmod((recordRotY+0.0174f*velocityUp),6.2831); //save rotation done	
 	}
-	if  (glfwGetKey(69)==1  | velocityDown != 0.0f){//E pressed => down
-		if(glfwGetKey(69)==1 & velocityDown<1.0f){
+	if  ( (KeyE==true) | (velocityDown != 0.0f)){//E pressed => down
+		if((KeyE==true) & (velocityDown<1.0f)){
 				velocityDown = velocityDown + 0.01f;
 		}
 		else{
@@ -561,14 +517,11 @@ void Camera::handleKeyboard(){
 		rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,recordRotZ,-velocityDown);
 	
 		recordRotY = fmod((recordRotY-0.0174f*velocityDown),6.2831); //save rotation done
-	}*/
+	}
 }
 
-
-
-void Camera::handleCamera(){
-//std::cout<<" W "<< KeyW <<" A "<< KeyA  <<" S "<< KeyS <<" D "<< KeyD <<" E "<< KeyE  <<" Q "<< KeyQ <<" Shift "<< KeySHIFT<<" Space "<< KeySPACE <<std::endl;
-	//fps exploration
+void Camera::fpsExploration(){
+	
 	static double posX =  0.78f;
 	static double posY =  0.42f;
 	static double posZ =  0.30f;
@@ -592,11 +545,6 @@ void Camera::handleCamera(){
 	static double initJumpLookZ = 0;
 	static double jumpLevel =0;
 
-	deCasteljauTest4Points();
-	//	std::cout<<fmod((6.2831-recordRotY),6.2831)<<endl;
-	//std::cout<<(recordRotY)<<" "<<(recordRotZ)<<endl;
-	//std::cout<<posX<<" "<<posY<<" "<<posZ<<" "<<lookX<<" "<<lookY<<" "<<lookZ<<" "<<endl;
-	
 	if((KeySPACE==true) & (jumping==false)){//space => jump
 			jumping = true;
 			initJumpPosZ = posZ;
@@ -613,7 +561,6 @@ void Camera::handleCamera(){
 		else{
 			jumpLevel +=2.5;
 		}
-		//jumpLevel += 1;
 		
 		//estimate floor level 8only if mooving while jumping
 		int tmpX = int((1+posX)*1024/2);
@@ -663,9 +610,6 @@ void Camera::handleCamera(){
 			velocityForward +=0.01;
 		}
 		
-		//Flying exploration
-		//moveAlongAxis(posX,posY,posZ,lookX,lookY,lookZ,velocityForward);
-
 		//FPS exploration
 		if((posX<=1) & (posX>=-1) & (posY<=1) & (posY>=-1) & (jumping == false)){//stay on the map
 			double dispX = 0.2f*velocityForward*powf(posX-lookX,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posX-lookX)/abs(posX-lookX);
@@ -694,8 +638,6 @@ void Camera::handleCamera(){
 		else{
 			velocityBackward = velocityBackward - 0.0005f;
 		}
-		//flying exploration
-		//moveAlongAxis(posX,posY,posZ,lookX,lookY,lookZ,-velocityBackward);
 		
 		//fps exploration
 		if((posX<=1) & (posX>=-1) & (posY<=1) & (posY>=-1)){//stay on the map
@@ -752,11 +694,22 @@ void Camera::handleCamera(){
 	
 		recordRotY = fmod((recordRotY-0.0174f*velocityDown),6.2831); //save rotation done
 	}
+}
 
+void Camera::handleCamera(){
+	if (ModeFlying == true){
+		flyingExploration();
+	}
+	else if (ModeFps == true){
+		fpsExploration();
+	}
+	else if (ModeBCurve == true){
+		deCasteljauTest4Points();
+	}
 }
 
 void Camera::handleCameraControls(int key, int action){
-	std::cout<<key<<"  "<<action<<std::endl;
+	//std::cout<<key<<"  "<<action<<std::endl;
 	
 	switch(key){
 	case 87 :
@@ -782,6 +735,24 @@ void Camera::handleCameraControls(int key, int action){
 		break;
 	case 32 :
 		KeySPACE = !KeySPACE; 
+		break;
+	case 303: //1  
+		std::cout<<"Exploration in free flying mode"<<std::endl;
+		ModeFlying = true;
+		ModeFps = false;
+		ModeBCurve = false;
+		break;
+	case 304: //2 
+		std::cout<<"Exploration in fps mode"<<std::endl;
+		ModeFlying = false;
+		ModeFps = true;
+		ModeBCurve = false;
+		break;
+	case 305: //3
+		std::cout<<"Exploration in Bcurve mode"<<std::endl;
+		ModeFlying = false;
+		ModeFps = false;
+		ModeBCurve = true;
 		break;
 	}
 }
