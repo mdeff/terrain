@@ -32,8 +32,9 @@ void RenderingContext::init(Vertices* vertices, const char* vshader, const char*
         exit(EXIT_FAILURE);
     glUseProgram(_programID);
 
-    /// Set vertex attribute array ID.
-    _vertexAttribID = glGetAttribLocation(_programID, vertexAttribName);
+    /// Bind the vertex attribute ID to vertex data.
+    GLuint vertexAttribID = glGetAttribLocation(_programID, vertexAttribName);
+    _vertices->bind(vertexAttribID);
 
 }
 

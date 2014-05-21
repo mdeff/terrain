@@ -27,6 +27,7 @@ private:
     unsigned int _lightOffsetMVPID;
     unsigned int _lightPositionModelID;
     unsigned int _timeID;
+	unsigned int _lightMVPID;
 
 	//Water reflection 
 	GLuint reflectionID;

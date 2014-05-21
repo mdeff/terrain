@@ -24,6 +24,7 @@ private:
     unsigned int _projectionID;
     unsigned int _lightOffsetMVPID;
     unsigned int _lightPositionModelID;
+	unsigned int _lightMVPID;
 
 	//helper function
 	GLuint WaterReflection::load_texture(const char * imagepath) const; 

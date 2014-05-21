@@ -42,11 +42,11 @@ void Skybox::draw(const mat4& projection, const mat4& modelview) const {
     glUniformMatrix4fv(_modelviewID, 1, GL_FALSE, modelview.data());
     glUniformMatrix4fv(_projectionID, 1, GL_FALSE, projection.data());
 
-    /// Do not clear the screen framebuffer : done by Terrain.
+    /// Do not clear the default framebuffer (screen) : done by Terrain.
     /// Otherwise Terrain drawn pixels will be cleared and we'll only see the skybox.
 
     /// Render the skybox from camera point of view to default framebuffer.
-    _vertices->draw(_vertexAttribID);
+    _vertices->draw();
 
 }
 

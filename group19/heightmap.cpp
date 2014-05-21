@@ -82,11 +82,11 @@ void Heightmap::draw() const {
 
     /// Update the content of the uniforms.
 
-    /// Clear the framebuffer object.
+    /// Clear the FBO.
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     /// Render the height map to FBO.
-    _vertices->draw(_vertexAttribID);
+    _vertices->draw();
 
 }
 

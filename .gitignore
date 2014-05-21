@@ -20,3 +20,6 @@ build
 
 # Test and temporary directory
 others
+
+# Video folder, too big
+videos

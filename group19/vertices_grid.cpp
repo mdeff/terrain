@@ -14,7 +14,7 @@ const unsigned int nIndices = (N-1)*(N-1)*6;
 /// Generate a flat and regular triangle grid. Copy vertices to GPU.
 void VerticesGrid::generate() {
 
-    /// Vertex array object.
+    /// Vertex array object (VAO).
     glGenVertexArrays(1, &_vertexArrayID);
     glBindVertexArray(_vertexArrayID);
 
@@ -55,28 +55,28 @@ void VerticesGrid::generate() {
 }
 
 
-void VerticesGrid::draw(GLuint vertexAttribID) const {
-
-    /*
-     * Bind vertex array
-     * A vertex array object holds references to the vertex buffers, the index
-     * buffer and the layout specification of the vertex itself. At runtime,
-     * you can just glBindVertexArray to recall all of these information.
-     */
-    glBindVertexArray(_vertexArrayID);
+void VerticesGrid::bind(GLuint vertexAttribID) const {
 
     /// Vertex attribute points to data from the currently binded array buffer.
+    /// The binding is part of the binded VAO state.
+    glBindVertexArray(_vertexArrayID);
     glBindBuffer(GL_ARRAY_BUFFER, _vertexBufferID);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _elementBufferID);
     glEnableVertexAttribArray(vertexAttribID);
     // vec2: 2 floats per vertex for the attribute.
     glVertexAttribPointer(vertexAttribID, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
+}
+
+
+void VerticesGrid::draw() const {
+
+    /// The GL_ELEMENT_ARRAY_BUFFER binding is stored within the VAO.
+    /// The GL_ARRAY_BUFFER​ binding is NOT part of the VAO state.
+    /// But the vertex attribute binding to the VBO is retained.
+    glBindVertexArray(_vertexArrayID);
+
     /// Draw the grid vertices.
     glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, 0);
-
-    /// Disable the vertex attribute as the array is pointed by two attributes.
-    glDisableVertexAttribArray(vertexAttribID);
 
 }
 

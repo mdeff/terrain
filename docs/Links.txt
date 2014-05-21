@@ -1,3 +1,7 @@
+Principal ressources :
+  http://www.opengl.org/wiki
+  http://www.opengl-tutorial.org
+
 Framebuffer object (FBO) :
   http://www.opengl.org/wiki/Framebuffer_Object
 

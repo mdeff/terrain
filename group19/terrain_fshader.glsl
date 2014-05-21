@@ -6,14 +6,13 @@ uniform vec3 Ia, Id, Is;
 // Texture 0. Defined by glActiveTexture and passed by glUniform1i.
 uniform sampler2D heightMapTex;
 
-// Environmental textures 1-6. Defined by glActiveTexture and passed by glUniform1i.
-uniform sampler2D sandTex, iceMoutainTex, treeTex, stoneTex, underWaterTex, snowTex;
-
-
-// Texture 8. Defined by glActiveTexture and passed by glUniform1i.
+// Texture 1. Defined by glActiveTexture and passed by glUniform1i.
 // Shadow sampler for percentage closer filtering (PCF).
-uniform sampler2D shadowMapTex;
-//uniform sampler2DShadow shadowMapTex;
+//uniform sampler2D shadowMapTex;
+uniform sampler2DShadow shadowMapTex;
+
+// Environmental textures 2-7. Defined by glActiveTexture and passed by glUniform1i.
+uniform sampler2D sandTex, iceMoutainTex, treeTex, stoneTex, underWaterTex, snowTex;
 
 // Vertices 3D position (after heightmap displacement) in model space.
 in vec3 vertexPosition3DModel;
@@ -24,8 +23,7 @@ in vec3 ShadowCoord;
 // Light and view directions.
 in vec3 lightDir, viewDir;
 
-// First output buffer is pixel color.
-// gl_FragColor
+// First output buffer is pixel color (gl_FragColor).
 layout(location = 0) out vec3 color;
 
 
@@ -41,7 +39,9 @@ const float snowMax = 0.425;
 vec3 compute_normal(vec3 position) {
 
     const ivec3 off = ivec3(-1, 0, 1);
-    const vec2 size = vec2(2.0/1024.0, 0.0);   //1024 is the size of the generated height map
+    // Retrieve the size of the generated height map texture.
+    int width = textureSize(heightMapTex, 0).x;
+    vec2 size = vec2(2.0/width, 0.0);
 
     //current UV coordinate
     vec2 UV = vec2((position.xy +1.0)/2.0);  
@@ -59,6 +59,7 @@ vec3 compute_normal(vec3 position) {
     vec3 normal = vec3(tmp.xy, 2*tmp.z);
     
     return normalize(normal);
+
 }
 
 
@@ -98,26 +99,30 @@ vec3 texture_mapping(vec3 position, vec3 normal) {
     }
 
     return mapped;
+
 }
 
 
-// Useful for screenshots to be included in report.
-vec3 shadowmap_screenshots(vec3 shadowPos, float visibility) {
+float shadowmap(vec3 coord) {
 
-    vec3 output;
+    // Small epsilon to avoid Z-fighting : from 0.001 to 0.00001.
+    const float bias = 0.001;
 
-    // Observe the shadow map.
-    output = vec3(texture(shadowMapTex, shadowPos.xy).r) * 10.0f - 8.8f;
+    // The texture only stores one component : r (red).
+    // Z is the distance to the camera in camera space.
 
-    // Observe distance from light (nice for screenshots).
-//    output = vec3(shadowPos.x);
-//    output = vec3(shadowPos.y);
-//    output = vec3(shadowPos.z) * 10.0f - 8.8f;
+    // Simple binary shadow test.
+//    float visibility = 1.0;
+//    if(texture(shadowMapTex, coord.xy).r  <  (coord.z-bias)) {
+//        visibility = 0.0;
+//    }
 
-    // Observe the shadow.
-    output = vec3(visibility);
+    // Percentage closer filtering (PCF).
+    // Need sampler2DShadow and compare function in texture parameters.
+    vec3 UVC = vec3(coord.xy, coord.z-bias);
+    float visibility = texture(shadowMapTex, UVC);
 
-    return output;
+    return visibility;
 
 }
 
@@ -141,66 +146,19 @@ void main() {
     kd = 0.7f;
     ks = 0.0f;
 
-    // Compute the ambient color component based on texture mapping.
+    // Compute ambient : simulates indirect lighting.
     vec3 ambient = Ia * ka * material;
 
-    // Compute the diffuse color component.
+    // Compute diffuse : "color" of the object.
     vec3 diffuse = Id * kd * material * max(dot(normal,L),0.0);
 
-    // Compute the specular color component.
+    // Compute specular : reflective highlight, like a mirror.
     vec3 specular = Is * ks * material * pow(max(dot(V,reflect(L,normal)),0.0),power);
 
+    // Query the visibility.
+    float visibility = shadowmap(ShadowCoord);
+
     // Assemble the colors.
-//    color = ambient + diffuse + specular;
-
-
-    // small epsilon to avoid Z-fighting
-    const float bias = 0.00001; //00001;  // 0.001  0.00001
-
-
-    // percentage closer filtering (PCF).
-//    vec3 tmp1 = ShadowCoord.xyz / ShadowCoord.w;
-//    vec3 tmp2 = tmp1 * 0.5 + 0.5;
-//    vec3 UVC = vec3(tmp2.xy, tmp2.z + bias);
-//    float visibility = texture(shadowMapTex, UVC);
-
-    //Shadow / visibility
-
-
-    ///>>>>>>>>>> TODO >>>>>>>>>>>
-    /// TODO: Practical 6.
-    /// 2) query the visibility of ShadowCoord in shadowMap, bias the query by subtracting bias. What happens without bias?
-    /// Hint: Divide the ShadowCoord by its w-component before using it as a 3d point.
-    /// Ressources: https://www.opengl.org/wiki/Sampler_(GLSL)#Shadow_samplers
-    ///<<<<<<<<<< TODO <<<<<<<<<<<
-    // The texture only stores one component : r (red).
-    // Z is the distance to the camera in camera space.
-    // A perspective transformation is not affine, and as such, can't be represented entirely by a matrix. After beeing multiplied by the ProjectionMatrix, homogeneous coordinates are divided by their own W component. This W component happens to be -Z (because the projection matrix has been crafted this way). This way, points that are far away from the origin are divided by a big Z; their X and Y coordinates become smaller; points become more close to each other, objects seem smaller; and this is what gives the perspective.
-    float visibility = 1.0;
-//    vec3 tmp1 = ShadowCoord.xyz / ShadowCoord.w;
-//    vec3 tmp2 = tmp1 * 0.5 + 0.5;
-//    if(texture(shadowMapTex, ShadowCoord.xy).r  <  ShadowCoord.z) {
-//    if(texture(shadowMapTex, ShadowCoord.xy).r < ShadowCoord.z - bias) {
-//    if(textureProj(shadowMapTex, ShadowCoord.xyw).r < (ShadowCoord.z-bias)/ShadowCoord.w) {
-//    if(texture(shadowMapTex, ShadowCoord.xy/ShadowCoord.w).r  <  (ShadowCoord.z)/ShadowCoord.w) {
-//    if(texture(shadowMapTex, tmp2.xy).r  <  (tmp2.z-bias)) {
-        if(texture(shadowMapTex, ShadowCoord.xy).r  <  (ShadowCoord.z-bias)) {
-        visibility = 0.0;
-    }
-
-//    color =
-//     // Ambient : simulates indirect lighting
-//     MaterialAmbientColor +
-//     // Diffuse : "color" of the object
-//     visibility * MaterialDiffuseColor * LightColor * LightPower * cosTheta+
-//     // Specular : reflective highlight, like a mirror
-//     visibility * MaterialSpecularColor * LightColor * LightPower * pow(cosAlpha,5);
-
     color = ambient + visibility * diffuse + visibility * specular;
-//    color = visibility * ambient;
-
-
-//    color = shadowmap_screenshots(tmp2, visibility);
-//    color = shadowmap_screenshots(ShadowCoord, visibility);
 
 }

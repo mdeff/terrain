@@ -5,6 +5,9 @@ uniform mat4 projection;
 uniform mat4 modelview;
 
 // Transformation matrix from model space to light clip space.
+uniform mat4 lightMVP;
+
+// Transformation matrix from model space to light clip space.
 uniform mat4 lightOffsetMVP;
 
 // Light source position in model space.
@@ -41,7 +44,7 @@ void main() {
     gl_Position = projection * vertexPositionCamera;
 
     // Vertex position in light source clip space.
-    vec4 vertexPositionReflection = lightOffsetMVP * vec4(vertexPosition3DModel, 1.0);
+    vec4 vertexPositionReflection = lightMVP * vec4(vertexPosition3DModel, 1.0);
     // Reflection map texture coordinates with w division for perspective.
     reflectionCoord = vertexPositionReflection.xyz / vertexPositionReflection.w * 0.5 + 0.5;
 

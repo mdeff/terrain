@@ -86,6 +86,7 @@ GLuint WaterReflection::init(Vertices* vertices, GLuint heightMapTexID) {
     _modelviewID = glGetUniformLocation(_programID, "modelview");
     _projectionID = glGetUniformLocation(_programID, "projection");
     _lightOffsetMVPID = glGetUniformLocation(_programID, "lightOffsetMVP");
+	_lightMVPID = glGetUniformLocation(_programID, "lightMVP");
     _lightPositionModelID = glGetUniformLocation(_programID, "lightPositionModel");
     
     /// Return the reflection texture ID
@@ -111,6 +112,7 @@ void WaterReflection::draw(const mat4& projection, const mat4& modelview,
     /// Update the content of the uniforms.
     glUniformMatrix4fv(_modelviewID, 1, GL_FALSE, modelview.data());
     glUniformMatrix4fv(_projectionID, 1, GL_FALSE, projection.data());
+	glUniformMatrix4fv(_lightMVPID, 1, GL_FALSE, lightMVP.data());
     glUniform3fv(_lightPositionModelID, 1, lightPositionModel.data());
   
 	
@@ -129,7 +131,7 @@ void WaterReflection::draw(const mat4& projection, const mat4& modelview,
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     /// Render the terrain from camera point of view to default framebuffer.
-    _vertices->draw(_vertexAttribID);
+    _vertices->draw();
 
 	//glDisable(GL_CLIP_DISTANCE0);
 
