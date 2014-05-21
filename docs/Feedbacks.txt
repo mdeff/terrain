@@ -6,3 +6,11 @@ Good.
 The report is very nice to read, except some typo. What you have implemented
 is very good. However, you need to find better parameters to obtain more
 fascinating terrains.
+
+
+Stage 2
+-------
+
+Almost back on track, but you need some more work. Remember we are available
+during office hours as well as during the practical sessions in case you need
+some guidance.
