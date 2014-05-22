@@ -41,7 +41,7 @@ const float b3Z =  0.40f;
 
 
 /// Choose the resolution.
-const unsigned int nVertices = 1000;
+const unsigned int nVertices = 50;
 
 
 /// Copy Bézier curve vertices to GPU.
@@ -54,7 +54,7 @@ void VerticesBezier::generate() {
     /// Generate nVertices along a Bézier curve.
     float vertices[3*nVertices];
     for(int i=0; i<nVertices; ++i) {
-        float t = float(i) / 1000.0;
+        float t = float(i) / float(nVertices);
         vertices[3*i+0] = std::pow((1-t),3)*b0X + 3*t*std::pow((1-t),2)*b1X + 3*std::pow(t,2)*(1-t)*b2X + std::pow(t,3)*b3X;
         vertices[3*i+1] = std::pow((1-t),3)*b0Y + 3*t*std::pow((1-t),2)*b1Y + 3*std::pow(t,2)*(1-t)*b2Y + std::pow(t,3)*b3Y;
         vertices[3*i+2] = std::pow((1-t),3)*b0Z + 3*t*std::pow((1-t),2)*b1Z + 3*std::pow(t,2)*(1-t)*b2Z + std::pow(t,3)*b3Z;
@@ -88,9 +88,9 @@ void VerticesBezier::draw() const {
     /// But the vertex attribute binding to the VBO is retained.
     glBindVertexArray(_vertexArrayID);
 
-    /// Draw the grid vertices : either points or lines.
-    glDrawArrays(GL_POINTS, 0, nVertices);
-//    glDrawArrays(GL_LINES, 0, nVertices);
+    /// Draw the camera path vertices : either points or lines.
+//    glDrawArrays(GL_POINTS, 0, nVertices);
+    glDrawArrays(GL_LINES, 0, nVertices);
 
 }
 
