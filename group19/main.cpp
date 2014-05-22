@@ -83,15 +83,14 @@ void update_matrix_stack(const mat4& model) {
     /// Camera is in a corner, looking down to the terrain.
     //vec3 camPos(2.0f, -2.0f, 2.5f);
     //vec3 camPos(1.0f, 0.0f,0.7f); // Close texture view.
-    
-	vec3 flippedCamPos = vec3(camPos[0], camPos[1],  2*GROUND_HEIGHT - camPos[2]);
+
     /// View from center.
 
 
     //// Global view from outside.
-    //vec3 camPos(0.0f, -3.0f, 4.0f);
-    //vec3 camLookAt(0.0f, 0.0f, 0.0f);
-    //vec3 camUp(0.0f, 0.0f, 1.0f);
+//    vec3 camPos(0.0f, -3.0f, 4.0f);
+//    vec3 camLookAt(0.0f, 0.0f, 0.0f);
+//    vec3 camUp(0.0f, 0.0f, 1.0f);
 
 	//fps exploration
 	//vec3 camPos(0.78f, 0.42f, 0.30f);
@@ -113,6 +112,8 @@ void update_matrix_stack(const mat4& model) {
 //    vec3 camPos(0.2f, -0.1f, 0.5f);
 //    vec3 camLookAt(-0.3f, 0.1f, 0.2f);
 //    vec3 camUp(0.0f, 0.0f, 1.0f);
+
+    vec3 flippedCamPos = vec3(camPos[0], camPos[1],  2*GROUND_HEIGHT - camPos[2]);
 
     /// Assemble the view matrix.
     mat4 view = Eigen::lookAt(camPos, camLookAt, camUp);
@@ -229,17 +230,12 @@ void display() {
     /// Render everything.
     shadowmap.draw(lightMVP);
     terrain.draw(cameraProjection, cameraModelview, lightMVP, lightPositionModel);
-
-	water.draw(cameraProjection, cameraModelview, flippedCameraModelview, lightMVP, lightPositionModel);
     skybox.draw(cameraProjection, cameraModelview);
-
-	//reflection.draw(cameraProjection, flippedCameraModelview, lightMVP, lightPositionModel);
-//    shadowmap.draw(lightMVP);
-   
-
     camera.draw(cameraProjection, cameraModelview);
 
-
+    water.draw(cameraProjection, cameraModelview, flippedCameraModelview, lightMVP, lightPositionModel);
+//    reflection.draw(cameraProjection, flippedCameraModelview, lightMVP, lightPositionModel);
+   
 }
 
 

@@ -52,14 +52,13 @@ void VerticesBezier::generate() {
     glBindVertexArray(_vertexArrayID);
 
     /// Generate nVertices along a Bézier curve.
-    float vertices[nVertices*3];
+    float vertices[3*nVertices];
     for(int i=0; i<nVertices; ++i) {
         float t = float(i) / 1000.0;
-        vertices[i+0] = std::pow((1-t),3)*b0X + 3*t*std::pow((1-t),2)*b1X + 3*std::pow(t,2)*(1-t)*b2X + std::pow(t,3)*b3X;
-        vertices[i+1] = std::pow((1-t),3)*b0Y + 3*t*std::pow((1-t),2)*b1Y + 3*std::pow(t,2)*(1-t)*b2Y + std::pow(t,3)*b3Y;
-        vertices[i+2] = std::pow((1-t),3)*b0Z + 3*t*std::pow((1-t),2)*b1Z + 3*std::pow(t,2)*(1-t)*b2Z + std::pow(t,3)*b3Z;
-		//std::cout<<vertices[i+0]<<" "<< vertices[i+1]<<" "<< vertices[i+2]<<std::endl;
-    }			  
+        vertices[3*i+0] = std::pow((1-t),3)*b0X + 3*t*std::pow((1-t),2)*b1X + 3*std::pow(t,2)*(1-t)*b2X + std::pow(t,3)*b3X;
+        vertices[3*i+1] = std::pow((1-t),3)*b0Y + 3*t*std::pow((1-t),2)*b1Y + 3*std::pow(t,2)*(1-t)*b2Y + std::pow(t,3)*b3Y;
+        vertices[3*i+2] = std::pow((1-t),3)*b0Z + 3*t*std::pow((1-t),2)*b1Z + 3*std::pow(t,2)*(1-t)*b2Z + std::pow(t,3)*b3Z;
+    }
     /// Copy the vertices to GPU in a vertex buffer (VBO).
 
     glGenBuffers(1, &_vertexBufferID);

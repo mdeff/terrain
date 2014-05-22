@@ -40,7 +40,14 @@ void Camera::init(Vertices* vertices) {
 
     /// Common initialization.
     RenderingContext::init(vertices, camera_vshader, camera_fshader, "vertexPosition3DModel");
-	Camera::InitdeCasteljau4Points();
+
+    // FIXME : points generated here and in vertices_bezier.
+    InitdeCasteljau4Points();
+
+    /// Set uniform IDs.
+    _modelviewID = glGetUniformLocation(_programID, "modelview");
+    _projectionID = glGetUniformLocation(_programID, "projection");
+
 }
 
 
