@@ -223,7 +223,7 @@ void display() {
         lastTime += 1.0;
     }
 
-//    camera.handleCamera();
+    camera.handleCamera();
     /// Uncomment to render only the boundary (not full triangles).
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
