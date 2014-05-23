@@ -184,45 +184,50 @@ void Camera::fpsRotateUpDown(double& posX, double& posY, double& posZ, double& l
 		update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
 }
 
-
 void Camera::rotateLeftRight(double& posX, double& posY, double& posZ, double& lookX, double& lookY, double& lookZ,double& recordRotY,double velocity){
 		
-		//1 cancel Y rotation
-		double tmpX =lookX;
-		double tmpZ =lookZ;
-		rotate2D(posX,posZ,tmpX,tmpZ, fmod((6.2831-recordRotY),6.2831));
+		//1 move to the origine
+		double tmpX = lookX - posX;
+		double tmpY = lookY - posY;
+		double tmpZ = lookZ - posZ;
 
-		//2 rotate on Z axis
+		//2 cancel Y rotation
+		rotate2D(0,0,tmpX,tmpZ, -recordRotY);
+
+		//3 rotate on Z axis
 		double Angle = 0.0174f*velocity; // more or less 1 degree
-		double tmpY  = lookY;
-		rotate2D(posX,posY,tmpX,tmpY,Angle);
+		rotate2D(0,0,tmpX,tmpY,Angle);
 	
-		//3 redo Y rotation
-		rotate2D(posX,posZ,tmpX,tmpZ,recordRotY);
+		//4 redo Y rotation
+		rotate2D(0,0,tmpX,tmpZ,recordRotY);
 		
-		lookX = tmpX;
-		lookY = tmpY;
-		lookZ = tmpZ;
+		lookX = tmpX + posX;
+		lookY = tmpY + posY;
+		lookZ = tmpZ + posZ;
 		
 		update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
 }
 
 void Camera::rotateUpDown(double& posX, double& posY, double& posZ, double& lookX, double& lookY, double& lookZ,double& recordRotZ,double velocity){
 
-		//1 cancel Z rotation
-		double tmpX = lookX;
-		double tmpY = lookY;
-		rotate2D(posX,posY,tmpX,tmpY, fmod((6.2831-recordRotZ),6.2831));
-		//2 rotate on Y axis
+		//1 move to the origine
+		double tmpX = lookX - posX;
+		double tmpY = lookY - posY;
+		double tmpZ = lookZ - posZ;
+
+		//2 undo lateral (Z) rotation
+		rotate2D(0,0,tmpX,tmpY,-recordRotZ);
+
+		//3 rotate on Y axis
 		double Angle = 0.0174f*velocity; // more or less 1 degree
-		double tmpZ = lookZ;
-		rotate2D(posX,posZ,tmpX,tmpZ, Angle);
-		//3 redo Z rotation
-		rotate2D(posX,posY,tmpX,tmpY, recordRotZ);
+		rotate2D(0,0,tmpX,tmpZ, Angle);
+
+		//4 redo Z rotation
+		rotate2D(0,0,tmpX,tmpY, recordRotZ);
 		
-		lookX = tmpX ;
-		lookY = tmpY ;
-		lookZ = tmpZ ;
+		lookX = tmpX + posX ;
+		lookY = tmpY + posY ;
+		lookZ = tmpZ + posZ ;
 		
 		update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
 }
@@ -436,16 +441,17 @@ void Camera::flyingExploration(){
 	static double recordRotZ = 0;
 	static double recordRotY = 0;
 
+	static double lastTime = glfwGetTime();
+    double currentTime = glfwGetTime();
+    float deltaT = float(currentTime - lastTime); //deltaT in sc 
+    lastTime = currentTime;
+
 	if ((KeyW==true) | (velocityForward > 0.0f)){//W pressed => go forward 
-		if((KeyW==1) & (velocityForward<0.01f)){
-				velocityForward = velocityForward + 0.0005f;
+		if((KeyW==1) & (velocityForward<0.5f*deltaT)){
+				velocityForward = velocityForward + 0.1f * deltaT;
 		}
 		else{
-			velocityForward = velocityForward - 0.0005f;
-		}
-
-		if((KeySHIFT==true) & (KeyW==true) & (velocityForward<0.02f)){ // press shift => running
-			velocityForward +=0.01;
+			velocityForward = velocityForward - 0.1f*deltaT;
 		}
 		
 		//Flying exploration
@@ -453,63 +459,65 @@ void Camera::flyingExploration(){
 
 		
 	}
-	if  ((KeyS==true)| (velocityBackward != 0.0f)){//S pressed => go backward 
-		if((KeyS==true) & (velocityBackward<0.01f)){
-				velocityBackward = velocityBackward + 0.0005f;
+	if  ((KeyS==true)| (velocityBackward > 0.0f)){//S pressed => go backward 
+		if((KeyS==true) & (velocityBackward<0.5f*deltaT)){
+				velocityBackward = velocityBackward + 0.1f*deltaT;
 		}
 		else{
-			velocityBackward = velocityBackward - 0.0005f;
+			velocityBackward = velocityBackward - 0.1f*deltaT;
 		}
 		//flying exploration
 		moveAlongAxis(posX,posY,posZ,lookX,lookY,lookZ,-velocityBackward);
 		
 	}
-	if ((KeyA==true) | (velocityLeft != 0.0f)){//A pressed => turn left
-		if((KeyA==true) & (velocityLeft<1.0f)){
-				velocityLeft = velocityLeft + 0.01f;
+	if ((KeyA==true) | (velocityLeft > 0.0f)){//A pressed => turn left
+		if((KeyA==true) & (velocityLeft<20.0f*deltaT)){
+				velocityLeft = velocityLeft + 5.0f*deltaT;
 		}
 		else{
-			velocityLeft = velocityLeft - 0.01f;
+			velocityLeft = velocityLeft - 5.0f*deltaT;
 		}
 	//	rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,recordRotZ,velocityLeft);
-	
+		rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,velocityLeft);
+
 		//rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,velocityLeft);
 		recordRotZ = fmod((recordRotZ+0.0174f*velocityLeft),6.2831); //save rotation done
 	}
-	if ((KeyD==true) | (velocityRight != 0.0f)){//D pressed =turn right
-		if((KeyD==true) & (velocityRight<1.0f)){
-				velocityRight = velocityRight + 0.01f;
+	if ((KeyD==true) | (velocityRight > 0.0f)){//D pressed =turn right
+		if((KeyD==true) & (velocityRight<20.0f*deltaT)){
+				velocityRight = velocityRight + 5.0f*deltaT;
 		}
 		else{
-			velocityRight = velocityRight - 0.01f;
+			velocityRight = velocityRight - 5.0f*deltaT;
 		}
 	//	rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,recordRotZ,-velocityRight);
-	
+		rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,-velocityRight);
 		//rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,-velocityRight);
 		recordRotZ = fmod((recordRotZ-0.0174f*velocityRight),6.2831); //save rotation done
 	}
-	if  ((KeyQ==true)  | (velocityUp != 0.0f)){//Q pressed turn up
-		if((KeyQ==true) & (velocityUp<1.0f)){
-				velocityUp = velocityUp + 0.01f;
+	if  ((KeyQ==true)  | (velocityUp > 0.0f)){//Q pressed turn up
+		if((KeyQ==true) & (velocityUp<20.0f*deltaT)){
+				velocityUp = velocityUp + 5.0f*deltaT;
 		}
 		else{
-			velocityUp = velocityUp - 0.01f;
+			velocityUp = velocityUp - 5.0f*deltaT;
 		}
 		//rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotZ,velocityUp);
 	//	rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,recordRotZ,velocityUp);
-	
+		rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotZ,velocityUp);
+
 		recordRotY = fmod((recordRotY+0.0174f*velocityUp),6.2831); //save rotation done	
 	}
-	if  ( (KeyE==true) | (velocityDown != 0.0f)){//E pressed => down
-		if((KeyE==true) & (velocityDown<1.0f)){
-				velocityDown = velocityDown + 0.01f;
+	if  ( (KeyE==true) | (velocityDown > 0.0f)){//E pressed => down
+		if((KeyE==true) & (velocityDown<20.0f*deltaT)){
+				velocityDown = velocityDown + 5.0f*deltaT;
 		}
 		else{
-			velocityDown = velocityDown - 0.01f;
+			velocityDown = velocityDown - 5.0f*deltaT;
 		}
 		//rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotZ,-velocityDown);
 	//	rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,recordRotZ,-velocityDown);
-	
+		rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotZ,-velocityDown);
 		recordRotY = fmod((recordRotY-0.0174f*velocityDown),6.2831); //save rotation done
 	}
 }
@@ -538,6 +546,11 @@ void Camera::fpsExploration(){
 	static double initJumpPosZ = 0;
 	static double initJumpLookZ = 0;
 	static double jumpLevel =0;
+
+	static double lastTime = glfwGetTime();
+    double currentTime = glfwGetTime();
+    float deltaT = float(currentTime - lastTime); //deltaT in sc 
+    lastTime = currentTime;
 
 	if((KeySPACE==true) & (jumping==false)){//space => jump
 			jumping = true;
@@ -593,15 +606,15 @@ void Camera::fpsExploration(){
 		update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
 	}
 	if ((KeyW==true) | (velocityForward > 0.0f)){//W pressed => go forward 
-		if((KeyW==1) & (velocityForward<0.01f)){
-				velocityForward = velocityForward + 0.0005f;
+		if((KeyW==1) & (velocityForward<0.5f*deltaT)){
+				velocityForward = velocityForward + 0.1f*deltaT;
 		}
 		else{
-			velocityForward = velocityForward - 0.0005f;
+			velocityForward = velocityForward - 0.1f*deltaT;
 		}
 
 		if((KeySHIFT==true) & (KeyW==true) & (velocityForward<0.02f)){ // press shift => running
-			velocityForward +=0.01;
+			velocityForward +=0.5*deltaT;
 		}
 		
 		//FPS exploration
@@ -625,12 +638,12 @@ void Camera::fpsExploration(){
 		}
 		
 	}
-	if  ((KeyS==true)| (velocityBackward != 0.0f)){//S pressed => go backward 
-		if((KeyS==true) & (velocityBackward<0.01f)){
-				velocityBackward = velocityBackward + 0.0005f;
+	if  ((KeyS==true)| (velocityBackward > 0.0f)){//S pressed => go backward 
+		if((KeyS==true) & (velocityBackward<0.5f*deltaT)){
+				velocityBackward = velocityBackward + 0.1f*deltaT;
 		}
 		else{
-			velocityBackward = velocityBackward - 0.0005f;
+			velocityBackward = velocityBackward - 0.1f*deltaT;
 		}
 		
 		//fps exploration
@@ -640,46 +653,46 @@ void Camera::fpsExploration(){
 			fpsExplorationForwardBackward(posX,posY,posZ,lookX,lookY,lookZ,-dispX,-dispY);
 		}
 	}
-	if ((KeyA==true) | (velocityLeft != 0.0f)){//A pressed => turn left
-		if((KeyA==true) & (velocityLeft<1.0f)){
-				velocityLeft = velocityLeft + 0.01f;
+	if ((KeyA==true) | (velocityLeft > 0.0f)){//A pressed => turn left
+		if((KeyA==true) & (velocityLeft<20.0f*deltaT)){
+				velocityLeft = velocityLeft + 2.0f*deltaT;
 		}
 		else{
-			velocityLeft = velocityLeft - 0.01f;
+			velocityLeft = velocityLeft - 2.0f*deltaT;
 		}
 		fpsRotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,velocityLeft);
 		recordRotZ = fmod((recordRotZ+0.0174f*velocityRight),6.2831); //save rotation done
 	
 		//rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,velocityLeft);
 	}
-	if ((KeyD==true) | (velocityRight != 0.0f)){//D pressed =turn right
-		if((KeyD==true) & (velocityRight<1.0f)){
-				velocityRight = velocityRight + 0.01f;
+	if ((KeyD==true) | (velocityRight > 0.0f)){//D pressed =turn right
+		if((KeyD==true) & (velocityRight<20.0f*deltaT)){
+				velocityRight = velocityRight + 2.0f*deltaT;
 		}
 		else{
-			velocityRight = velocityRight - 0.01f;
+			velocityRight = velocityRight - 2.0f*deltaT;
 		}
 		fpsRotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,-velocityRight);
 		recordRotZ = fmod((recordRotZ-0.0174f*velocityRight),6.2831); //save rotation done
 	
 		//rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,-velocityRight);
 	}
-	if  ((KeyQ==true)  | (velocityUp != 0.0f)){//Q pressed turn up
-		if((KeyQ==true) & (velocityUp<1.0f)){
-				velocityUp = velocityUp + 0.01f;
+	if  ((KeyQ==true)  | (velocityUp > 0.0f)){//Q pressed turn up
+		if((KeyQ==true) & (velocityUp<20.0f*deltaT)){
+				velocityUp = velocityUp + 2.0f*deltaT;
 		}
 		else{
-			velocityUp = velocityUp - 0.01f;
+			velocityUp = velocityUp - 2.0f*deltaT;
 		}
 		//rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotZ,velocityUp);
 		fpsRotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotZ,velocityUp);
 	}
-	if  ( (KeyE==true) | (velocityDown != 0.0f)){//E pressed => down
-		if((KeyE==true) & (velocityDown<1.0f)){
-				velocityDown = velocityDown + 0.01f;
+	if  ( (KeyE==true) | (velocityDown > 0.0f)){//E pressed => down
+		if((KeyE==true) & (velocityDown<20.0f*deltaT)){
+				velocityDown = velocityDown + 2.0f*deltaT;
 		}
 		else{
-			velocityDown = velocityDown - 0.01f;
+			velocityDown = velocityDown - 2.0f*deltaT;
 		}
 		//rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotZ,-velocityDown);
 		fpsRotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotZ,-velocityDown);
