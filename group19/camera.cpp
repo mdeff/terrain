@@ -144,62 +144,48 @@ void Camera::rotate3D(double& posX, double& posY, double& posZ, double& lookX, d
 	lookZ = newLookZ2 + posZ;
 
 }
-void Camera::rotateLeftRight(double& posX, double& posY, double& posZ, double& lookX, double& lookY, double& lookZ,double& recordRotY,double& recordRotZ,double velocity){
-		
-		//1 cancel Y rotation
-		double tmpX =lookX;
-		double tmpZ =lookZ;
-		rotate2D(posX,posZ,tmpX,tmpZ, fmod((6.2831-recordRotY),6.2831));
-		
-		//2 cancel z rotation
-		double tmpY = lookY;
-		rotate2D(posX,posY,tmpX,tmpY, fmod((6.2831-recordRotZ),6.2831));
+
+void Camera::fpsRotateLeftRight(double& posX, double& posY, double& posZ, double& lookX, double& lookY, double& lookZ,double velocity){
+
+		double tmpX = lookX-posX;
+		double tmpY = lookY-posY;
 
 		//3 rotate on Z axis
 		double Angle = 0.0174f*velocity; // more or less 1 degree
-		rotate2D(posX,posY,tmpX,tmpY,Angle);
-	
-		//4 redo Z rotation
-		rotate2D(posX,posY,tmpX,tmpY, recordRotZ);
-
-		//5 redo Y rotation
-		rotate2D(posX,posZ,tmpX,tmpZ,recordRotY);
-		
-		lookX = tmpX;
-		lookY = tmpY;
-		lookZ = tmpZ;
+		rotate2D(0,0,tmpX,tmpY,Angle);
+			
+		lookX = tmpX+posX;
+		lookY = tmpY+posY;
 		
 		update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
 }
-void Camera::rotateUpDown(double& posX, double& posY, double& posZ, double& lookX, double& lookY, double& lookZ,double& recordRotY,double& recordRotZ,double velocity){
-		
-		//1 cancel Y rotation
-		double tmpX =lookX;
-		double tmpZ =lookZ;
-		rotate2D(posX,posZ,tmpX,tmpZ, fmod((6.2831-recordRotY),6.2831));
-		
-		//2 cancel z rotation
-		double tmpY = lookY;
-		rotate2D(posX,posY,tmpX,tmpY, fmod((6.2831-recordRotZ),6.2831));
 
-		//3 aply rotation arround Y
+void Camera::fpsRotateUpDown(double& posX, double& posY, double& posZ, double& lookX, double& lookY, double& lookZ,double recordRotZ, double velocity){
+		
+		double tmpX =lookX-posX;
+		double tmpY =lookY-posY;
+		double tmpZ =lookZ-posZ;
+		
+		//undo lateral (Z) rotation
+		rotate2D(0,0,tmpX,tmpY,-recordRotZ);
+		
+		//proceed vertical (Y) rotation
 		double Angle = 0.0174f*velocity; // more or less 1 degree
-		rotate2D(posX,posZ,tmpX,tmpZ, Angle);
 
-		//4 redo Z rotation
-		rotate2D(posX,posY,tmpX,tmpY, recordRotZ);
+		rotate2D(0,0,tmpX,tmpZ, Angle);
 
-		//5 redo Y rotation
-		rotate2D(posX,posZ,tmpX,tmpZ,recordRotY);
-		
-		lookX = tmpX;
-		lookY = tmpY;
-		lookZ = tmpZ;
+		//redo lateral (Z) rotation
+		rotate2D(0,0,tmpX,tmpY,recordRotZ);
+
+		lookX = tmpX + posX;
+		lookY = tmpY + posY;
+		lookZ = tmpZ + posZ;
 		
 		update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
 }
-/*
-void rotateLeftRight(double& posX, double& posY, double& posZ, double& lookX, double& lookY, double& lookZ,double& recordRotY,double velocity){
+
+
+void Camera::rotateLeftRight(double& posX, double& posY, double& posZ, double& lookX, double& lookY, double& lookZ,double& recordRotY,double velocity){
 		
 		//1 cancel Y rotation
 		double tmpX =lookX;
@@ -219,9 +205,9 @@ void rotateLeftRight(double& posX, double& posY, double& posZ, double& lookX, do
 		lookZ = tmpZ;
 		
 		update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
-}*/
-/*
-void rotateUpDown(double& posX, double& posY, double& posZ, double& lookX, double& lookY, double& lookZ,double& recordRotZ,double velocity){
+}
+
+void Camera::rotateUpDown(double& posX, double& posY, double& posZ, double& lookX, double& lookY, double& lookZ,double& recordRotZ,double velocity){
 
 		//1 cancel Z rotation
 		double tmpX = lookX;
@@ -239,7 +225,7 @@ void rotateUpDown(double& posX, double& posY, double& posZ, double& lookX, doubl
 		lookZ = tmpZ ;
 		
 		update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
-}*/
+}
 
 void Camera::moveAlongAxis(double& posX, double& posY, double& posZ, double& lookX, double& lookY, double& lookZ, double velocity){
 		
@@ -485,7 +471,7 @@ void Camera::flyingExploration(){
 		else{
 			velocityLeft = velocityLeft - 0.01f;
 		}
-		rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,recordRotZ,velocityLeft);
+	//	rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,recordRotZ,velocityLeft);
 	
 		//rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,velocityLeft);
 		recordRotZ = fmod((recordRotZ+0.0174f*velocityLeft),6.2831); //save rotation done
@@ -497,7 +483,7 @@ void Camera::flyingExploration(){
 		else{
 			velocityRight = velocityRight - 0.01f;
 		}
-		rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,recordRotZ,-velocityRight);
+	//	rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,recordRotZ,-velocityRight);
 	
 		//rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,-velocityRight);
 		recordRotZ = fmod((recordRotZ-0.0174f*velocityRight),6.2831); //save rotation done
@@ -510,7 +496,7 @@ void Camera::flyingExploration(){
 			velocityUp = velocityUp - 0.01f;
 		}
 		//rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotZ,velocityUp);
-		rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,recordRotZ,velocityUp);
+	//	rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,recordRotZ,velocityUp);
 	
 		recordRotY = fmod((recordRotY+0.0174f*velocityUp),6.2831); //save rotation done	
 	}
@@ -522,7 +508,7 @@ void Camera::flyingExploration(){
 			velocityDown = velocityDown - 0.01f;
 		}
 		//rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotZ,-velocityDown);
-		rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,recordRotZ,-velocityDown);
+	//	rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,recordRotZ,-velocityDown);
 	
 		recordRotY = fmod((recordRotY-0.0174f*velocityDown),6.2831); //save rotation done
 	}
@@ -545,8 +531,8 @@ void Camera::fpsExploration(){
 	static double velocityUp = 0;
 	static double velocityDown = 0;
 
+	
 	static double recordRotZ = 0;
-	static double recordRotY = 0;
 
 	static bool jumping = false;
 	static double initJumpPosZ = 0;
@@ -661,10 +647,10 @@ void Camera::fpsExploration(){
 		else{
 			velocityLeft = velocityLeft - 0.01f;
 		}
-		rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,recordRotZ,velocityLeft);
+		fpsRotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,velocityLeft);
+		recordRotZ = fmod((recordRotZ+0.0174f*velocityRight),6.2831); //save rotation done
 	
 		//rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,velocityLeft);
-		recordRotZ = fmod((recordRotZ+0.0174f*velocityLeft),6.2831); //save rotation done
 	}
 	if ((KeyD==true) | (velocityRight != 0.0f)){//D pressed =turn right
 		if((KeyD==true) & (velocityRight<1.0f)){
@@ -673,10 +659,10 @@ void Camera::fpsExploration(){
 		else{
 			velocityRight = velocityRight - 0.01f;
 		}
-		rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,recordRotZ,-velocityRight);
+		fpsRotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,-velocityRight);
+		recordRotZ = fmod((recordRotZ-0.0174f*velocityRight),6.2831); //save rotation done
 	
 		//rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,-velocityRight);
-		recordRotZ = fmod((recordRotZ-0.0174f*velocityRight),6.2831); //save rotation done
 	}
 	if  ((KeyQ==true)  | (velocityUp != 0.0f)){//Q pressed turn up
 		if((KeyQ==true) & (velocityUp<1.0f)){
@@ -686,9 +672,7 @@ void Camera::fpsExploration(){
 			velocityUp = velocityUp - 0.01f;
 		}
 		//rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotZ,velocityUp);
-		rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,recordRotZ,velocityUp);
-	
-		recordRotY = fmod((recordRotY+0.0174f*velocityUp),6.2831); //save rotation done	
+		fpsRotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotZ,velocityUp);
 	}
 	if  ( (KeyE==true) | (velocityDown != 0.0f)){//E pressed => down
 		if((KeyE==true) & (velocityDown<1.0f)){
@@ -698,9 +682,7 @@ void Camera::fpsExploration(){
 			velocityDown = velocityDown - 0.01f;
 		}
 		//rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotZ,-velocityDown);
-		rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,recordRotZ,-velocityDown);
-	
-		recordRotY = fmod((recordRotY-0.0174f*velocityDown),6.2831); //save rotation done
+		fpsRotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotZ,-velocityDown);
 	}
 }
 
