@@ -133,7 +133,7 @@ void GLFWCALL keyboard_callback(int key, int action) {
 
     /// Distance from center (0,0,0) to sun.
     const float r = 3.0f;
-	//std::cout << "Pressed key : " << key << std::endl;
+	std::cout << "Pressed key : " << key << std::endl;
 
     if(action == GLFW_PRESS) {
 
@@ -230,8 +230,9 @@ void display() {
         lastTime = currentTime;
     }
 
-//    camera.handleCamera();
-    /// Uncomment to render only the boundary (not full triangles).
+    camera.handleCamera();
+
+	/// Uncomment to render only the boundary (not full triangles).
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 //    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

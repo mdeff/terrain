@@ -26,7 +26,8 @@ static bool KeySHIFT = false;
 static bool KeySPACE = false; 
 static bool ModeFlying = false;
 static bool ModeFps = false;
-static bool ModeBCurve = true;
+static bool ModeBCurve = false;
+static bool ModeFix = true;
 
 //Bezier curve 
 static double bezierCurve[1000*3];
@@ -748,18 +749,29 @@ void Camera::handleCameraControls(int key, int action){
 		ModeFlying = true;
 		ModeFps = false;
 		ModeBCurve = false;
+		ModeFix = false;
 		break;
 	case 304: //2 
 		std::cout<<"Exploration in fps mode"<<std::endl;
 		ModeFlying = false;
 		ModeFps = true;
 		ModeBCurve = false;
+		ModeFix = false;
 		break;
 	case 305: //3
 		std::cout<<"Exploration in Bcurve mode"<<std::endl;
 		ModeFlying = false;
 		ModeFps = false;
 		ModeBCurve = true;
+		ModeFix = false;
 		break;
+	case 306: //4
+		std::cout<<"Frontal view"<<std::endl;
+		ModeFix = true;
+		ModeFlying = false;
+		ModeFps = false;
+		ModeBCurve = false;
+		/// Frontal view to observe falling particles.
+		update_camera_modelview(0.0f,-4.8f,1.0f,0.0f,0.0f,1.0f);
 	}
 }
