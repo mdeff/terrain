@@ -15,7 +15,6 @@ layout(pixel_center_integer) in vec4 gl_FragCoord;
 layout(location = 0) out vec3 particlePos;
 layout(location = 1) out vec3 particleVel;
 
-
 // Earth acceleration.
 const vec3 acc = vec3(0, 0, -0.01);
 
@@ -49,6 +48,7 @@ void main() {
 
 
     // Initialize particles that start above skybox.
+    // Goal : particles ar initialized the same way than reseted.
     if(pos.z > 5.0 && pos.z < 6.0) {
         pos.z = 2.0;
         vel = vec3(0,0,0);

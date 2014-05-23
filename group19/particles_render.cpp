@@ -12,8 +12,9 @@
 #include "particles_render_fshader.h"
 
 
-ParticlesRender::ParticlesRender(unsigned int width, unsigned int height) :
-    RenderingContext(width, height) {
+ParticlesRender::ParticlesRender(unsigned int width, unsigned int height, unsigned int nParticlesSide) :
+    RenderingContext(width, height),
+    _nParticlesSide(nParticlesSide) {
 }
 
 
@@ -21,6 +22,9 @@ void ParticlesRender::init(GLuint particlePosTexID[]) {
 
     /// Common initialization.
     RenderingContext::init(NULL, particles_render_vshader, particles_render_fshader, "", 0);
+
+    /// Allow programmable point size for the vertex shader to size the sprite.
+    glEnable(GL_PROGRAM_POINT_SIZE);
 
     /// Store the position texture IDs.
     _particlePosTexID[0] = particlePosTexID[0];
@@ -43,12 +47,16 @@ void ParticlesRender::draw(const mat4& projection, const mat4& modelview) {
     /// Common drawing. 
     RenderingContext::draw();
 
+    /// Blending for particle transparency.
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     /// Update the content of the uniforms.
     glUniformMatrix4fv(_modelviewID, 1, GL_FALSE, modelview.data());
     glUniformMatrix4fv(_projectionID, 1, GL_FALSE, projection.data());
 
-    /// Flip the position texture binding.
-    static int pingpong = 0;  // Sart with 1.
+    /// Flip the position texture binding : start with 1.
+    static int pingpong = 0;
     pingpong = (pingpong+1) % 2;
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_1D, _particlePosTexID[pingpong]);
@@ -57,8 +65,10 @@ void ParticlesRender::draw(const mat4& projection, const mat4& modelview) {
     /// Otherwise already drawn pixels will be cleared.
 
     /// Render the particles from camera point of view to default framebuffer.
-    const int nParticlesSide = 10;
-    const int nVertices = nParticlesSide*nParticlesSide*nParticlesSide;
+    unsigned int nVertices = _nParticlesSide*_nParticlesSide*_nParticlesSide;
     glDrawArrays(GL_POINTS, 0, nVertices);
+
+    /// Disable blending : all the other primitives are opaque.
+    glDisable(GL_BLEND);
 
 }

@@ -21,24 +21,26 @@
 
 
 /// Screen size.
-const int windowWidth(1024);
-const int windowHeight(768);
+const unsigned int windowWidth(1024);
+const unsigned int windowHeight(768);
 
 /// Textures (heightmap and shadowmap) sizes.
-const int textureWidth(1024);
-const int textureHeight(1024);
+const unsigned int textureWidth(1024);
+const unsigned int textureHeight(1024);
 
+/// Number of particles on the side. That makes nParticlesSide^3 particles.
+const unsigned int nParticlesSide(20);
 
 /// Instanciate the rendering contexts that render to the screen.
 Skybox skybox(windowWidth, windowHeight);
 Terrain terrain(windowWidth, windowHeight);
 Camera camera(windowWidth, windowHeight);
 Watermap water(windowWidth, windowHeight);
-ParticlesRender particlesRender(windowWidth, windowHeight);
+ParticlesRender particlesRender(windowWidth, windowHeight, nParticlesSide);
 
 /// Instanciate the rendering contexts that render to FBO.
 Shadowmap shadowmap(textureWidth, textureHeight);
-ParticlesControl particlesControl;
+ParticlesControl particlesControl(nParticlesSide);
 
 WaterReflection reflection(windowWidth, windowHeight);
 
@@ -236,19 +238,26 @@ void display() {
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 //    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    /// Render everything.
+
+    /// Generate the shadowmap.
     shadowmap.draw(lightMVP);
+
+    /// Render opaque primitives on screen.
     terrain.draw(cameraProjection, cameraModelview, lightMVP, lightPositionModel);
-//    skybox.draw(cameraProjection, cameraModelview);
+    skybox.draw(cameraProjection, cameraModelview);
     camera.draw(cameraProjection, cameraModelview);
 
-    /// First control particle positions, then render them on screen.
-    particlesControl.draw();
-    particlesRender.draw(cameraProjection, cameraModelview);
 
 //    water.draw(cameraProjection, cameraModelview, flippedCameraModelview, lightMVP, lightPositionModel);
 //    reflection.draw(cameraProjection, flippedCameraModelview, lightMVP, lightPositionModel);
-   
+
+
+    /// First control particle positions, then render them on screen.
+    /// Render the translucent primitives last. Otherwise opaque objects that
+    /// may be visible behind get discarded by the depth test.
+    particlesControl.draw();
+    particlesRender.draw(cameraProjection, cameraModelview);
+
 }
 
 

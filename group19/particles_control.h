@@ -9,7 +9,7 @@ class ParticlesControl : public RenderingContext {
 public:
 
     /// Common methods of all RenderingContext.
-    ParticlesControl();
+    ParticlesControl(unsigned int nParticlesSide);
     void init(Vertices* vertices, unsigned int particlePosTexID[]);
     void draw() const;
 
@@ -21,7 +21,8 @@ private:
     /// Texture IDs : current and last particles position and velocity.
     unsigned int _particleTexID[4];
 
-    /// Helper functions.
+    /// Number of particles on the side. That makes nParticlesSide^3 particles.
+    unsigned int _nParticlesSide;
 
 };
 

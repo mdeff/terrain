@@ -11,7 +11,7 @@ class ParticlesRender : public RenderingContext {
 public:
 
     /// Common methods of all RenderingContext.
-    ParticlesRender(unsigned int width, unsigned int height);
+    ParticlesRender(unsigned int width, unsigned int height, unsigned int nParticlesSide);
     void init(unsigned int particlePosTexID[]);
     void draw(const mat4& projection, const mat4& modelview);
 
@@ -23,6 +23,9 @@ private:
 
     /// Texture IDs : current and last particle positions.
     unsigned int _particlePosTexID[2];
+
+    /// Number of particles on the side. That makes nParticlesSide^3 particles.
+    unsigned int _nParticlesSide;
 
 };
 

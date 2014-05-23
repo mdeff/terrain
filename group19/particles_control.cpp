@@ -13,14 +13,10 @@
 #include "particles_control_fshader.h"
 
 
-/// Number of particles on the side. That is nParticlesSide^3 particles.
-const int nParticlesSide = 10;
-const int nParticles = nParticlesSide*nParticlesSide*nParticlesSide;
-
-
 /// Texture is 1D, image should thus have an height of 1 pixel.
-ParticlesControl::ParticlesControl() :
-    RenderingContext(nParticles, 1) {
+ParticlesControl::ParticlesControl(unsigned int nParticlesSide) :
+    RenderingContext(nParticlesSide*nParticlesSide*nParticlesSide, 1),
+    _nParticlesSide(nParticlesSide) {
 }
 
 
@@ -55,15 +51,16 @@ void ParticlesControl::init(Vertices* vertices, GLuint particlePosTexID[]) {
 
     /// Initial particles position and velocity.
     /// Particles can be in x=[-1,1], y=[-1,1], z=[0,5].
+    unsigned int nParticles = _nParticlesSide*_nParticlesSide*_nParticlesSide;
     float particlesPos[3*nParticles];
     float particlesVel[3*nParticles];
     for(int k=0; k<nParticles; ++k) {
-        particlesPos[3*k+0] = 2.0f * float(k % (nParticlesSide*nParticlesSide) % nParticlesSide) / float(nParticlesSide) - 1.0f;  // x
-        particlesPos[3*k+1] = 2.0f * float(k % (nParticlesSide*nParticlesSide) / nParticlesSide) / float(nParticlesSide) - 1.0f;  // y
-        particlesPos[3*k+2] = 2.0f * float(k / (nParticlesSide*nParticlesSide)                 ) / float(nParticlesSide) + 6.2f;  // z
+        particlesPos[3*k+0] = 2.0f * float(k % (_nParticlesSide*_nParticlesSide) % _nParticlesSide) / float(_nParticlesSide) - 1.0f;  // x
+        particlesPos[3*k+1] = 2.0f * float(k % (_nParticlesSide*_nParticlesSide) / _nParticlesSide) / float(_nParticlesSide) - 1.0f;  // y
+        particlesPos[3*k+2] = 2.0f * float(k / (_nParticlesSide*_nParticlesSide)                  ) / float(_nParticlesSide) + 6.2f;  // z
         particlesVel[3*k+0] = 0.0f;  // x
         particlesVel[3*k+1] = 0.0f;  // y
-        particlesVel[3*k+2] = 0.1f * float(k / (nParticlesSide*nParticlesSide)                 ) / float(nParticlesSide) + 0.0f;  // z
+        particlesVel[3*k+2] = 0.1f * float(k / (_nParticlesSide*_nParticlesSide)                  ) / float(_nParticlesSide) + 0.0f;  // z
     }
     glBindTexture(GL_TEXTURE_1D, _particleTexID[0]);
     glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB32F, _width, 0, GL_RGB, GL_FLOAT, particlesPos);
@@ -88,8 +85,8 @@ void ParticlesControl::draw() const {
     lastTime = currentTime;
     glUniformMatrix4fv(_deltaTID, 1, GL_FALSE, &deltaT);
 
-    /// Binary [0,1] variable to switch between input / output textures.
-    static int pingpong = 1;  // Sart with 0.
+    /// Binary [0,1] variable to switch between input / output textures : start with 0.
+    static int pingpong = 1;
     pingpong = (pingpong+1) % 2;
 
     /// Flip the position and velocity texture bindings.
