@@ -5,7 +5,6 @@
 #include "opengp.h"
 
 
-/// By default,render to the default framebuffer (screen) : FBO 0.
 RenderingContext::RenderingContext(unsigned int width, unsigned int height) :
     _width(width), _height(height) {
     for(int i = 0; i<_nTextures; ++i)

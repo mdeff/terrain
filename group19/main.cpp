@@ -28,8 +28,6 @@ const int windowHeight(768);
 const int textureWidth(1024);
 const int textureHeight(1024);
 
-/// SQUARE ROOT of the number of particules.
-//const int nParticules(10);
 
 /// Instanciate the rendering contexts that render to the screen.
 Skybox skybox(windowWidth, windowHeight);
@@ -40,7 +38,7 @@ ParticlesRender particlesRender(windowWidth, windowHeight);
 
 /// Instanciate the rendering contexts that render to FBO.
 Shadowmap shadowmap(textureWidth, textureHeight);
-ParticlesControl particlesControl(1000);
+ParticlesControl particlesControl;
 
 WaterReflection reflection(windowWidth, windowHeight);
 
@@ -238,6 +236,7 @@ void display() {
     skybox.draw(cameraProjection, cameraModelview);
     camera.draw(cameraProjection, cameraModelview);
 
+    /// First control particle positions, then render them on screen.
     particlesControl.draw();
     particlesRender.draw(cameraProjection, cameraModelview);
 

@@ -16,7 +16,8 @@ layout(location = 1) out vec3 particleVel;
 void main() {
 
     // Update the particle position.
-    particlePos = texelFetch(particlePosTex, int(gl_FragCoord.x), 0).rgb;
-    particlePos = vec3(0.0, 0.0, 1.0);
+    vec3 lastPos = texelFetch(particlePosTex, int(gl_FragCoord.x), 0).rgb;
 
+    // Constant speed falling.
+    particlePos = lastPos - vec3(0, 0, 0.1);
 }

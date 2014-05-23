@@ -60,7 +60,7 @@ GLuint Heightmap::init(Vertices* vertices) {
     /// The texture becomes the fragment shader first output buffer.
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, heightMapTexID, 0);
     GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0};
-    glDrawBuffers(sizeof(drawBuffers)/sizeof(GLenum), drawBuffers);
+    glDrawBuffers(1, drawBuffers);
 
     /// Check that our framebuffer is complete.
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
@@ -82,7 +82,7 @@ void Heightmap::draw() const {
     /// Update the content of the uniforms.
 
     /// Clear the FBO.
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT);
 
     /// Render the height map to FBO.
     _vertices->draw();

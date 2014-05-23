@@ -48,11 +48,10 @@ void ParticlesRender::draw(const mat4& projection, const mat4& modelview) {
     glUniformMatrix4fv(_projectionID, 1, GL_FALSE, projection.data());
 
     /// Flip the position texture binding.
+    static int pingpong = 0;
+    pingpong = (pingpong+1) % 2;
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_1D, _particlePosTexID[0]);
-    GLuint tmp = _particlePosTexID[0];
-    _particlePosTexID[0] = _particlePosTexID[1];
-    _particlePosTexID[1] = tmp;
+    glBindTexture(GL_TEXTURE_1D, _particlePosTexID[pingpong]);
 
     /// Do not clear the default framebuffer (screen) : done by Terrain.
     /// Otherwise already drawn pixels will be cleared.
