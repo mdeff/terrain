@@ -17,7 +17,7 @@ protected:
 
     /// Common methods of all RenderingContext.
     RenderingContext(unsigned int width, unsigned int height);
-    void init(Vertices* vertices, const char* vshader, const char* fshader, const char* vertexAttribName, int frameBufferID = 0);
+    void init(Vertices* vertices, const char* vshader, const char* fshader, const char* vertexAttribName, int frameBufferID);
     void draw() const;
 
     /// Helper function.

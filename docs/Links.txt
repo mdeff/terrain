@@ -57,3 +57,9 @@ Water reflection :
   http://ivanleben.blogspot.com.au/2008/03/water-reflections-with-opengl.html
   http://renderingwonders.wordpress.com/2011/01/03/chapter-08-%E2%80%93-buffer-objects-storage-is-now-in-your-hands-%E2%80%93-fbo-textures/
   http://cgvr.cs.uni-bremen.de/teaching/cg_literatur/Cube_map_tutorial/cube_map.html
+
+Particle system :
+  http://stackoverflow.com/questions/19839442/render-to-1d-texture
+  https://www.opengl.org/wiki/Memory_Model
+  https://www.opengl.org/wiki/Texture
+  https://www.opengl.org/sdk/docs/man3/xhtml/glFramebufferTexture.xml

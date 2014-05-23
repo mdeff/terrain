@@ -4,18 +4,17 @@
 uniform mat4 modelview;
 uniform mat4 projection;
 
-// Texture 0. Defined by glActiveTexture and passed by glUniform1i.
+// Particules position texture.
 uniform sampler1D particlesPosTex;
 
-// Indices in the position texture.
-// TODO : can be int ?
-in int particlesPosTexIdx;
+// Index of the current vertex defines the index in the position texture.
+in int gl_VertexID;
 
 
 void main() {
 
     // Retrieve the 3D position of the particule in the position texture.
-    vec3 vertexPosition3DModel = texelFetch(particlesPosTex, particlesPosTexIdx, 0).rgb;
+    vec3 vertexPosition3DModel = texelFetch(particlesPosTex, gl_VertexID, 0).rgb;
 
     // Model matrix transforms from model space to world space.
     // View matrix transforms from world space to camera space.

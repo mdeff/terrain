@@ -32,9 +32,11 @@ void RenderingContext::init(Vertices* vertices, const char* vshader, const char*
         exit(EXIT_FAILURE);
     glUseProgram(_programID);
 
-    /// Bind the vertex attribute ID to vertex data.
-    GLuint vertexAttribID = glGetAttribLocation(_programID, vertexAttribName);
-    _vertices->bind(vertexAttribID);
+    /// Bind the vertex attribute ID to vertex data, if they exist.
+    if(vertices != NULL) {
+        GLuint vertexAttribID = glGetAttribLocation(_programID, vertexAttribName);
+        _vertices->bind(vertexAttribID);
+    }
 
 }
 
@@ -71,7 +73,7 @@ void RenderingContext::clean() {
         glDeleteFramebuffers(1, &_frameBufferID);
 
     /// Delete all the binded textures.
-    // TODO: be carefull of shared textures.
+    // TODO: take care of shared textures.
     for(int i=0; i<_nTextures; ++i) {
         if(_textures[i].ID >= 0) {
             glDeleteTextures(1, (GLuint*)&_textures[i].ID);
@@ -88,7 +90,6 @@ void RenderingContext::set_texture(const GLuint textureIndex, int textureID, con
 
     /// Bind the newly created texture to the context :
     /// all future texture functions will modify this texture.
-    glActiveTexture(GL_TEXTURE0 + textureIndex);
     glBindTexture(target, textureID);
 
     /// Put the texture index value in the Sampler uniform.

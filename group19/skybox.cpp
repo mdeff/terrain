@@ -20,7 +20,7 @@ Skybox::Skybox(unsigned int width, unsigned int height) :
 void Skybox::init(Vertices* vertices) {
 
     /// Common initialization.
-    RenderingContext::init(vertices, skybox_vshader, skybox_fshader, "vertexPosition3DModel");
+    RenderingContext::init(vertices, skybox_vshader, skybox_fshader, "vertexPosition3DModel", 0);
 
     /// Bind the Skybox cube map to texture 0.
     set_texture(0, -1, "skyboxTex", GL_TEXTURE_CUBE_MAP);

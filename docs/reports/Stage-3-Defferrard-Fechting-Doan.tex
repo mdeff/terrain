@@ -36,6 +36,9 @@ We did implement all the basic
 
 The cheapest way to display particles is to use sprites: polygons that face the camera
 in any orientation.
+
+As for the heightmap, if we were able to work with OpenGL 4, we could have use compute shaders instead of an empty vertex shader for this kind of GPGPU computation. It would have permit us to store particle data in buffer objects and avoid pingpong storage.
+
 %Each sprite is created using the Geometry Shader. So we only feed the GPU a set of 3D positions, one per sprite. The Geometry Shader expands each position into two triangles and correctly orients them perpendicular to the camera view direction.
 transparency gradient proportional to distance to center : \texttt{gl\_PointCoord}
 particle size inversely proportional to the squared distance to the camera : \texttt{gl\_pointSize}
@@ -48,6 +51,10 @@ A common technique to solve this is to test if the currently-drawn fragment is n
 As we cannot read from a texture and render to it at the same time, we need two velocity textures. The one used as an input is the one that was rendered to before. At each frame rendering we exchange the two.
 
 The vertex attribute buffer contain integers from 0 to nParticles - 1. The attribute is the index in the \texttt{particlesPosTex} which will allow the \texttt{particles\_render\_vshader} to retrieve the particle position. The attribute type is \texttt{GL\_INT}. As for the indices to not be converted to floating point values, the \texttt{glVertexAttribIPointer} function is used (notice the \texttt{I}).
+
+The \texttt{gl\_VertexID} vertex language input variable is used by the \texttt{particule\_render\_vshader} to index the particle textures.
+1D texture to store position and velocity.
+Window and textures are of size \texttt{nParticles} times 1 pixels.
 
 \section{Improvements on last stage}
 

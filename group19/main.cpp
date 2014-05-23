@@ -17,7 +17,6 @@
 #include "vertices_skybox.h"
 #include "waterReflection.h"
 #include "vertices_bezier.h"
-#include "vertices_particules.h"
 #include "camera.h"
 
 
@@ -41,15 +40,15 @@ ParticlesRender particlesRender(windowWidth, windowHeight);
 
 /// Instanciate the rendering contexts that render to FBO.
 Shadowmap shadowmap(textureWidth, textureHeight);
-ParticlesControl particlesControl(10, 10);
+ParticlesControl particlesControl(1000);
 
 WaterReflection reflection(windowWidth, windowHeight);
 
 /// Instanciate the vertices.
+Vertices* verticesQuad = new VerticesQuad();
 Vertices* verticesGrid = new VerticesGrid();
 Vertices* verticesSkybox = new VerticesSkybox();
 Vertices* verticesBezier = new VerticesBezier();
-Vertices* verticesParticules = new VerticesParticules();
 
 /// Matrices that have to be shared between functions.
 mat4 cameraModelview;
@@ -86,27 +85,16 @@ void update_matrix_stack(const mat4& model) {
 //    vec3 camPos(0.0f, -1.5f, 0.8f);
 //    vec3 camLookAt(0.0f, 0.0f, 0.0f);
 //    vec3 camUp(0.0f, 0.0f, 1.0f);
+
     /// Camera is right on top, comparison with light position.
     //camPos = vec3(0.0, 0.0, 5.0);
     //camLookAt = vec3(0.0, 0.0, 0.0);
-
     //camUp = vec3(1.0, 0.0, 0.0);
-    /// Camera is in a corner, looking down to the terrain.
-    //vec3 camPos(2.0f, -2.0f, 2.5f);
-    //vec3 camPos(1.0f, 0.0f,0.7f); // Close texture view.
 
-    /// View from center.
-
-
-    //// Global view from outside.
+    /// Global view from outside.
     vec3 camPos(0.0f, -3.0f, 4.0f);
     vec3 camLookAt(0.0f, 0.0f, 0.0f);
     vec3 camUp(0.0f, 0.0f, 1.0f);
-
-	//fps exploration
-	//vec3 camPos(0.78f, 0.42f, 0.30f);
- //   vec3 camLookAt(-0.24f, 0.19f, 0.13f);
- //   vec3 camUp(0.0f, 0.0f, 1.0f);
 
     /// FPS exploration.
 //	  vec3 camPos(0.78f, 0.42f, 0.30f);
@@ -114,7 +102,6 @@ void update_matrix_stack(const mat4& model) {
 //    vec3 camUp(0.0f, 0.0f, 1.0f);
 
     /// Internal view from center.
-
 //    vec3 camPos(0.9f, -0.8f, 1.0f);
 //    vec3 camLookAt(-0.3f, 0.1f, 0.5f);
 //    vec3 camUp(0.0f, 0.0f, 1.0f);
@@ -184,33 +171,35 @@ void init() {
 	glEnable (GL_BLEND);
     //glEnable(GL_CULL_FACE);
 
-    /// Generate the heightmap texture.
-    Vertices* verticesQuad = new VerticesQuad();
+
+    /// Generate the vertices.
     verticesQuad->generate();
+    verticesGrid->generate();
+    verticesSkybox->generate();
+    verticesBezier->generate();
+
+    /// Generate the heightmap texture.
     Heightmap heightmap(textureWidth, textureHeight);
     GLuint heightMapTexID = heightmap.init(verticesQuad);
 	heightmap.draw();
     heightmap.clean();
-    verticesQuad->clean();
-    delete verticesQuad;
+//    verticesQuad->clean();
+//    delete verticesQuad;
 
 	// write heightmap in CPU 
 	camera.CopyHeightmapToCPU(heightMapTexID);
     
 
-    /// Generate the vertices.
-    verticesGrid->generate();
-    verticesSkybox->generate();
-    verticesBezier->generate();
-    verticesParticules->generate();
 
     /// Initialize the rendering contexts.
     GLuint shadowMapTexID = shadowmap.init(verticesGrid, heightMapTexID);
     terrain.init(verticesGrid, heightMapTexID, shadowMapTexID);
     skybox.init(verticesSkybox);
 
-    GLuint particlesPosTexID = particlesControl.init(NULL);
-    particlesRender.init(verticesParticules, particlesPosTexID);
+    /// Pass the particles position textures from control to render.
+    GLuint particlePosTexID[2];
+    particlesControl.init(verticesQuad, particlePosTexID);
+    particlesRender.init(particlePosTexID);
 
 	water.init(verticesGrid, heightMapTexID);
 	//reflection.init(verticesGrid, heightMapTexID);
@@ -248,6 +237,8 @@ void display() {
     terrain.draw(cameraProjection, cameraModelview, lightMVP, lightPositionModel);
     skybox.draw(cameraProjection, cameraModelview);
     camera.draw(cameraProjection, cameraModelview);
+
+    particlesControl.draw();
     particlesRender.draw(cameraProjection, cameraModelview);
 
     water.draw(cameraProjection, cameraModelview, flippedCameraModelview, lightMVP, lightPositionModel);

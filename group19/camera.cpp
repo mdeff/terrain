@@ -39,7 +39,7 @@ Camera::Camera(unsigned int width, unsigned int height) :
 void Camera::init(Vertices* vertices) {
 
     /// Common initialization.
-    RenderingContext::init(vertices, camera_vshader, camera_fshader, "vertexPosition3DModel");
+    RenderingContext::init(vertices, camera_vshader, camera_fshader, "vertexPosition3DModel", 0);
 
     // FIXME : points generated here and in vertices_bezier.
     InitdeCasteljau4Points();

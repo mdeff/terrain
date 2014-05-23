@@ -28,7 +28,7 @@ void Watermap::init(Vertices* vertices , GLuint heightMapTexID) {
 	set_texture(0, reflectionID, "reflectionTex", GL_TEXTURE_2D);
   
 	 /// Common initialization.
-	RenderingContext::init(vertices, watermap_vshader, watermap_fshader, "vertexPosition2DModel");
+    RenderingContext::init(vertices, watermap_vshader, watermap_fshader, "vertexPosition2DModel", 0);
 	/* Load texture for water surface */
 	set_texture(1, -1, "waterNormalMap", GL_TEXTURE_2D);
     load_texture("../../textures/water_normal_map_2.tga");
