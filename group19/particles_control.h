@@ -16,6 +16,7 @@ public:
 private:
 
     /// Uniform IDs.
+    unsigned int _deltaTID;
 
     /// Texture IDs : current and last particles position and velocity.
     unsigned int _particleTexID[4];

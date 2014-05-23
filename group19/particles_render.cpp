@@ -48,7 +48,7 @@ void ParticlesRender::draw(const mat4& projection, const mat4& modelview) {
     glUniformMatrix4fv(_projectionID, 1, GL_FALSE, projection.data());
 
     /// Flip the position texture binding.
-    static int pingpong = 0;
+    static int pingpong = 0;  // Sart with 1.
     pingpong = (pingpong+1) % 2;
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_1D, _particlePosTexID[pingpong]);

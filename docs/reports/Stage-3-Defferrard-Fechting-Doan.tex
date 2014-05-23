@@ -56,6 +56,8 @@ The \texttt{gl\_VertexID} vertex language input variable is used by the \texttt{
 1D texture to store position and velocity.
 Window and textures are of size \texttt{nParticles} times 1 pixels.
 
+In our implementation, particles that fall below the water level are reseted to the top and will fall down again, indefinitely. In order to keep the aggregate compact and so as it does not spread out in the space, particles that go too far in x or y direction get moved to the oder side.
+
 \section{Improvements on last stage}
 
 \subsection{Code cleanup}

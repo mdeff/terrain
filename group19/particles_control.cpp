@@ -53,22 +53,25 @@ void ParticlesControl::init(Vertices* vertices, GLuint particlePosTexID[]) {
         glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + k, _particleTexID[k], 0);
     }
 
-    /// Initial particles position and velocity : cube of 2x2x5.
-    /// Terrain is 2*2 and skybox has height of 5.
+    /// Initial particles position and velocity.
+    /// Particles can be in x=[-1,1], y=[-1,1], z=[0,5].
     float particlesPos[3*nParticles];
     float particlesVel[3*nParticles];
     for(int k=0; k<nParticles; ++k) {
         particlesPos[3*k+0] = 2.0f * float(k % (nParticlesSide*nParticlesSide) % nParticlesSide) / float(nParticlesSide) - 1.0f;  // x
         particlesPos[3*k+1] = 2.0f * float(k % (nParticlesSide*nParticlesSide) / nParticlesSide) / float(nParticlesSide) - 1.0f;  // y
-        particlesPos[3*k+2] = 5.0f * float(k / (nParticlesSide*nParticlesSide)                 ) / float(nParticlesSide) + 1.0f;  // z
+        particlesPos[3*k+2] = 2.0f * float(k / (nParticlesSide*nParticlesSide)                 ) / float(nParticlesSide) + 6.2f;  // z
         particlesVel[3*k+0] = 0.0f;  // x
         particlesVel[3*k+1] = 0.0f;  // y
-        particlesVel[3*k+2] = 0.0f;  // z
+        particlesVel[3*k+2] = 0.1f * float(k / (nParticlesSide*nParticlesSide)                 ) / float(nParticlesSide) + 0.0f;  // z
     }
     glBindTexture(GL_TEXTURE_1D, _particleTexID[0]);
     glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB32F, _width, 0, GL_RGB, GL_FLOAT, particlesPos);
     glBindTexture(GL_TEXTURE_1D, _particleTexID[2]);
     glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB32F, _width, 0, GL_RGB, GL_FLOAT, particlesVel);
+
+    /// Set uniform IDs.
+    _deltaTID = glGetUniformLocation(_programID, "deltaT");
 
 }
 
@@ -79,9 +82,14 @@ void ParticlesControl::draw() const {
     RenderingContext::draw();
 
     /// Update the content of the uniforms.
+    static double lastTime = glfwGetTime();
+    double currentTime = glfwGetTime();
+    float deltaT = float(currentTime - lastTime);
+    lastTime = currentTime;
+    glUniformMatrix4fv(_deltaTID, 1, GL_FALSE, &deltaT);
 
     /// Binary [0,1] variable to switch between input / output textures.
-    static int pingpong = 1;
+    static int pingpong = 1;  // Sart with 0.
     pingpong = (pingpong+1) % 2;
 
     /// Flip the position and velocity texture bindings.

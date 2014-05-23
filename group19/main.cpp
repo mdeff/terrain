@@ -84,14 +84,19 @@ void update_matrix_stack(const mat4& model) {
 //    vec3 camLookAt(0.0f, 0.0f, 0.0f);
 //    vec3 camUp(0.0f, 0.0f, 1.0f);
 
-    /// Camera is right on top, comparison with light position.
-    //camPos = vec3(0.0, 0.0, 5.0);
-    //camLookAt = vec3(0.0, 0.0, 0.0);
-    //camUp = vec3(1.0, 0.0, 0.0);
+    /// Camera is right on top (comparison with light position).
+//    vec3 camPos = vec3(0.0, 0.0, 5.0);
+//    vec3 camLookAt = vec3(0.0, 0.0, 0.0);
+//    vec3 camUp = vec3(1.0, 0.0, 0.0);
 
     /// Global view from outside.
-    vec3 camPos(0.0f, -3.0f, 4.0f);
-    vec3 camLookAt(0.0f, 0.0f, 0.0f);
+//    vec3 camPos(0.0f, -3.0f, 4.0f);
+//    vec3 camLookAt(0.0f, 0.0f, 0.0f);
+//    vec3 camUp(0.0f, 0.0f, 1.0f);
+
+    /// Frontal view to observe falling particles.
+    vec3 camPos(0.0f, -4.8f, 1.0f);
+    vec3 camLookAt(0.0f, 0.0f, 1.0f);
     vec3 camUp(0.0f, 0.0f, 1.0f);
 
     /// FPS exploration.
@@ -222,7 +227,7 @@ void display() {
     if(currentTime - lastTime >= 1.0) {
         std::cout << nbFrames << " FPS" << std::endl;
         nbFrames = 0;
-        lastTime += 1.0;
+        lastTime = currentTime;
     }
 
 //    camera.handleCamera();
@@ -233,14 +238,14 @@ void display() {
     /// Render everything.
     shadowmap.draw(lightMVP);
     terrain.draw(cameraProjection, cameraModelview, lightMVP, lightPositionModel);
-    skybox.draw(cameraProjection, cameraModelview);
+//    skybox.draw(cameraProjection, cameraModelview);
     camera.draw(cameraProjection, cameraModelview);
 
     /// First control particle positions, then render them on screen.
     particlesControl.draw();
     particlesRender.draw(cameraProjection, cameraModelview);
 
-    water.draw(cameraProjection, cameraModelview, flippedCameraModelview, lightMVP, lightPositionModel);
+//    water.draw(cameraProjection, cameraModelview, flippedCameraModelview, lightMVP, lightPositionModel);
 //    reflection.draw(cameraProjection, flippedCameraModelview, lightMVP, lightPositionModel);
    
 }
