@@ -8,6 +8,8 @@
 #include "shadowmap.h"
 #include "watermap.h"
 #include "skybox.h"
+#include "particles_control.h"
+#include "particles_render.h"
 #include "terrain.h"
 #include "vertices.h"
 #include "vertices_quad.h"
@@ -15,6 +17,7 @@
 #include "vertices_skybox.h"
 #include "waterReflection.h"
 #include "vertices_bezier.h"
+#include "vertices_particules.h"
 #include "camera.h"
 
 
@@ -26,19 +29,27 @@ const int windowHeight(768);
 const int textureWidth(1024);
 const int textureHeight(1024);
 
-/// Instanciate the rendering contexts.
-Shadowmap shadowmap(textureWidth, textureHeight);
+/// SQUARE ROOT of the number of particules.
+//const int nParticules(10);
+
+/// Instanciate the rendering contexts that render to the screen.
 Skybox skybox(windowWidth, windowHeight);
 Terrain terrain(windowWidth, windowHeight);
+Camera camera(windowWidth, windowHeight);
 Watermap water(windowWidth, windowHeight);
+ParticlesRender particlesRender(windowWidth, windowHeight);
+
+/// Instanciate the rendering contexts that render to FBO.
+Shadowmap shadowmap(textureWidth, textureHeight);
+ParticlesControl particlesControl(10, 10);
 
 WaterReflection reflection(windowWidth, windowHeight);
 
-Camera camera(windowWidth, windowHeight);
-// Instanciate the vertices.
+/// Instanciate the vertices.
 Vertices* verticesGrid = new VerticesGrid();
 Vertices* verticesSkybox = new VerticesSkybox();
 Vertices* verticesBezier = new VerticesBezier();
+Vertices* verticesParticules = new VerticesParticules();
 
 /// Matrices that have to be shared between functions.
 mat4 cameraModelview;
@@ -72,9 +83,9 @@ void update_matrix_stack(const mat4& model) {
     /// View matrix (camera extrinsics) (position in world space).
 
     /// Camera is in the sky, looking down.
-    vec3 camPos(0.0f, -1.5f, 0.8f);
-    vec3 camLookAt(0.0f, 0.0f, 0.0f);
-    vec3 camUp(0.0f, 0.0f, 1.0f);
+//    vec3 camPos(0.0f, -1.5f, 0.8f);
+//    vec3 camLookAt(0.0f, 0.0f, 0.0f);
+//    vec3 camUp(0.0f, 0.0f, 1.0f);
     /// Camera is right on top, comparison with light position.
     //camPos = vec3(0.0, 0.0, 5.0);
     //camLookAt = vec3(0.0, 0.0, 0.0);
@@ -88,9 +99,9 @@ void update_matrix_stack(const mat4& model) {
 
 
     //// Global view from outside.
-//    vec3 camPos(0.0f, -3.0f, 4.0f);
-//    vec3 camLookAt(0.0f, 0.0f, 0.0f);
-//    vec3 camUp(0.0f, 0.0f, 1.0f);
+    vec3 camPos(0.0f, -3.0f, 4.0f);
+    vec3 camLookAt(0.0f, 0.0f, 0.0f);
+    vec3 camUp(0.0f, 0.0f, 1.0f);
 
 	//fps exploration
 	//vec3 camPos(0.78f, 0.42f, 0.30f);
@@ -191,11 +202,15 @@ void init() {
     verticesGrid->generate();
     verticesSkybox->generate();
     verticesBezier->generate();
+    verticesParticules->generate();
 
     /// Initialize the rendering contexts.
     GLuint shadowMapTexID = shadowmap.init(verticesGrid, heightMapTexID);
     terrain.init(verticesGrid, heightMapTexID, shadowMapTexID);
     skybox.init(verticesSkybox);
+
+    GLuint particlesPosTexID = particlesControl.init(NULL);
+    particlesRender.init(verticesParticules, particlesPosTexID);
 
 	water.init(verticesGrid, heightMapTexID);
 	//reflection.init(verticesGrid, heightMapTexID);
@@ -223,15 +238,17 @@ void display() {
         lastTime += 1.0;
     }
 
-    camera.handleCamera();
+//    camera.handleCamera();
     /// Uncomment to render only the boundary (not full triangles).
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
+//    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     /// Render everything.
     shadowmap.draw(lightMVP);
     terrain.draw(cameraProjection, cameraModelview, lightMVP, lightPositionModel);
     skybox.draw(cameraProjection, cameraModelview);
     camera.draw(cameraProjection, cameraModelview);
+    particlesRender.draw(cameraProjection, cameraModelview);
 
     water.draw(cameraProjection, cameraModelview, flippedCameraModelview, lightMVP, lightPositionModel);
 //    reflection.draw(cameraProjection, flippedCameraModelview, lightMVP, lightPositionModel);

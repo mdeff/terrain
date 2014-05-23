@@ -32,6 +32,22 @@ We did implement all the basic
 
 \subsection{Advanced}
 
+\subsubsection{Particle system}
+
+The cheapest way to display particles is to use sprites: polygons that face the camera
+in any orientation.
+%Each sprite is created using the Geometry Shader. So we only feed the GPU a set of 3D positions, one per sprite. The Geometry Shader expands each position into two triangles and correctly orients them perpendicular to the camera view direction.
+transparency gradient proportional to distance to center : \texttt{gl\_PointCoord}
+particle size inversely proportional to the squared distance to the camera : \texttt{gl\_pointSize}
+no sorting with respect to camera distance for transparency : can create weird effect if a particle that is nearer than another gets drawn before. The farther particle will visually seem to be in front of the nearer. Thanks to particle speed, this won't be visible.
+Draw a real flocon ? not much added value to particle speed
+Use geometry shader ?
+Particle texture ?
+A common technique to solve this is to test if the currently-drawn fragment is near the Z-Buffer. If so, the fragment is faded out. However, you’ll have to sample the Z-Buffer, which is not possible with the “normal” Z-Buffer. You need to render your scene in a render target. Alternatively, you can copy the Z-Buffer from one framebuffer to another with glBlitFramebuffer.
+
+As we cannot read from a texture and render to it at the same time, we need two velocity textures. The one used as an input is the one that was rendered to before. At each frame rendering we exchange the two.
+
+The vertex attribute buffer contain integers from 0 to nParticles - 1. The attribute is the index in the \texttt{particlesPosTex} which will allow the \texttt{particles\_render\_vshader} to retrieve the particle position. The attribute type is \texttt{GL\_INT}. As for the indices to not be converted to floating point values, the \texttt{glVertexAttribIPointer} function is used (notice the \texttt{I}).
 
 \section{Improvements on last stage}
 

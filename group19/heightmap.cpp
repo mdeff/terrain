@@ -31,9 +31,8 @@ GLuint Heightmap::init(Vertices* vertices) {
     GLuint gradVectTexID = gen_gradient_vectors();
     set_texture(1, gradVectTexID, "gradVectTex", GL_TEXTURE_1D);
 
-    /// Create and bind to texture 2 the texture which will contain the
-    /// color output (the actual height map) of our shader. No need to be
-    /// binded to a texture index, but it is simpler to use the framework.
+    /// Create and bind the texture which will contain the
+    /// color output (the actual height map) of our shader.
     GLuint heightMapTexID;
     glGenTextures(1, &heightMapTexID);
     glBindTexture(GL_TEXTURE_2D, heightMapTexID);
