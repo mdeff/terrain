@@ -18,6 +18,9 @@ static bool KeyE = false;
 static bool KeyQ = false;
 static bool KeySHIFT = false;
 static bool KeySPACE = false;
+static bool Key1 = false;
+static bool Key2 = false;
+static bool KeyENTER = false;
 
 static double pictorialCameraPos[3];
 static double pictorialCameraLookat[3];
@@ -472,7 +475,7 @@ void CameraControl::InitdeCasteljauSubdivision(){
         _bezierCurve[i*3+0] = posX;
         _bezierCurve[i*3+1] = posY;
         _bezierCurve[i*3+2] = posZ;
-		std::cout<<"1 "<<t<<" "<<posX<<" "<<posY<<std::endl;
+		//std::cout<<"1 "<<t<<" "<<posX<<" "<<posY<<std::endl;
 	
 		t = t+0.001;
 	}
@@ -491,7 +494,7 @@ void CameraControl::InitdeCasteljauSubdivision(){
         _bezierCurve[i*3+1] = posY;
         _bezierCurve[i*3+2] = posZ;
 
-		std::cout<<"2 "<<t<<" "<<posX<<" "<<posY<<std::endl;
+		//std::cout<<"2 "<<t<<" "<<posX<<" "<<posY<<std::endl;
 		
 		t = t+0.001;
 	}
@@ -631,6 +634,45 @@ void CameraControl::deCasteljau4PointsChanging(int PointToChange,double changeX,
 	//std::cout<<b0Z<<" "<<b1Z<<" "<<b2Z<<" "<<b3Z<<std::endl;
 	/// Choose the resolution.
     const unsigned int nPoints = 200;
+
+	_bezierCurve.clear();
+    /// To avoid vector resizing on every loop.
+    _bezierCurve.reserve(3*nPoints);
+
+    /// Generate coordinates.
+    for(int k=0; k<nPoints; ++k) {
+        float t = float(k) / float(nPoints);
+        _bezierCurve.push_back(std::pow((1-t),3)*b0X + 3*t*std::pow((1-t),2)*b1X + 3*std::pow(t,2)*(1-t)*b2X + std::pow(t,3)*b3X);
+        _bezierCurve.push_back(std::pow((1-t),3)*b0Y + 3*t*std::pow((1-t),2)*b1Y + 3*std::pow(t,2)*(1-t)*b2Y + std::pow(t,3)*b3Y);
+        _bezierCurve.push_back(std::pow((1-t),3)*b0Z + 3*t*std::pow((1-t),2)*b1Z + 3*std::pow(t,2)*(1-t)*b2Z + std::pow(t,3)*b3Z);
+    }
+
+    /// Copy the vertices to GPU.
+    _verticesCameraPath ->copy(_bezierCurve.data(), _bezierCurve.size());
+
+}
+
+void CameraControl::createBCurve(){
+	
+	//other setting flying through
+	float b0X = _userBCurve.at(0) ;
+	float b0Y = _userBCurve.at(1) ;
+	float b0Z = _userBCurve.at(2) ;
+    float b1X = _userBCurve.at(3) ;
+	float b1Y = _userBCurve.at(4) ;
+	float b1Z = _userBCurve.at(5) ;
+    float b2X = _userBCurve.at(6) ;
+	float b2Y = _userBCurve.at(7) ;
+	float b2Z = _userBCurve.at(8) ;
+    float b3X = _userBCurve.at(9) ;
+	float b3Y = _userBCurve.at(10);
+	float b3Z = _userBCurve.at(11);
+
+	//std::cout<<b0X<<" "<<b1X<<" "<<b2X<<" "<<b3X<<std::endl;
+	//std::cout<<b0Y<<" "<<b1Y<<" "<<b2Y<<" "<<b3Y<<std::endl;
+	//std::cout<<b0Z<<" "<<b1Z<<" "<<b2Z<<" "<<b3Z<<std::endl;
+	/// Choose the resolution.
+    const unsigned int nPoints = 500;
 
 	_bezierCurve.clear();
     /// To avoid vector resizing on every loop.
@@ -792,10 +834,16 @@ void CameraControl::flyingExploration(){
 		rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotZ,-velocityDown);
 		recordRotY = fmod((recordRotY-0.0174f*velocityDown),6.2831); //save rotation done
 	}
+	if(Key1==true){
+		update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
+	}
 }
 
 void CameraControl::fpsExploration(){
 	
+	static bool ModeSettingControlPoint=false;
+	static int controlPointsCount = 0;
+
 	static double posX =  0.78f;
 	static double posY =  0.42f;
 	static double posZ =  0.30f;
@@ -810,7 +858,6 @@ void CameraControl::fpsExploration(){
 	static double velocityRight = 0;
 	static double velocityUp = 0;
 	static double velocityDown = 0;
-
 	
 	static double recordRotZ = 0;
 
@@ -824,150 +871,227 @@ void CameraControl::fpsExploration(){
     float deltaT = float(currentTime - lastTime); //deltaT in sc 
     lastTime = currentTime;
 
-	if((KeySPACE==true) & (jumping==false)){//space => jump
-			jumping = true;
-			initJumpPosZ = posZ;
-			initJumpLookZ = lookZ;
-	}
-	if (jumping ==true ){
+	//if(ModeSettingControlPoint==false){
+		if((KeySPACE==true) & (jumping==false)){//space => jump
+				jumping = true;
+				initJumpPosZ = posZ;
+				initJumpLookZ = lookZ;
+		}
+		if (jumping ==true ){
 
-		if((jumpLevel>80) & (jumpLevel<100)){
-			jumpLevel +=1;
-		}
-		else if (((jumpLevel>60) & (jumpLevel<=80))|((jumpLevel>=100) & (jumpLevel<120))){
-			jumpLevel +=1.5;
-		}
-		else{
-			jumpLevel +=2.5;
-		}
+			if((jumpLevel>80) & (jumpLevel<100)){
+				jumpLevel +=1;
+			}
+			else if (((jumpLevel>60) & (jumpLevel<=80))|((jumpLevel>=100) & (jumpLevel<120))){
+				jumpLevel +=1.5;
+			}
+			else{
+				jumpLevel +=2.5;
+			}
 		
-		//estimate floor level 8only if mooving while jumping
-		int tmpX = int((1+posX)*1024/2);
-		int tmpY = int((1+posY)*1024/2);
-		tmpX = tmpX -2;
-		tmpY = tmpY -2;
-		double tmpZ=0;
-		double AmountOfPoints = 0; 
-		for(int i=0;i<5;i++){//take in count 24 z values arround to have a smooth move 
-			for(int j=0;j<5;j++){
-				tmpX = tmpX + i;
-				tmpY = tmpY + j;
-				if ((tmpX>0) & (tmpX<1025) & (tmpY>0) &(tmpY<1025)){
-                    tmpZ = tmpZ + _heightmapCPU[tmpX+1024*tmpY];
-					AmountOfPoints++;
+			//estimate floor level 8only if mooving while jumping
+			int tmpX = int((1+posX)*1024/2);
+			int tmpY = int((1+posY)*1024/2);
+			tmpX = tmpX -2;
+			tmpY = tmpY -2;
+			double tmpZ=0;
+			double AmountOfPoints = 0; 
+			for(int i=0;i<5;i++){//take in count 24 z values arround to have a smooth move 
+				for(int j=0;j<5;j++){
+					tmpX = tmpX + i;
+					tmpY = tmpY + j;
+					if ((tmpX>0) & (tmpX<1025) & (tmpY>0) &(tmpY<1025)){
+						tmpZ = tmpZ + _heightmapCPU[tmpX+1024*tmpY];
+						AmountOfPoints++;
+					}
 				}
 			}
-		}
-		//std::cout<<"AmountOfPoints ="<<AmountOfPoints<<endl;
-		tmpZ=tmpZ/AmountOfPoints;
-		double floorLevel = tmpZ+0.06; //fps person height
+			//std::cout<<"AmountOfPoints ="<<AmountOfPoints<<endl;
+			tmpZ=tmpZ/AmountOfPoints;
+			double floorLevel = tmpZ+0.06; //fps person height
 
-		if ((jumpLevel >= 90) & (posZ<=floorLevel)){ //reach floor =>jump finished
-			jumping = false;
-			jumpLevel = 0;
-			posZ = floorLevel;// 0.06 person height
-		}
-		else if(jumpLevel > 180 ){// falling ! 
-			posZ -= 0.005f; 
-		}
-		else{
-			posZ = initJumpPosZ + 0.1 * sin(0.0174f*jumpLevel);
-			lookZ = initJumpLookZ + 0.1 * sin(0.0174f*jumpLevel);
-		}
+			if ((jumpLevel >= 90) & (posZ<=floorLevel)){ //reach floor =>jump finished
+				jumping = false;
+				jumpLevel = 0;
+				posZ = floorLevel;// 0.06 person height
+			}
+			else if(jumpLevel > 180 ){// falling ! 
+				posZ -= 0.005f; 
+			}
+			else{
+				posZ = initJumpPosZ + 0.1 * sin(0.0174f*jumpLevel);
+				lookZ = initJumpLookZ + 0.1 * sin(0.0174f*jumpLevel);
+			}
 
-		update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
-	}
-	if ((KeyW==true) | (velocityForward > 0.0f)){//W pressed => go forward 
-		if((KeyW==1) & (velocityForward<0.5f*deltaT)){
-				velocityForward = velocityForward + 0.1f*deltaT;
-		}
-		else{
-			velocityForward = velocityForward - 0.1f*deltaT;
-		}
-
-		if((KeySHIFT==true) & (KeyW==true) & (velocityForward<0.02f)){ // press shift => running
-			velocityForward +=0.5*deltaT;
-		}
-		
-		//FPS exploration
-		if((posX<=1) & (posX>=-1) & (posY<=1) & (posY>=-1) & (jumping == false)){//stay on the map
-			double dispX = 0.2f*velocityForward*powf(posX-lookX,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posX-lookX)/abs(posX-lookX);
-			double dispY = 0.2f*velocityForward*powf(posY-lookY,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posY-lookY)/abs(posY-lookY);
-			fpsExplorationForwardBackward(posX,posY,posZ,lookX,lookY,lookZ,dispX,dispY);
-		}
-		else if((posX<=1) & (posX>=-1) & (posY<=1) & (posY>=-1) & (jumping == true)){//stay on the map jumping forward
-			double dispX = 0.2f*velocityForward*powf(posX-lookX,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posX-lookX)/abs(posX-lookX);
-			double dispY = 0.2f*velocityForward*powf(posY-lookY,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posY-lookY)/abs(posY-lookY);
-			posX = posX - dispX; 
-			posY = posY - dispY; 
-			lookX = lookX - dispX; 
-			lookY = lookY - dispY; 
-			if(posX>1){posX=1;}
-			else if(posX<-1){posX=-1;}
-			if(posY>1){posY=1;}
-			else if(posY<-1){posY=-1;}
 			update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
 		}
+		if ((KeyW==true) | (velocityForward > 0.0f)){//W pressed => go forward 
+			if((KeyW==1) & (velocityForward<0.5f*deltaT)){
+					velocityForward = velocityForward + 0.1f*deltaT;
+			}
+			else{
+				velocityForward = velocityForward - 0.1f*deltaT;
+			}
+
+			if((KeySHIFT==true) & (KeyW==true) & (velocityForward<0.02f)){ // press shift => running
+				velocityForward +=0.5*deltaT;
+			}
 		
-	}
-	if  ((KeyS==true)| (velocityBackward > 0.0f)){//S pressed => go backward 
-		if((KeyS==true) & (velocityBackward<0.5f*deltaT)){
-				velocityBackward = velocityBackward + 0.1f*deltaT;
-		}
-		else{
-			velocityBackward = velocityBackward - 0.1f*deltaT;
-		}
+			//FPS exploration
+			if((posX<=1) & (posX>=-1) & (posY<=1) & (posY>=-1) & (jumping == false)){//stay on the map
+				double dispX = 0.2f*velocityForward*powf(posX-lookX,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posX-lookX)/abs(posX-lookX);
+				double dispY = 0.2f*velocityForward*powf(posY-lookY,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posY-lookY)/abs(posY-lookY);
+				fpsExplorationForwardBackward(posX,posY,posZ,lookX,lookY,lookZ,dispX,dispY);
+			}
+			else if((posX<=1) & (posX>=-1) & (posY<=1) & (posY>=-1) & (jumping == true)){//stay on the map jumping forward
+				double dispX = 0.2f*velocityForward*powf(posX-lookX,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posX-lookX)/abs(posX-lookX);
+				double dispY = 0.2f*velocityForward*powf(posY-lookY,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posY-lookY)/abs(posY-lookY);
+				posX = posX - dispX; 
+				posY = posY - dispY; 
+				lookX = lookX - dispX; 
+				lookY = lookY - dispY; 
+				if(posX>1){posX=1;}
+				else if(posX<-1){posX=-1;}
+				if(posY>1){posY=1;}
+				else if(posY<-1){posY=-1;}
+				update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
+			}
 		
-		//fps exploration
-		if((posX<=1) & (posX>=-1) & (posY<=1) & (posY>=-1)){//stay on the map
-			double dispX = 0.2f*velocityBackward*powf(posX-lookX,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posX-lookX)/abs(posX-lookX);
-			double dispY = 0.2f*velocityBackward*powf(posY-lookY,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posY-lookY)/abs(posY-lookY);
-			fpsExplorationForwardBackward(posX,posY,posZ,lookX,lookY,lookZ,-dispX,-dispY);
 		}
-	}
-	if ((KeyA==true) | (velocityLeft > 0.0f)){//A pressed => turn left
-		if((KeyA==true) & (velocityLeft<20.0f*deltaT)){
-				velocityLeft = velocityLeft + 2.0f*deltaT;
+		if  ((KeyS==true)| (velocityBackward > 0.0f)){//S pressed => go backward 
+			if((KeyS==true) & (velocityBackward<0.5f*deltaT)){
+					velocityBackward = velocityBackward + 0.1f*deltaT;
+			}
+			else{
+				velocityBackward = velocityBackward - 0.1f*deltaT;
+			}
+		
+			//fps exploration
+			if((posX<=1) & (posX>=-1) & (posY<=1) & (posY>=-1)){//stay on the map
+				double dispX = 0.2f*velocityBackward*powf(posX-lookX,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posX-lookX)/abs(posX-lookX);
+				double dispY = 0.2f*velocityBackward*powf(posY-lookY,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posY-lookY)/abs(posY-lookY);
+				fpsExplorationForwardBackward(posX,posY,posZ,lookX,lookY,lookZ,-dispX,-dispY);
+			}
 		}
-		else{
-			velocityLeft = velocityLeft - 2.0f*deltaT;
-		}
-		fpsRotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,velocityLeft);
-		recordRotZ = fmod((recordRotZ+0.0174f*velocityRight),6.2831); //save rotation done
+		if ((KeyA==true) | (velocityLeft > 0.0f)){//A pressed => turn left
+			if((KeyA==true) & (velocityLeft<40.0f*deltaT)){
+					velocityLeft = velocityLeft + 2.0f*deltaT;
+			}
+			else{
+				velocityLeft = velocityLeft - 2.0f*deltaT;
+			}
+			fpsRotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,velocityLeft);
+			recordRotZ = fmod((recordRotZ+0.0174f*velocityRight),6.2831); //save rotation done
 	
-		//rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,velocityLeft);
-	}
-	if ((KeyD==true) | (velocityRight > 0.0f)){//D pressed =turn right
-		if((KeyD==true) & (velocityRight<20.0f*deltaT)){
-				velocityRight = velocityRight + 2.0f*deltaT;
+			//rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,velocityLeft);
 		}
-		else{
-			velocityRight = velocityRight - 2.0f*deltaT;
-		}
-		fpsRotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,-velocityRight);
-		recordRotZ = fmod((recordRotZ-0.0174f*velocityRight),6.2831); //save rotation done
+		if ((KeyD==true) | (velocityRight > 0.0f)){//D pressed =turn right
+			if((KeyD==true) & (velocityRight<40.0f*deltaT)){
+					velocityRight = velocityRight + 2.0f*deltaT;
+			}
+			else{
+				velocityRight = velocityRight - 2.0f*deltaT;
+			}
+			fpsRotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,-velocityRight);
+			recordRotZ = fmod((recordRotZ-0.0174f*velocityRight),6.2831); //save rotation done
 	
-		//rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,-velocityRight);
-	}
-	if  ((KeyQ==true)  | (velocityUp > 0.0f)){//Q pressed turn up
-		if((KeyQ==true) & (velocityUp<20.0f*deltaT)){
-				velocityUp = velocityUp + 2.0f*deltaT;
+			//rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,-velocityRight);
 		}
-		else{
-			velocityUp = velocityUp - 2.0f*deltaT;
+		if  ((KeyQ==true)  | (velocityUp > 0.0f)){//Q pressed turn up
+			if((KeyQ==true) & (velocityUp<40.0f*deltaT)){
+					velocityUp = velocityUp + 2.0f*deltaT;
+			}
+			else{
+				velocityUp = velocityUp - 2.0f*deltaT;
+			}
+			//rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotZ,velocityUp);
+			fpsRotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotZ,velocityUp);
 		}
-		//rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotZ,velocityUp);
-		fpsRotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotZ,velocityUp);
-	}
-	if  ( (KeyE==true) | (velocityDown > 0.0f)){//E pressed => down
-		if((KeyE==true) & (velocityDown<20.0f*deltaT)){
-				velocityDown = velocityDown + 2.0f*deltaT;
+		if  ( (KeyE==true) | (velocityDown > 0.0f)){//E pressed => down
+			if((KeyE==true) & (velocityDown<40.0f*deltaT)){
+					velocityDown = velocityDown + 2.0f*deltaT;
+			}
+			else{
+				velocityDown = velocityDown - 2.0f*deltaT;
+			}
+			//rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotZ,-velocityDown);
+			fpsRotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotZ,-velocityDown);
 		}
-		else{
-			velocityDown = velocityDown - 2.0f*deltaT;
+		if(Key2==true){
+			update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
 		}
-		//rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotZ,-velocityDown);
-		fpsRotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotZ,-velocityDown);
+		if(KeyENTER==true & ModeSettingControlPoint==false){
+			KeyENTER=false;
+			ModeSettingControlPoint=true;
+			if(controlPointsCount<=4){//restart creating path
+				controlPointsCount=0;
+				_userBCurve.clear();
+			}
+			//1) push the posX,Y,Z as a new control point P0 or P4.
+			if (controlPointsCount==0){
+				_userBCurve.push_back(posX);
+				_userBCurve.push_back(posY);
+				_userBCurve.push_back(posZ);
+				controlPointsCount++;
+			}
+			//2) set the P2 or P3 control point
+		}	
+	
+	if (ModeSettingControlPoint==true){ // set a control point if necessary
+		//use position of lookX,lookY,lookZ to preview curve 
+		if (controlPointsCount==1 & _userBCurve.size()==3){
+			_userBCurve.push_back(lookX);
+			_userBCurve.push_back(lookY);
+			_userBCurve.push_back(lookZ);
+		}
+		else if(controlPointsCount==1 & _userBCurve.size()==6){
+			_userBCurve.pop_back();
+			_userBCurve.pop_back();
+			_userBCurve.pop_back();
+			_userBCurve.push_back(lookX);
+			_userBCurve.push_back(lookY);
+			_userBCurve.push_back(lookZ);
+		}
+		else if(controlPointsCount ==2  & _userBCurve.size()==6){
+			
+			_userBCurve.push_back(lookX);
+			_userBCurve.push_back(lookY);
+			_userBCurve.push_back(lookZ);
+			_userBCurve.push_back(posX);
+			_userBCurve.push_back(posY);
+			_userBCurve.push_back(posZ);
+		}
+		else if(controlPointsCount==2 & _userBCurve.size()==12){
+			_userBCurve.pop_back();
+			_userBCurve.pop_back();
+			_userBCurve.pop_back();
+			_userBCurve.pop_back();
+			_userBCurve.pop_back();
+			_userBCurve.pop_back();
+			_userBCurve.push_back(lookX);
+			_userBCurve.push_back(lookY);
+			_userBCurve.push_back(lookZ);
+			_userBCurve.push_back(posX);
+			_userBCurve.push_back(posY);
+			_userBCurve.push_back(posZ);
+			std::cout<<"refreshing look at"<<std::endl;
+		}
+		if(_userBCurve.size()>6){//render bezier
+			createBCurve();
+			std::cout<<"render curve"<<std::endl;
+		}
+		std::cout<<"Wait "<<_userBCurve.size()<<std::endl;
+		if(KeyENTER==true){
+			if(controlPointsCount==1){
+				controlPointsCount++;
+			}
+			else if(controlPointsCount==2){
+				controlPointsCount = controlPointsCount+2;
+				ModeSettingControlPoint=false;
+			}
+			KeyENTER=false;
+		}
+		//.pop_back()remove last element of vector
 	}
 }
 
@@ -1023,11 +1147,13 @@ void CameraControl::handleCameraControls(int key, int action){
 		break;
 	case 303: //1  
         std::cout << "Exploration mode : FLYING" << std::endl;
+		Key1 =!Key1;
         _explorationMode = FLYING;
 		break;
     case 304: //2
         std::cout << "Exploration mode : FPS" << std::endl;
         _explorationMode = FPS;
+		Key2 =!Key2;
 		break;
     case 305: //3
         std::cout << "Exploration mode : PATH" << std::endl;
@@ -1079,6 +1205,9 @@ void CameraControl::handleCameraControls(int key, int action){
 			case 308: //6
 				MultipleBezier();
 				break;
+			case 294://ENTER => drop control point
+				std::cout<<"control point to set"<<std::endl;
+				KeyENTER = true;
 		}
 	}
 }

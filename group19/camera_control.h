@@ -27,6 +27,9 @@ private:
     /// Camera path (Bézier curve) coordinates.
     std::vector<float> _bezierCurve;
 
+	/// User defined camera path (Bézier curve) coordinates.
+    std::vector<float> _userBCurve;
+
     /// Handle to camera path vertices.
     VerticesCameraPath* _verticesCameraPath;
 
@@ -59,6 +62,7 @@ private:
 	void deCasteljau4PointsChanging(int PointToChange,double changeX,double changeY,double changeZ);
 	void animatePictorialCamera();
 	void MultipleBezier();
+	void createBCurve();
 };
 
 #endif /* __camera_control_h__ */
