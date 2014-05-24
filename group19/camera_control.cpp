@@ -649,44 +649,47 @@ void CameraControl::deCasteljau4PointsChanging(int PointToChange,double changeX,
 
 }
 
-/*void CameraControl::MultipleBezier() {
-	//test time to compute
-	static double lastTime = glfwGetTime();
-    
-	//hand-out setting
-    //const float b0X = -0.51f,b0Y =  1.09f,b0Z =  0.40f;
-    //const float b1X =  0.57f,b1Y =  1.26f,b1Z =  0.40f;
-    //const float b2X =  1.31f,b2Y =  0.92f,b2Z =  0.40f;
-    //const float b3X =  1.25f,b3Y = -0.41f,b3Z =  0.40f;
-	////other setting flying through
-	const float b0X = -0.51f,b0Y = -0.91f,b0Z =  0.20f;
-    const float b1X = -0.43f,b1Y =  2.66f,b1Z =  0.001f;
-    const float b2X =  0.31f,b2Y = -2.08f,b2Z =  0.50f;
-    const float b3X =  0.55f,b3Y =  0.39f,b3Z =  0.30f;
+void CameraControl::MultipleBezier() {
+	
+	//// setting first bezier curve
+	const float bA0X = -1.00f,bA0Y =  0.00f,bA0Z =  0.40f;
+    const float bA1X = -0.50f,bA1Y = -1.00f,bA1Z =  0.40f;
+    const float bA2X = -0.50f,bA2Y =  1.00f,bA2Z =  0.40f;
+    const float bA3X =  0.00f,bA3Y =  0.00f,bA3Z =  0.40f;
+
+	//// setting second bezier curve
+	const float bB0X =  bA3X ,bB0Y =  bA3Y ,bB0Z =  bA3Z ; // PB0 = PA3
+    const float bB1X = 2*bB0X - bA2X;//PB1 = 2PB0 - PA2
+	const float bB1Y = 2*bB0Y - bA2Y;//PB1 is the PA2 mirrored on PB0
+	const float bB1Z = 2*bB0Z - bA2Z;
+    const float bB2X =  0.50f,bB2Y =  1.00f,bB2Z =  0.40f;
+    const float bB3X =  1.00f,bB3Y =  0.00f,bB3Z =  0.40f;
 
     /// Choose the resolution.
-    const unsigned int nPoints = 768;
+    const unsigned int nPoints = 500;
 
+	_bezierCurve.clear();
     /// To avoid vector resizing on every loop.
-    _bezierCurve.reserve(3*nPoints);
+    _bezierCurve.reserve(2*3*nPoints);
 
-    /// Generate coordinates.
+    /// Generate coordinates of first bezier curve.
     for(int k=0; k<nPoints; ++k) {
         float t = float(k) / float(nPoints);
-        _bezierCurve.push_back(std::pow((1-t),3)*b0X + 3*t*std::pow((1-t),2)*b1X + 3*std::pow(t,2)*(1-t)*b2X + std::pow(t,3)*b3X);
-        _bezierCurve.push_back(std::pow((1-t),3)*b0Y + 3*t*std::pow((1-t),2)*b1Y + 3*std::pow(t,2)*(1-t)*b2Y + std::pow(t,3)*b3Y);
-        _bezierCurve.push_back(std::pow((1-t),3)*b0Z + 3*t*std::pow((1-t),2)*b1Z + 3*std::pow(t,2)*(1-t)*b2Z + std::pow(t,3)*b3Z);
+        _bezierCurve.push_back(std::pow((1-t),3)*bA0X + 3*t*std::pow((1-t),2)*bA1X + 3*std::pow(t,2)*(1-t)*bA2X + std::pow(t,3)*bA3X);
+        _bezierCurve.push_back(std::pow((1-t),3)*bA0Y + 3*t*std::pow((1-t),2)*bA1Y + 3*std::pow(t,2)*(1-t)*bA2Y + std::pow(t,3)*bA3Y);
+        _bezierCurve.push_back(std::pow((1-t),3)*bA0Z + 3*t*std::pow((1-t),2)*bA1Z + 3*std::pow(t,2)*(1-t)*bA2Z + std::pow(t,3)*bA3Z);
     }
-	//end test time to compute
-	double currentTime = glfwGetTime();
-    float deltaT = float(currentTime - lastTime); //deltaT in sc 
-	std::cout<<"decastljau computed in "<<deltaT<<" sc with N = "<< _bezierCurve.size()<<" points"<<std::endl;
-	lastTime = currentTime;
-
+	/// Generate coordinates of second bezier curve.
+	for(int k=1; k<nPoints; ++k) {
+        float t = float(k) / float(nPoints);
+        _bezierCurve.push_back(std::pow((1-t),3)*bB0X + 3*t*std::pow((1-t),2)*bB1X + 3*std::pow(t,2)*(1-t)*bB2X + std::pow(t,3)*bB3X);
+        _bezierCurve.push_back(std::pow((1-t),3)*bB0Y + 3*t*std::pow((1-t),2)*bB1Y + 3*std::pow(t,2)*(1-t)*bB2Y + std::pow(t,3)*bB3Y);
+        _bezierCurve.push_back(std::pow((1-t),3)*bB0Z + 3*t*std::pow((1-t),2)*bB1Z + 3*std::pow(t,2)*(1-t)*bB2Z + std::pow(t,3)*bB3Z);
+    }
 	 /// Copy the vertices to GPU.
     _verticesCameraPath ->copy(_bezierCurve.data(), _bezierCurve.size());
 
-}*/
+}
 
 void CameraControl::flyingExploration(){
 	
@@ -1072,7 +1075,10 @@ void CameraControl::handleCameraControls(int key, int action){
 				break;
 			case 307: //5
 				InitSubdivision();
-				InitdeCasteljau4Points();
+				break;
+			case 308: //6
+				MultipleBezier();
+				break;
 		}
 	}
 }
