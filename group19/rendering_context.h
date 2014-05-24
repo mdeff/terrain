@@ -24,7 +24,7 @@ protected:
     void set_texture(unsigned int textureIndex, int textureID, const char* uniformName, unsigned int target);
 
     /// Common properties of all RenderingContext.
-    unsigned int _width, _height;
+    const unsigned int _width, _height;
     unsigned int _programID;
 
     /// Pointer : vertices object can be shared between RenderingContext.

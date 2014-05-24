@@ -25,7 +25,7 @@ private:
     unsigned int _particlePosTexID[2];
 
     /// Number of particles on the side. That makes nParticlesSide^3 particles.
-    unsigned int _nParticlesSide;
+    const unsigned int _nParticlesSide;
 
 };
 

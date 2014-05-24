@@ -51,7 +51,7 @@ void ParticlesControl::init(Vertices* vertices, GLuint particlePosTexID[]) {
 
     /// Initial particles position and velocity.
     /// Particles can be in x=[-1,1], y=[-1,1], z=[0,5].
-    unsigned int nParticles = _nParticlesSide*_nParticlesSide*_nParticlesSide;
+    const unsigned int nParticles = _nParticlesSide*_nParticlesSide*_nParticlesSide;
     float particlesPos[3*nParticles];
     float particlesVel[3*nParticles];
     for(int k=0; k<nParticles; ++k) {

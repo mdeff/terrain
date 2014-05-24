@@ -63,3 +63,6 @@ Particle system :
   https://www.opengl.org/wiki/Memory_Model
   https://www.opengl.org/wiki/Texture
   https://www.opengl.org/sdk/docs/man3/xhtml/glFramebufferTexture.xml
+  http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-10-transparency/
+  http://stackoverflow.com/questions/8509051/is-discard-bad-for-program-performance-in-opengl
+  http://byteblacksmith.com/improvements-to-the-canonical-one-liner-glsl-rand-for-opengl-es-2-0/
