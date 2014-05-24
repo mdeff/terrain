@@ -43,7 +43,6 @@ void CameraControl::init(VerticesCameraPath* verticesCameraPath, GLuint heightMa
 
 }
 
-
 void CameraControl::trackball(const mat4& model) {
 
     /// This camera control applies only in TRACKBALL exploration mode.
@@ -100,7 +99,6 @@ void CameraControl::trackball(const mat4& model) {
 //    flippedCameraModelview = flippedView * model;
 
 }
-
 
 void CameraControl::update_camera_modelview(double posX,double posY,double posZ,double lookX,double lookY,double lookZ){
 	vec3 camPos(posX,posY,posZ);
@@ -513,6 +511,132 @@ void CameraControl::InitdeCasteljauSubdivision(){
 	}
 }
 
+void CameraControl::InitSubdivision(){
+
+	//control points
+		//b0[iteration][XYZ]
+	const int iteration = 5;
+	const int Points = 32; //2^5
+	double res0[Points][3]; //[3][2] = {{1,1},{2,2},{3,3}};
+	double res1[Points][3];
+	double res2[Points][3];
+	double res3[Points][3];
+	
+	res0[0][0]=-0.51f; //b0X
+	res1[0][0]= 0.57f; //b1X
+	res2[0][0]= 1.31f; //b2X
+	res3[0][0]= 1.25f; //b3X
+
+	res0[0][1]= 1.09f; //b0Y
+	res1[0][1]= 1.26f; //b1Y
+	res2[0][1]= 0.92f; //b2Y
+	res3[0][1]=-0.41f; //b3Y
+
+	res0[0][2]= 0.40f; //b0Z
+	res1[0][2]= 0.40f; //b1Z
+	res2[0][2]= 0.40f; //b2Z
+	res3[0][2]= 0.40f; //b3Z
+	
+	double b0,b1,b2,b3;
+	double l0,l1,l2,l3,r1,r2,r3;
+	for(int i=0; i<iteration;i++){ // iterate to get more set of points
+		std::cout<<std::endl;
+		for(int j=powf(2,i)-1; j>=0;j--){
+			for(int k=0;k<3;k++){//iterate for X Y Z
+				b0=res0[j][k];
+				b1=res1[j][k];
+				b2=res2[j][k];
+				b3=res3[j][k];
+
+				Subdivision(b0,b1,b2,b3,l0,l1,l2,l3,r1,r2,r3);
+				res0[j*2][k] =l0;
+				res1[j*2][k] =l1;
+				res2[j*2][k] =l2;
+				res3[j*2][k] =l3;
+				res0[j*2+1][k]=l3;
+				res1[j*2+1][k]=r1;
+				res2[j*2+1][k]=r2;
+				res3[j*2+1][k]=r3;
+			}
+		}
+	}
+
+	for(int i=0;i<32;i++){
+		std::cout<<i<<" "<<res0[i][0]<<" "<<res1[i][0]<<" "<<res2[i][0]<<" "<<res3[i][0]<<std::endl;
+	}
+}
+
+void CameraControl::Subdivision(double b0,double b1, double b2,double b3, double& l0, double& l1, double& l2, double& l3 ,double& r1,double& r2, double& r3 ){
+	l0 = b0;
+	l1 = 0.5 * (b0 + b1);
+	l2 = 0.25 * (b0 + 2*b1 + b2); 
+	l3 = 0.125 * (b0 + 3*b1 + 3*b2 + b3);
+	r1 = 0.25 * (b1 + 2*b2 + b3); 
+	r2 = 0.5 * (b2 + b3);
+	r3 = b3;
+}
+
+void CameraControl::deCasteljau4PointsChanging(int PointToChange,double changeX,double changeY,double changeZ) {
+
+    static float b0X = -0.79f;
+    static float b0Y =  0.13f;
+    static float b0Z =  0.40f;
+
+    static float b1X = -0.55f;
+    static float b1Y = -0.61f;
+    static float b1Z =  0.40f;
+
+    static float b2X =  0.21f;
+    static float b2Y =  0.78f;
+    static float b2Z =  0.40f;
+
+    static float b3X =  0.81f;
+    static float b3Y =  0.03f;
+    static float b3Z =  0.40f;
+
+	switch(PointToChange){
+	case 0:
+		b0X +=changeX;
+		b0Y +=changeY;
+		b0Z +=changeZ;
+		break;
+	case 1:
+		b1X +=changeX;
+		b1Y +=changeY;
+		b1Z +=changeZ;
+		break;
+	case 2:
+		b2X +=changeX;
+		b2Y +=changeY;
+		b2Z +=changeZ;
+		break;
+	case 3:
+		b3X +=changeX;
+		b3Y +=changeY;
+		b3Z +=changeZ;
+		break;
+	}
+
+    /// Choose the resolution.
+    const unsigned int nPoints = 50;
+
+	_bezierCurve.clear();
+    /// To avoid vector resizing on every loop.
+    _bezierCurve.reserve(3*nPoints);
+
+    /// Generate coordinates.
+    for(int k=0; k<nPoints; ++k) {
+        float t = float(k) / float(nPoints);
+        _bezierCurve.push_back(std::pow((1-t),3)*b0X + 3*t*std::pow((1-t),2)*b1X + 3*std::pow(t,2)*(1-t)*b2X + std::pow(t,3)*b3X);
+        _bezierCurve.push_back(std::pow((1-t),3)*b0Y + 3*t*std::pow((1-t),2)*b1Y + 3*std::pow(t,2)*(1-t)*b2Y + std::pow(t,3)*b3Y);
+        _bezierCurve.push_back(std::pow((1-t),3)*b0Z + 3*t*std::pow((1-t),2)*b1Z + 3*std::pow(t,2)*(1-t)*b2Z + std::pow(t,3)*b3Z);
+    }
+
+    /// Copy the vertices to GPU.
+    _verticesCameraPath ->copy(_bezierCurve.data(), _bezierCurve.size());
+
+}
+
 void CameraControl::flyingExploration(){
 	
 	static double posX =  0.78f;
@@ -859,5 +983,33 @@ void CameraControl::handleCameraControls(int key, int action){
         std::cout << "Exploration mode : TRACKBALL" << std::endl;
         _explorationMode = TRACKBALL;
         trackball(mat4::Identity());
+	}
+	static int controlPointModify = 0;
+	if(action==1){
+		switch(key){
+			case 90: //Z=> change control point under modification
+				controlPointModify++;
+				if(controlPointModify>3)
+					controlPointModify=0;
+				std::cout<<"Changing control point nB"<<controlPointModify<<std::endl;
+			case 85: //U=> X+
+				deCasteljau4PointsChanging(controlPointModify,0.1f,0.0f,0.0f);
+				break;
+			case 74: //J=> X-
+				deCasteljau4PointsChanging(controlPointModify,-0.1f,0.0f,0.0f);
+				break;
+			case 73: //I=> Y+
+				deCasteljau4PointsChanging(controlPointModify,0.0f,0.1f,0.0f);
+				break;
+			case 75: //K=> Y-
+				deCasteljau4PointsChanging(controlPointModify,0.0f,-0.1f,0.0f);
+				break;
+			case 79: //O=> Z+
+				deCasteljau4PointsChanging(controlPointModify,0.0f,0.0f,0.1f);
+				break;
+			case 76: //L=> Z-
+				deCasteljau4PointsChanging(controlPointModify,0.0f,0.0f,-0.1f);
+				break;
+		}
 	}
 }
