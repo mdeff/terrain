@@ -51,9 +51,11 @@ void ParticlesControl::init(Vertices* vertices, GLuint particlePosTexID[]) {
 
     /// Initial particles position and velocity.
     /// Particles can be in x=[-1,1], y=[-1,1], z=[0,5].
+    /// While g++ does, VC++ does not support particlesPos[3*nParticles] as
+    /// nParticles isn't a compile-time constant. Allocate dynamically on the heap.
     const unsigned int nParticles = _nParticlesSide*_nParticlesSide*_nParticlesSide;
-    float particlesPos[3*nParticles];
-    float particlesVel[3*nParticles];
+    float *particlesPos = new float[3*nParticles];
+    float *particlesVel = new float[3*nParticles];
     for(int k=0; k<nParticles; ++k) {
         particlesPos[3*k+0] = 2.0f * float(k % (_nParticlesSide*_nParticlesSide) % _nParticlesSide) / float(_nParticlesSide) - 1.0f;  // x
         particlesPos[3*k+1] = 2.0f * float(k % (_nParticlesSide*_nParticlesSide) / _nParticlesSide) / float(_nParticlesSide) - 1.0f;  // y
@@ -66,6 +68,7 @@ void ParticlesControl::init(Vertices* vertices, GLuint particlePosTexID[]) {
     glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB32F, _width, 0, GL_RGB, GL_FLOAT, particlesPos);
     glBindTexture(GL_TEXTURE_1D, _particleTexID[2]);
     glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB32F, _width, 0, GL_RGB, GL_FLOAT, particlesVel);
+    delete particlesPos, particlesVel;
 
     /// Set uniform IDs.
     _deltaTID = glGetUniformLocation(_programID, "deltaT");
