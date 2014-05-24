@@ -29,6 +29,7 @@ static bool ModeFps = false;
 static bool ModeBCurve = false;
 static bool ModeFix = true;
 
+
 //Bezier curve 
 static double bezierCurve[1000*3];
 
@@ -36,21 +37,20 @@ Camera::Camera(unsigned int width, unsigned int height) :
     RenderingContext(width, height) {
 }
 
-
 void Camera::init(Vertices* vertices) {
 
     /// Common initialization.
     RenderingContext::init(vertices, camera_vshader, camera_fshader, "vertexPosition3DModel", 0);
 
     // FIXME : points generated here and in vertices_bezier.
-    InitdeCasteljau4Points();
+//    InitdeCasteljau4Points();
+	InitdeCasteljauSubdivision();
 
     /// Set uniform IDs.
     _modelviewID = glGetUniformLocation(_programID, "modelview");
     _projectionID = glGetUniformLocation(_programID, "projection");
 
 }
-
 
 void Camera::draw(const mat4& projection, const mat4& modelview) const {
 
@@ -68,7 +68,6 @@ void Camera::draw(const mat4& projection, const mat4& modelview) const {
     _vertices->draw();
 
 }
-
 
 void Camera::CopyHeightmapToCPU(GLuint heightMapTexID){
 	/*float test;
@@ -96,8 +95,12 @@ void Camera::CopyHeightmapToCPU(GLuint heightMapTexID){
 void Camera::update_camera_modelview(double posX,double posY,double posZ,double lookX,double lookY,double lookZ){
 	vec3 camPos(posX,posY,posZ);
 	vec3 camLookAt(lookX, lookY, lookZ);
+	//std::cout<<posX<<" "<<posY<<" "<<posZ<<" "<<lookX<<" "<<lookY<<" "<<lookZ<<" "<<std::endl;
+	//std::cout<<posX-lookX<<" "<<posY-lookY<<" "<<posZ-lookZ<<std::endl;
+	//vec3 camUp(posX-lookX,posY-lookY,posZ-lookZ);
 	vec3 camUp(0.0f,0.0f,1.0f);
-
+	
+	
 	mat4 view = Eigen::lookAt(camPos, camLookAt, camUp);
 	cameraModelview = view;
 	//std::cout<<(powf(posX-lookX,2)+powf(posY-lookY,2)+powf(posZ-lookZ,2))<<endl;
@@ -317,10 +320,10 @@ void Camera::deCasteljauTest3Points(){
 }
 
 void Camera::deCasteljauTest4Points(){
-	static int i =0;
+	static int i = 0;
 
 	if(i<1000){
-
+		std::cout<<i<<std::endl;
 		double posX	= bezierCurve[i*3+0];
 		double posY	= bezierCurve[i*3+1];
 		double posZ	= bezierCurve[i*3+2];
@@ -392,23 +395,25 @@ void Camera::deCasteljauTest4Points(){
 void Camera::InitdeCasteljau4Points(){
 
 	double t=0;
+		
+	double b0X = -0.51f;
+	double b0Y =  1.09f;
+	double b0Z =  0.40f;
+
+	double b1X =  0.57f;
+	double b1Y =  1.26f;
+	double b1Z =  0.40f;
+
+	double b2X = 1.31f;
+	double b2Y = 0.92f;
+	double b2Z = 0.40f;
+
+	double b3X = 1.25f;
+	double b3Y = -0.41f;
+	double b3Z = 0.40f;
+	
 	for (int i=0; i<1000; i++){
 		//set control points
-		double b0X = -0.51f;
-		double b0Y =  1.09f;
-		double b0Z =  0.40f;
-
-		double b1X =  0.57f;
-		double b1Y =  1.26f;
-		double b1Z =  0.40f;
-
-		double b2X = 1.31f;
-		double b2Y = 0.92f;
-		double b2Z = 0.40f;
-
-		double b3X = 1.25f;
-		double b3Y = -0.41f;
-		double b3Z = 0.40f;
 
 		double posX = powf((1-t),3) * b0X + 3*t*powf((1-t),2) * b1X + 3*powf(t,2)*(1-t) *b2X+powf(t,3)*b3X;
 		double posY = powf((1-t),3) * b0Y + 3*t*powf((1-t),2) * b1Y + 3*powf(t,2)*(1-t) *b2Y+powf(t,3)*b3Y;
@@ -417,6 +422,82 @@ void Camera::InitdeCasteljau4Points(){
 		bezierCurve[i*3+0] = posX;
 		bezierCurve[i*3+1] = posY;
 		bezierCurve[i*3+2] = posZ;
+		t = t+0.001;
+	}
+}
+
+void Camera::InitdeCasteljauSubdivision(){
+
+
+	
+	//control points
+	double b0X = -0.51f, b0Y =  1.09f, b0Z = 0.40f;
+	double b1X =  0.57f, b1Y =  1.26f, b1Z = 0.40f;
+	double b2X =  1.31f, b2Y =  0.92f, b2Z = 0.40f;
+	double b3X =  1.25f, b3Y = -0.41f, b3Z = 0.40f;
+
+	double l0X = b0X, l0Y = b0Y, l0Z = b0Z;
+	
+	double l1X = 0.5 * (b0X + b1X);
+	double l1Y = 0.5 * (b0Y + b1Y);
+	double l1Z = 0.5 * (b0Z + b1Z);
+
+	double l2X = 0.25 * (b0X + 2*b1X + b2X); 
+	double l2Y = 0.25 * (b0Y + 2*b1Y + b2Y); 
+	double l2Z = 0.25 * (b0Z + 2*b1Z + b2Z); 
+	
+	double l3X = 0.125 * (b0X + 3*b1X + 3*b2X + b3X);
+	double l3Y = 0.125 * (b0Y + 3*b1Y + 3*b2Y + b3Y);
+	double l3Z = 0.125 * (b0Z + 3*b1Z + 3*b2Z + b3Z);
+	
+	double r0X = l3X, r0Y = l3Y, r0Z = l3Z;
+
+	double r1X = 0.25 * (b1X + 2*b2X + b3X); 
+	double r1Y = 0.25 * (b1Y + 2*b2Y + b3Y); 
+	double r1Z = 0.25 * (b1Z + 2*b2Z + b3Z); 
+
+	double r2X = 0.5 * (b2X + b3X);
+	double r2Y = 0.5 * (b2Y + b3Y);
+	double r2Z = 0.5 * (b2Z + b3Z);
+	
+	double r3X = b3X, r3Y = b3Y, r3Z = b3Z;
+
+	double tmp0X = l0X, tmp0Y=l0Y, tmp0Z=l0Z;
+	double tmp1X = l1X, tmp1Y=l1Y, tmp1Z=l1Z;
+	double tmp2X = l2X, tmp2Y=l2Y, tmp2Z=l2Z;
+	double tmp3X = l3X, tmp3Y=l3Y, tmp3Z=l3Z;
+
+	double t=0;
+	for (int i=0; i<=500; i++){
+	
+		double posX = powf((1-t),3) * tmp0X + 3*t*powf((1-t),2) * tmp1X + 3*powf(t,2)*(1-t) *tmp2X + powf(t,3)*tmp3X;
+		double posY = powf((1-t),3) * tmp0Y + 3*t*powf((1-t),2) * tmp1Y + 3*powf(t,2)*(1-t) *tmp2Y + powf(t,3)*tmp3Y;
+		double posZ = powf((1-t),3) * tmp0Z + 3*t*powf((1-t),2) * tmp1Z + 3*powf(t,2)*(1-t) *tmp2Z + powf(t,3)*tmp3Z;
+		
+		bezierCurve[i*3+0] = posX;
+		bezierCurve[i*3+1] = posY;
+		bezierCurve[i*3+2] = posZ;
+		std::cout<<"1 "<<t<<" "<<posX<<" "<<posY<<std::endl;
+	
+		t = t+0.001;
+	}
+
+	tmp0X = r0X, tmp0Y=r0Y, tmp0Z=r0Z;
+	tmp1X = r1X, tmp1Y=r1Y, tmp1Z=r1Z;
+	tmp2X = r2X, tmp2Y=r2Y, tmp2Z=r2Z;
+	tmp3X = r3X, tmp3Y=r3Y, tmp3Z=r3Z;
+	for (int i=500; i<=1000; i++){
+
+		double posX = powf((1-t),3) * tmp0X + 3*t*powf((1-t),2) * tmp1X + 3*powf(t,2)*(1-t) *tmp2X + powf(t,3)*tmp3X;
+		double posY = powf((1-t),3) * tmp0Y + 3*t*powf((1-t),2) * tmp1Y + 3*powf(t,2)*(1-t) *tmp2Y + powf(t,3)*tmp3Y;
+		double posZ = powf((1-t),3) * tmp0Z + 3*t*powf((1-t),2) * tmp1Z + 3*powf(t,2)*(1-t) *tmp2Z + powf(t,3)*tmp3Z;
+		
+		bezierCurve[i*3+0] = posX;
+		bezierCurve[i*3+1] = posY;
+		bezierCurve[i*3+2] = posZ;
+
+		std::cout<<"2 "<<t<<" "<<posX<<" "<<posY<<std::endl;
+		
 		t = t+0.001;
 	}
 }
@@ -441,6 +522,9 @@ void Camera::flyingExploration(){
 	static double recordRotZ = 0;
 	static double recordRotY = 0;
 
+	//std::cout<<(lookZ-posZ)*cos(recordRotY)<<" "<<(lookY-posY)*cos(recordRotZ)<<std::endl;
+	
+
 	static double lastTime = glfwGetTime();
     double currentTime = glfwGetTime();
     float deltaT = float(currentTime - lastTime); //deltaT in sc 
@@ -448,23 +532,22 @@ void Camera::flyingExploration(){
 
 	if ((KeyW==true) | (velocityForward > 0.0f)){//W pressed => go forward 
 		if((KeyW==1) & (velocityForward<0.5f*deltaT)){
-				velocityForward = velocityForward + 0.1f * deltaT;
+				velocityForward = velocityForward + 0.05f * deltaT;
 		}
 		else{
-			velocityForward = velocityForward - 0.1f*deltaT;
+			velocityForward = velocityForward - 0.05f*deltaT;
 		}
 		
 		//Flying exploration
 		moveAlongAxis(posX,posY,posZ,lookX,lookY,lookZ,velocityForward);
 
-		
 	}
 	if  ((KeyS==true)| (velocityBackward > 0.0f)){//S pressed => go backward 
 		if((KeyS==true) & (velocityBackward<0.5f*deltaT)){
-				velocityBackward = velocityBackward + 0.1f*deltaT;
+				velocityBackward = velocityBackward + 0.05f*deltaT;
 		}
 		else{
-			velocityBackward = velocityBackward - 0.1f*deltaT;
+			velocityBackward = velocityBackward - 0.05f*deltaT;
 		}
 		//flying exploration
 		moveAlongAxis(posX,posY,posZ,lookX,lookY,lookZ,-velocityBackward);
