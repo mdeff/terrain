@@ -13,6 +13,7 @@ uniform mat4 lightOffsetMVP;
 // Light source position in model space.
 uniform vec3 lightPositionModel;
 
+
 // Vertices 2D position in model space.
 // First input buffer. Defined here, retrieved in C++ by glGetAttribLocation.
 layout(location = 0) in vec2 vertexPosition2DModel;
@@ -24,8 +25,7 @@ out vec3 vertexPosition3DModel;
 out vec3 reflectionCoord;
 
 // Light and view directions.
-out vec3 lightDir;
-out vec3 viewDir;
+out vec3 lightDir, viewDir;
 
 
 void main() {
@@ -44,10 +44,11 @@ void main() {
     gl_Position = projection * vertexPositionCamera;
 
     // Vertex position in light source clip space.
-    vec4 vertexPositionReflection = lightMVP * vec4(vertexPosition3DModel, 1.0);
+    //vec4 vertexPositionReflection = lightMVP * vec4(vertexPosition3DModel, 1.0);
     // Reflection map texture coordinates with w division for perspective.
-    reflectionCoord = vertexPositionReflection.xyz / vertexPositionReflection.w * 0.5 + 0.5;
+    //reflectionCoord = vertexPositionReflection.xyz / vertexPositionReflection.w * 0.5 + 0.5;
 
+	reflectionCoord = vertexPositionCamera.xyz/vertexPositionCamera.z *0.5 + 0.5;
 
     // Light and view directions : subtraction of 2 points gives vector.
     // Camera space --> camera position at origin --> subtraction by [0,0,0].

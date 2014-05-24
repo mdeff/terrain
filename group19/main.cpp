@@ -58,6 +58,9 @@ VerticesCameraPath* verticesCameraPath = new VerticesCameraPath();
 static mat4 lightMVP;
 static vec3 lightPositionModel;
 
+//flip the camera for reflection effect
+static mat4 flippedCameraModelview;
+
 
 
 /// Projection parameters.
@@ -143,9 +146,10 @@ void init() {
     GLuint shadowMapTexID = shadowmap.init(verticesGrid, heightMapTexID);
     terrain.init(verticesGrid, heightMapTexID, shadowMapTexID);
     skybox.init(verticesSkybox);
-
-    water.init(verticesGrid, heightMapTexID);
-    //reflection.init(verticesGrid, heightMapTexID);
+	//init water part
+	GLuint reflectionID = reflection.init(verticesGrid, heightMapTexID);
+    water.init(verticesGrid, reflectionID);
+    
 
     /// Pass the particles position textures from control to render.
     GLuint particlePosTexID[2];
@@ -192,10 +196,11 @@ void display() {
     terrain.draw(cameraProjection, cameraModelview, lightMVP, lightPositionModel);
     skybox.draw(cameraProjection, cameraModelview);
     cameraPath.draw(cameraProjection, cameraModelview);
+	
+	//draw water map
+//   reflection.draw(cameraProjection, flippedCameraModelview, lightMVP, lightPositionModel);
+//    water.draw(cameraProjection, cameraModelview, cameraModelView, lightMVP, lightPositionModel);
 
-
-//    water.draw(cameraProjection, cameraModelview, flippedCameraModelview, lightMVP, lightPositionModel);
-//    reflection.draw(cameraProjection, flippedCameraModelview, lightMVP, lightPositionModel);
 
 
     /// First control particle positions, then render them on screen.

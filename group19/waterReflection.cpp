@@ -86,7 +86,6 @@ GLuint WaterReflection::init(Vertices* vertices, GLuint heightMapTexID) {
     _modelviewID = glGetUniformLocation(_programID, "modelview");
     _projectionID = glGetUniformLocation(_programID, "projection");
     _lightOffsetMVPID = glGetUniformLocation(_programID, "lightOffsetMVP");
-	_lightMVPID = glGetUniformLocation(_programID, "lightMVP");
     _lightPositionModelID = glGetUniformLocation(_programID, "lightPositionModel");
     
     /// Return the reflection texture ID

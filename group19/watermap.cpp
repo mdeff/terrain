@@ -14,21 +14,20 @@
 #include "watermap_fshader.h"
 
 Watermap::Watermap(unsigned int width, unsigned int height) :
-    RenderingContext(width, height), reflection(width, height) {
+    RenderingContext(width, height){
 	 //initialization the reflection class as well
 	
 }
 
 	
-void Watermap::init(Vertices* vertices , GLuint heightMapTexID) {
+void Watermap::init(Vertices* vertices , GLuint reflectionID) {
 
-  		
-	//init the reflection context as well
-	reflectionID = reflection.init(vertices, heightMapTexID);
+  	 /// Common initialization.
+	RenderingContext::init(vertices, watermap_vshader, watermap_fshader, "vertexPosition2DModel", 0);	
+
+	//bind the reflection tex to texture 0
 	set_texture(0, reflectionID, "reflectionTex", GL_TEXTURE_2D);
-  
-	 /// Common initialization.
-    RenderingContext::init(vertices, watermap_vshader, watermap_fshader, "vertexPosition2DModel", 0);
+	
 	/* Load texture for water surface */
 	set_texture(1, -1, "waterNormalMap", GL_TEXTURE_2D);
     load_texture("../../textures/water_normal_map_2.tga");
@@ -58,13 +57,12 @@ void Watermap::init(Vertices* vertices , GLuint heightMapTexID) {
 }
 
 
-void Watermap::draw(const mat4& projection, const mat4& modelview, const mat4& flippedModelview,
+void Watermap::draw(const mat4& projection, const mat4& modelview,
                    const mat4& lightMVP, const vec3& lightPositionModel) const {
 	 // Enable blending
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
-	reflection.draw(projection, flippedModelview, lightMVP, lightPositionModel);
     /// Common drawing. 
     RenderingContext::draw();
 

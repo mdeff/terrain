@@ -28,8 +28,7 @@ layout(location = 0) in vec2 vertexPosition2DModel;
 out vec3 vertexPosition3DModel;
 
 // Light and view directions.
-out vec3 lightDir;
-out vec3 viewDir;
+out vec3 lightDir, viewDir;
 
 
 out float gl_ClipDistance[1];
