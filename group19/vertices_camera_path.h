@@ -1,10 +1,10 @@
 
-#ifndef __vertices_bezier_h__
-#define __vertices_bezier_h__
+#ifndef __vertices_camera_path_h__
+#define __vertices_camera_path_h__
 
 #include "vertices.h"
 
-class VerticesBezier : public Vertices {
+class VerticesCameraPath : public Vertices {
 
 public:
 
@@ -25,4 +25,4 @@ public:
 
 };
 
-#endif /* __vertices_bezier_h__ */
+#endif /* __vertices_camera_path_h__ */

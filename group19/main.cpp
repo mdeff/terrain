@@ -7,18 +7,18 @@
 #include "heightmap.h"
 #include "shadowmap.h"
 #include "watermap.h"
+#include "waterReflection.h"
 #include "skybox.h"
 #include "particles_control.h"
 #include "particles_render.h"
 #include "terrain.h"
+#include "camera_control.h"
 #include "camera_path.h"
 #include "vertices.h"
 #include "vertices_quad.h"
 #include "vertices_grid.h"
 #include "vertices_skybox.h"
-#include "waterReflection.h"
-#include "vertices_bezier.h"
-#include "camera.h"
+#include "vertices_camera_path.h"
 
 
 /// Screen size.
@@ -42,25 +42,21 @@ ParticlesRender particlesRender(windowWidth, windowHeight, nParticlesSide);
 Shadowmap shadowmap(textureWidth, textureHeight);
 ParticlesControl particlesControl(nParticlesSide);
 
-
 Watermap water(windowWidth, windowHeight);
 WaterReflection reflection(windowWidth, windowHeight);
 
-Camera camera(windowWidth, windowHeight);
-
+/// Camera position controller.
+CameraControl cameraControl;
 
 /// Instanciate the vertices.
 Vertices* verticesQuad = new VerticesQuad();
 Vertices* verticesGrid = new VerticesGrid();
 Vertices* verticesSkybox = new VerticesSkybox();
-VerticesBezier* verticesBezier = new VerticesBezier();
+VerticesCameraPath* verticesCameraPath = new VerticesCameraPath();
 
 /// Matrices that have to be shared between functions.
-mat4 cameraModelview;
 static mat4 lightMVP;
 static vec3 lightPositionModel;
-//flip the camera for reflection effect
-static mat4 flippedCameraModelview;
 
 
 
@@ -80,59 +76,6 @@ const mat4 cameraProjection = Eigen::perspective(fieldOfView, aspectRatio, nearP
 
 /// Spot light projection matrix.
 const mat4 lightProjection = Eigen::perspective(fieldOfView, float(textureWidth)/float(textureHeight), nearPlane, farPlane);
-
-
-void update_matrix_stack(const mat4& model) {
-
-    /// View matrix (camera extrinsics) (position in world space).
-
-    /// Camera is in the sky, looking down.
-//    vec3 camPos(0.0f, -1.5f, 0.8f);
-//    vec3 camLookAt(0.0f, 0.0f, 0.0f);
-//    vec3 camUp(0.0f, 0.0f, 1.0f);
-
-    /// Camera is right on top (comparison with light position).
-//    vec3 camPos = vec3(0.0, 0.0, 5.0);
-//    vec3 camLookAt = vec3(0.0, 0.0, 0.0);
-//    vec3 camUp = vec3(1.0, 0.0, 0.0);
-
-    /// Global view from outside.
-//    vec3 camPos(0.0f, -3.0f, 4.0f);
-//    vec3 camLookAt(0.0f, 0.0f, 0.0f);
-//    vec3 camUp(0.0f, 0.0f, 1.0f);
-
-    /// Frontal view to observe falling particles.
-    vec3 camPos(0.0f, -4.8f, 1.0f);
-    vec3 camLookAt(0.0f, 0.0f, 1.0f);
-    vec3 camUp(0.0f, 0.0f, 1.0f);
-
-    /// FPS exploration.
-//	  vec3 camPos(0.78f, 0.42f, 0.30f);
-//    vec3 camLookAt(-0.24f, 0.19f, 0.13f);
-//    vec3 camUp(0.0f, 0.0f, 1.0f);
-
-    /// Internal view from center.
-//    vec3 camPos(0.9f, -0.8f, 1.0f);
-//    vec3 camLookAt(-0.3f, 0.1f, 0.5f);
-//    vec3 camUp(0.0f, 0.0f, 1.0f);
-
-    /// Close texture view, for screenshots.
-//    vec3 camPos(0.2f, -0.1f, 0.5f);
-//    vec3 camLookAt(-0.3f, 0.1f, 0.2f);
-//    vec3 camUp(0.0f, 0.0f, 1.0f);
-
-    vec3 flippedCamPos = vec3(camPos[0], camPos[1],  2*GROUND_HEIGHT - camPos[2]);
-
-    /// Assemble the view matrix.
-    mat4 view = Eigen::lookAt(camPos, camLookAt, camUp);
-	mat4 flippedView = Eigen::lookAt(flippedCamPos, camLookAt, camUp);
-
-    /// Assemble the "Model View" matrix.
-    cameraModelview = view * model;
-	// Calculate the Model View matrix of flipped camera
-	flippedCameraModelview = flippedView * model;
-
-}
 
 
 /// Key press callback.
@@ -164,8 +107,9 @@ void GLFWCALL keyboard_callback(int key, int action) {
             lightMVP = lightProjection * lightView;
         }
     }
-	camera.handleCameraControls(key, action);
+    cameraControl.handleCameraControls(key, action);
 }
+
 
 void init() {
 	
@@ -181,12 +125,11 @@ void init() {
     glEnable(GL_BLEND);
     //glEnable(GL_CULL_FACE);
 
-
     /// Generate the vertices.
     verticesQuad->generate();
     verticesGrid->generate();
     verticesSkybox->generate();
-    verticesBezier->generate();
+    verticesCameraPath->generate();
 
     /// Generate the heightmap texture.
     Heightmap heightmap(textureWidth, textureHeight);
@@ -196,33 +139,24 @@ void init() {
 //    verticesQuad->clean();
 //    delete verticesQuad;
 
-	// write heightmap in CPU 
-	camera.CopyHeightmapToCPU(heightMapTexID);
-    
-
-
     /// Initialize the rendering contexts.
     GLuint shadowMapTexID = shadowmap.init(verticesGrid, heightMapTexID);
     terrain.init(verticesGrid, heightMapTexID, shadowMapTexID);
     skybox.init(verticesSkybox);
+
+    water.init(verticesGrid, heightMapTexID);
+    //reflection.init(verticesGrid, heightMapTexID);
 
     /// Pass the particles position textures from control to render.
     GLuint particlePosTexID[2];
     particlesControl.init(verticesQuad, particlePosTexID);
     particlesRender.init(particlePosTexID);
 
-	water.init(verticesGrid, heightMapTexID);
-	//reflection.init(verticesGrid, heightMapTexID);
-
-    /// CameraPath is the rendering object.
+    /// CameraPath is a rendering object.
     /// Camera is able to change the rendered vertices.
-    camera.init(verticesBezier);
-    cameraPath.init(verticesBezier);
+    cameraControl.init(verticesCameraPath, heightMapTexID);
+    cameraPath.init(verticesCameraPath);
 
-    /// Initialize the matrix stack.  	
-	update_matrix_stack(mat4::Identity());
-
-//    verticesBezier->copy(NULL, 1000);
     /// Initialize the light position.
     keyboard_callback(50, GLFW_PRESS);
 
@@ -242,7 +176,9 @@ void display() {
         lastTime = currentTime;
     }
 
-    camera.handleCamera();
+    /// Control the camera position.
+    mat4 cameraModelview;
+    cameraControl.updateCameraPosition(cameraModelview);
 
 	/// Uncomment to render only the boundary (not full triangles).
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -271,12 +207,17 @@ void display() {
 }
 
 
+void trackball(const mat4& model) {
+    cameraControl.trackball(model);
+}
+
+
 int main(int, char**) {
     glfwInitWindowSize(windowWidth, windowHeight);
-    glfwCreateWindow("Project - Group 19");	
+    glfwCreateWindow("EPFL - Computer Graphics - Project - Group 19");
     glfwDisplayFunc(display);
     init();
-    glfwTrackball(update_matrix_stack);
+    glfwTrackball(trackball);
     glfwSetKeyCallback(keyboard_callback);
     glfwMainLoop();
     return EXIT_SUCCESS;    

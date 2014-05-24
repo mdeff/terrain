@@ -1,16 +1,15 @@
 get_filename_component(DIR ${CMAKE_CURRENT_LIST_DIR} NAME)
 project(${DIR})
 add_executable(${DIR} main.cpp rendering_context.cpp
-                      vertices_grid.cpp vertices_skybox.cpp vertices_quad.cpp vertices_bezier.cpp
+                      vertices_grid.cpp vertices_skybox.cpp vertices_quad.cpp vertices_camera_path.cpp
                       heightmap.cpp terrain.cpp skybox.cpp shadowmap.cpp watermap.cpp waterReflection.cpp
-                      camera.cpp camera_path.cpp particles_control.cpp particles_render.cpp
+                      camera_control.cpp camera_path.cpp particles_control.cpp particles_render.cpp
                       heightmap_vshader.glsl heightmap_fshader.glsl
                       terrain_vshader.glsl   terrain_fshader.glsl
                       skybox_vshader.glsl    skybox_fshader.glsl
                       shadowmap_vshader.glsl shadowmap_fshader.glsl
                       watereflection_vshader.glsl	watereflection_fshader.glsl		   
                       watermap_vshader.glsl  watermap_fshader.glsl
-#                      camera_vshader.glsl    camera_fshader.glsl
                       particles_control_vshader.glsl particles_control_fshader.glsl
                       particles_render_vshader.glsl  particles_render_fshader.glsl
                       camera_path_vshader.glsl  camera_path_fshader.glsl)

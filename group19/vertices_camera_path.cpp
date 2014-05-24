@@ -1,11 +1,11 @@
 #include <iostream>
 
-#include "vertices_bezier.h"
+#include "vertices_camera_path.h"
 #include <cmath>
 #include <GL/glew.h>
 
 
-void VerticesBezier::generate() {
+void VerticesCameraPath::generate() {
 
     /// Vertex array object (VAO).
     glGenVertexArrays(1, &_vertexArrayID);
@@ -18,7 +18,7 @@ void VerticesBezier::generate() {
 }
 
 
-void VerticesBezier::copy(float *vertices, unsigned int size) {
+void VerticesCameraPath::copy(float *vertices, unsigned int size) {
 
     /// Update the number of vertices to render.
     _nVertices = size / 3;
@@ -34,7 +34,7 @@ void VerticesBezier::copy(float *vertices, unsigned int size) {
 }
 
 
-void VerticesBezier::bind(GLuint vertexAttribID) const {
+void VerticesCameraPath::bind(GLuint vertexAttribID) const {
 
     /// Vertex attribute points to data from the currently binded array buffer.
     /// The binding is part of the binded VAO state.
@@ -47,7 +47,7 @@ void VerticesBezier::bind(GLuint vertexAttribID) const {
 }
 
 
-void VerticesBezier::draw() const {
+void VerticesCameraPath::draw() const {
 
     /// The GL_ELEMENT_ARRAY_BUFFER binding is stored within the VAO.
     /// The GL_ARRAY_BUFFER​ binding is NOT part of the VAO state.
@@ -61,7 +61,7 @@ void VerticesBezier::draw() const {
 }
 
 
-void VerticesBezier::clean() {
+void VerticesCameraPath::clean() {
     glDeleteBuffers(1, &_vertexBufferID);
     glDeleteVertexArrays(1, &_vertexArrayID);
 }
