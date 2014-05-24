@@ -47,9 +47,9 @@ void Terrain::init(Vertices* vertices, GLuint heightMapTexID, GLuint shadowMapTe
     GLuint _IaID = glGetUniformLocation(_programID, "Ia");
     GLuint _IdID = glGetUniformLocation(_programID, "Id");
     GLuint _IsID = glGetUniformLocation(_programID, "Is");
-    glUniform3fv(_IaID, 1, Ia.data());
-    glUniform3fv(_IdID, 1, Id.data());
-    glUniform3fv(_IsID, 1, Is.data());
+    glProgramUniform3fv(_programID, _IaID, 1, Ia.data());
+    glProgramUniform3fv(_programID, _IdID, 1, Id.data());
+    glProgramUniform3fv(_programID, _IsID, 1, Is.data());
 
     /// Set uniform IDs.
     _modelviewID = glGetUniformLocation(_programID, "modelview");
@@ -68,10 +68,10 @@ void Terrain::draw(const mat4& projection, const mat4& modelview,
     RenderingContext::draw();
 
     /// Update the content of the uniforms.
-    glUniformMatrix4fv(_modelviewID, 1, GL_FALSE, modelview.data());
-    glUniformMatrix4fv(_projectionID, 1, GL_FALSE, projection.data());
-    glUniformMatrix4fv(_lightMVPID, 1, GL_FALSE, lightMVP.data());
-    glUniform3fv(_lightPositionModelID, 1, lightPositionModel.data());
+    glProgramUniformMatrix4fv(_programID, _modelviewID, 1, GL_FALSE, modelview.data());
+    glProgramUniformMatrix4fv(_programID, _projectionID, 1, GL_FALSE, projection.data());
+    glProgramUniformMatrix4fv(_programID, _lightMVPID, 1, GL_FALSE, lightMVP.data());
+    glProgramUniform3fv(_programID, _lightPositionModelID, 1, lightPositionModel.data());
 
     /// Clear the default framebuffer (screen).
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

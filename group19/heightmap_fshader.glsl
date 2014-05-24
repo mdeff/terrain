@@ -5,6 +5,7 @@
 uniform sampler1D permTableTex;
 uniform sampler1D gradVectTex;
 
+// Vertices 2D position. Use gl_FragCoord ?
 in vec2 position2D;
 
 // First output buffer.

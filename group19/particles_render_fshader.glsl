@@ -3,7 +3,8 @@
 // Coordinate of the fragment within a point.
 in vec2 gl_PointCoord;
 
-// First output buffer is pixel color. Fourth component is alpha.
+// First output buffer is pixel color (mandatory output, gl_FragColor).
+// Fourth component is alpha.
 layout(location = 0) out vec4 color;
 
 

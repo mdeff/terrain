@@ -39,8 +39,8 @@ void Skybox::draw(const mat4& projection, const mat4& modelview) const {
     RenderingContext::draw();
 
     /// Update the content of the uniforms.
-    glUniformMatrix4fv(_modelviewID, 1, GL_FALSE, modelview.data());
-    glUniformMatrix4fv(_projectionID, 1, GL_FALSE, projection.data());
+    glProgramUniformMatrix4fv(_programID, _modelviewID, 1, GL_FALSE, modelview.data());
+    glProgramUniformMatrix4fv(_programID, _projectionID, 1, GL_FALSE, projection.data());
 
     /// Do not clear the default framebuffer (screen) : done by Terrain.
     /// Otherwise already drawn pixels will be cleared.

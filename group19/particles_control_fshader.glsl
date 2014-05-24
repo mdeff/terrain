@@ -15,6 +15,7 @@ layout(pixel_center_integer) in vec4 gl_FragCoord;
 layout(location = 0) out vec3 particlePos;
 layout(location = 1) out vec3 particleVel;
 
+
 // Earth acceleration.
 const vec3 acc = vec3(0, 0, -0.01);
 
