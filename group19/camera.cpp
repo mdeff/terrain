@@ -1,6 +1,6 @@
 
 #include "camera.h"
-#include "vertices.h"
+#include "vertices_bezier.h"
 
 #include <iostream>
 
@@ -30,21 +30,20 @@ static bool ModeBCurve = false;
 static bool ModeFix = true;
 
 
-//Bezier curve 
-static double bezierCurve[1000*3];
-
 Camera::Camera(unsigned int width, unsigned int height) :
     RenderingContext(width, height) {
 }
 
-void Camera::init(Vertices* vertices) {
+void Camera::init(VerticesBezier* vertices) {
 
     /// Common initialization.
     RenderingContext::init(vertices, camera_vshader, camera_fshader, "vertexPosition3DModel", 0);
 
-    // FIXME : points generated here and in vertices_bezier.
-//    InitdeCasteljau4Points();
-	InitdeCasteljauSubdivision();
+    /// HACK.
+    _verticesBezier = vertices;
+
+    InitdeCasteljau4Points();
+//	InitdeCasteljauSubdivision();
 
     /// Set uniform IDs.
     _modelviewID = glGetUniformLocation(_programID, "modelview");
@@ -322,11 +321,11 @@ void Camera::deCasteljauTest3Points(){
 void Camera::deCasteljauTest4Points(){
 	static int i = 0;
 
-	if(i<1000){
+    if(i<_bezierCurve.size()/3){
 		std::cout<<i<<std::endl;
-		double posX	= bezierCurve[i*3+0];
-		double posY	= bezierCurve[i*3+1];
-		double posZ	= bezierCurve[i*3+2];
+        double posX	= _bezierCurve[i*3+0];
+        double posY	= _bezierCurve[i*3+1];
+        double posZ	= _bezierCurve[i*3+2];
 
 		double lookX = 0.0f;
 		double lookY = 0.0f;
@@ -392,38 +391,41 @@ void Camera::deCasteljauTest4Points(){
 
 }
 
-void Camera::InitdeCasteljau4Points(){
+void Camera::InitdeCasteljau4Points() {
 
-	double t=0;
-		
-	double b0X = -0.51f;
-	double b0Y =  1.09f;
-	double b0Z =  0.40f;
+    const float b0X = -0.51f;
+    const float b0Y =  1.09f;
+    const float b0Z =  0.40f;
 
-	double b1X =  0.57f;
-	double b1Y =  1.26f;
-	double b1Z =  0.40f;
+    const float b1X =  0.57f;
+    const float b1Y =  1.26f;
+    const float b1Z =  0.40f;
 
-	double b2X = 1.31f;
-	double b2Y = 0.92f;
-	double b2Z = 0.40f;
+    const float b2X =  1.31f;
+    const float b2Y =  0.92f;
+    const float b2Z =  0.40f;
 
-	double b3X = 1.25f;
-	double b3Y = -0.41f;
-	double b3Z = 0.40f;
-	
-	for (int i=0; i<1000; i++){
-		//set control points
+    const float b3X =  1.25f;
+    const float b3Y = -0.41f;
+    const float b3Z =  0.40f;
 
-		double posX = powf((1-t),3) * b0X + 3*t*powf((1-t),2) * b1X + 3*powf(t,2)*(1-t) *b2X+powf(t,3)*b3X;
-		double posY = powf((1-t),3) * b0Y + 3*t*powf((1-t),2) * b1Y + 3*powf(t,2)*(1-t) *b2Y+powf(t,3)*b3Y;
-		double posZ = powf((1-t),3) * b0Z + 3*t*powf((1-t),2) * b1Z + 3*powf(t,2)*(1-t) *b2Z+powf(t,3)*b3Z;
-		
-		bezierCurve[i*3+0] = posX;
-		bezierCurve[i*3+1] = posY;
-		bezierCurve[i*3+2] = posZ;
-		t = t+0.001;
-	}
+    /// Choose the resolution.
+    const unsigned int nPoints = 50;
+
+    /// To avoid vector resizing on every loop.
+    _bezierCurve.reserve(3*nPoints);
+
+    /// Generate coordinates.
+    for(int k=0; k<nPoints; ++k) {
+        float t = float(k) / float(nPoints);
+        _bezierCurve.push_back(std::pow((1-t),3)*b0X + 3*t*std::pow((1-t),2)*b1X + 3*std::pow(t,2)*(1-t)*b2X + std::pow(t,3)*b3X);
+        _bezierCurve.push_back(std::pow((1-t),3)*b0Y + 3*t*std::pow((1-t),2)*b1Y + 3*std::pow(t,2)*(1-t)*b2Y + std::pow(t,3)*b3Y);
+        _bezierCurve.push_back(std::pow((1-t),3)*b0Z + 3*t*std::pow((1-t),2)*b1Z + 3*std::pow(t,2)*(1-t)*b2Z + std::pow(t,3)*b3Z);
+    }
+
+    /// Copy the vertices to GPU.
+    _verticesBezier->copy(_bezierCurve.data(), _bezierCurve.size());
+
 }
 
 void Camera::InitdeCasteljauSubdivision(){
@@ -474,9 +476,9 @@ void Camera::InitdeCasteljauSubdivision(){
 		double posY = powf((1-t),3) * tmp0Y + 3*t*powf((1-t),2) * tmp1Y + 3*powf(t,2)*(1-t) *tmp2Y + powf(t,3)*tmp3Y;
 		double posZ = powf((1-t),3) * tmp0Z + 3*t*powf((1-t),2) * tmp1Z + 3*powf(t,2)*(1-t) *tmp2Z + powf(t,3)*tmp3Z;
 		
-		bezierCurve[i*3+0] = posX;
-		bezierCurve[i*3+1] = posY;
-		bezierCurve[i*3+2] = posZ;
+        _bezierCurve[i*3+0] = posX;
+        _bezierCurve[i*3+1] = posY;
+        _bezierCurve[i*3+2] = posZ;
 		std::cout<<"1 "<<t<<" "<<posX<<" "<<posY<<std::endl;
 	
 		t = t+0.001;
@@ -492,9 +494,9 @@ void Camera::InitdeCasteljauSubdivision(){
 		double posY = powf((1-t),3) * tmp0Y + 3*t*powf((1-t),2) * tmp1Y + 3*powf(t,2)*(1-t) *tmp2Y + powf(t,3)*tmp3Y;
 		double posZ = powf((1-t),3) * tmp0Z + 3*t*powf((1-t),2) * tmp1Z + 3*powf(t,2)*(1-t) *tmp2Z + powf(t,3)*tmp3Z;
 		
-		bezierCurve[i*3+0] = posX;
-		bezierCurve[i*3+1] = posY;
-		bezierCurve[i*3+2] = posZ;
+        _bezierCurve[i*3+0] = posX;
+        _bezierCurve[i*3+1] = posY;
+        _bezierCurve[i*3+2] = posZ;
 
 		std::cout<<"2 "<<t<<" "<<posX<<" "<<posY<<std::endl;
 		

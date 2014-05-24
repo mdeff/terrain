@@ -22,6 +22,7 @@ public:
 
 protected:
 
+    unsigned int _nVertices;
     unsigned int _vertexBufferID;
     unsigned int _elementBufferID;
     unsigned int _vertexArrayID;

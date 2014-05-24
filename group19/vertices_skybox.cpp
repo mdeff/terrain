@@ -45,7 +45,6 @@ const float vertices[] = {
 const unsigned int nVertices = sizeof(vertices) / sizeof(float) / 3;
 
 
-/// Copy box vertices to GPU.
 void VerticesSkybox::generate() {
 
     /// Vertex array object (VAO).

@@ -14,7 +14,6 @@ const GLfloat vertices[] = {
 const unsigned int nVertices = sizeof(vertices) / sizeof(GLfloat) / 2;
 
 
-/// Copy fullscreen quad vertices to GPU.
 void VerticesQuad::generate() {
 
     /// Vertex array object (VAO).

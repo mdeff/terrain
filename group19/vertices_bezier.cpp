@@ -4,66 +4,32 @@
 #include <cmath>
 #include <GL/glew.h>
 
-/* control from project subject
-double b0X = -1.10f;
-double b0Y =  0.97f;
-double b0Z =  0.40f;
 
-double b1X = -0.58f;
-double b1Y =  1.43f;
-double b1Z =  0.40f;
-
-double b2X = 0.65f;
-double b2Y = 1.37f;
-double b2Z = 0.40f;
-
-double b3X = 1.11f;
-double b3Y = 0.97f;
-double b3Z = 0.40f;*/
-
-/// Bézier curve control points.
-
-const float b0X = -0.51f;
-const float b0Y =  1.09f;
-const float b0Z =  0.40f;
-
-const float b1X =  0.57f;
-const float b1Y =  1.26f;
-const float b1Z =  0.40f;
-
-const float b2X =  1.31f;
-const float b2Y =  0.92f;
-const float b2Z =  0.40f;
-
-const float b3X =  1.25f;
-const float b3Y = -0.41f;
-const float b3Z =  0.40f;
-
-
-/// Choose the resolution.
-const unsigned int nVertices = 50;
-
-
-/// Copy Bézier curve vertices to GPU.
 void VerticesBezier::generate() {
 
     /// Vertex array object (VAO).
     glGenVertexArrays(1, &_vertexArrayID);
     glBindVertexArray(_vertexArrayID);
 
-    /// Generate nVertices along a Bézier curve.
-    float vertices[3*nVertices];
-    for(int k=0; k<nVertices; ++k) {
-        float t = float(k) / float(nVertices);
-        vertices[3*k+0] = std::pow((1-t),3)*b0X + 3*t*std::pow((1-t),2)*b1X + 3*std::pow(t,2)*(1-t)*b2X + std::pow(t,3)*b3X;
-        vertices[3*k+1] = std::pow((1-t),3)*b0Y + 3*t*std::pow((1-t),2)*b1Y + 3*std::pow(t,2)*(1-t)*b2Y + std::pow(t,3)*b3Y;
-        vertices[3*k+2] = std::pow((1-t),3)*b0Z + 3*t*std::pow((1-t),2)*b1Z + 3*std::pow(t,2)*(1-t)*b2Z + std::pow(t,3)*b3Z;
-    }
+    /// Create the vertex buffer (VBO) that will contain the vertices
+    /// passed to the copy() method.
+    glGenBuffers(1, &_vertexBufferID);
+
+}
+
+
+void VerticesBezier::copy(float *vertices, unsigned int size) {
+
+    /// Update the number of vertices to render.
+    _nVertices = size / 3;
 
     /// Copy the vertices to GPU in a vertex buffer (VBO).
-    glGenBuffers(1, &_vertexBufferID);
+    /// glBufferData() recreates the datastore. glBufferSubData() would avoid
+    /// to recreate the datastore but cannot deal with a variable number of
+    /// vertices. GL_STATIC_DRAW prefered as GL_STREAM_DRAW as data will be
+    /// updated very unfrequently.
     glBindBuffer(GL_ARRAY_BUFFER, _vertexBufferID);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, size*sizeof(float), vertices, GL_STATIC_DRAW);
 
 }
 
@@ -89,8 +55,8 @@ void VerticesBezier::draw() const {
     glBindVertexArray(_vertexArrayID);
 
     /// Draw the camera path vertices : either points or lines.
-//    glDrawArrays(GL_POINTS, 0, nVertices);
-    glDrawArrays(GL_LINES, 0, nVertices);
+    //glDrawArrays(GL_POINTS, 0, _nVertices);
+    glDrawArrays(GL_LINES, 0, _nVertices);
 
 }
 

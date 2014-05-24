@@ -48,7 +48,7 @@ WaterReflection reflection(windowWidth, windowHeight);
 Vertices* verticesQuad = new VerticesQuad();
 Vertices* verticesGrid = new VerticesGrid();
 Vertices* verticesSkybox = new VerticesSkybox();
-Vertices* verticesBezier = new VerticesBezier();
+VerticesBezier* verticesBezier = new VerticesBezier();
 
 /// Matrices that have to be shared between functions.
 mat4 cameraModelview;
@@ -173,7 +173,7 @@ void init() {
 	glEnable(GL_CLIP_DISTANCE0);
 
 	//glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glEnable (GL_BLEND);
+    glEnable(GL_BLEND);
     //glEnable(GL_CULL_FACE);
 
 
@@ -213,8 +213,9 @@ void init() {
     /// Initialize the matrix stack.  	
 	update_matrix_stack(mat4::Identity());
 
+//    verticesBezier->copy(NULL, 1000);
     /// Initialize the light position.
-    keyboard_callback(49, GLFW_PRESS);
+    keyboard_callback(50, GLFW_PRESS);
 
 }
 
