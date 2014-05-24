@@ -8,8 +8,8 @@
 #include <GL/glfw.h>
 #include "opengp.h"
 
-#include "camera_vshader.h"
-#include "camera_fshader.h"
+//#include "camera_vshader.h"
+//#include "camera_fshader.h"
 
 
 //save heightmap to cpu to read for fps exploration
@@ -37,7 +37,7 @@ Camera::Camera(unsigned int width, unsigned int height) :
 void Camera::init(VerticesBezier* vertices) {
 
     /// Common initialization.
-    RenderingContext::init(vertices, camera_vshader, camera_fshader, "vertexPosition3DModel", 0);
+//    RenderingContext::init(vertices, camera_vshader, camera_fshader, "vertexPosition3DModel", 0);
 
     /// HACK.
     _verticesBezier = vertices;
@@ -46,25 +46,25 @@ void Camera::init(VerticesBezier* vertices) {
 //	InitdeCasteljauSubdivision();
 
     /// Set uniform IDs.
-    _modelviewID = glGetUniformLocation(_programID, "modelview");
-    _projectionID = glGetUniformLocation(_programID, "projection");
+//    _modelviewID = glGetUniformLocation(_programID, "modelview");
+//    _projectionID = glGetUniformLocation(_programID, "projection");
 
 }
 
 void Camera::draw(const mat4& projection, const mat4& modelview) const {
 
     /// Common drawing.
-    RenderingContext::draw();
+//    RenderingContext::draw();
 
     /// Update the content of the uniforms.
-    glUniformMatrix4fv(_modelviewID, 1, GL_FALSE, modelview.data());
-    glUniformMatrix4fv(_projectionID, 1, GL_FALSE, projection.data());
+//    glUniformMatrix4fv(_modelviewID, 1, GL_FALSE, modelview.data());
+//    glUniformMatrix4fv(_projectionID, 1, GL_FALSE, projection.data());
 
     /// Do not clear the default framebuffer (screen) : done by Terrain.
     /// Otherwise already drawn pixels will be cleared.
 
     /// Render the Bézier curve from camera point of view to default framebuffer.
-    _vertices->draw();
+//    _vertices->draw();
 
 }
 

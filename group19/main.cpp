@@ -11,6 +11,7 @@
 #include "particles_control.h"
 #include "particles_render.h"
 #include "terrain.h"
+#include "camera_path.h"
 #include "vertices.h"
 #include "vertices_quad.h"
 #include "vertices_grid.h"
@@ -34,15 +35,19 @@ const unsigned int nParticlesSide(20);
 /// Instanciate the rendering contexts that render to the screen.
 Skybox skybox(windowWidth, windowHeight);
 Terrain terrain(windowWidth, windowHeight);
-Camera camera(windowWidth, windowHeight);
-Watermap water(windowWidth, windowHeight);
+CameraPath cameraPath(windowWidth, windowHeight);
 ParticlesRender particlesRender(windowWidth, windowHeight, nParticlesSide);
 
 /// Instanciate the rendering contexts that render to FBO.
 Shadowmap shadowmap(textureWidth, textureHeight);
 ParticlesControl particlesControl(nParticlesSide);
 
+
+Watermap water(windowWidth, windowHeight);
 WaterReflection reflection(windowWidth, windowHeight);
+
+Camera camera(windowWidth, windowHeight);
+
 
 /// Instanciate the vertices.
 Vertices* verticesQuad = new VerticesQuad();
@@ -209,7 +214,11 @@ void init() {
 	water.init(verticesGrid, heightMapTexID);
 	//reflection.init(verticesGrid, heightMapTexID);
 
+    /// CameraPath is the rendering object.
+    /// Camera is able to change the rendered vertices.
     camera.init(verticesBezier);
+    cameraPath.init(verticesBezier);
+
     /// Initialize the matrix stack.  	
 	update_matrix_stack(mat4::Identity());
 
@@ -246,7 +255,7 @@ void display() {
     /// Render opaque primitives on screen.
     terrain.draw(cameraProjection, cameraModelview, lightMVP, lightPositionModel);
     skybox.draw(cameraProjection, cameraModelview);
-    camera.draw(cameraProjection, cameraModelview);
+    cameraPath.draw(cameraProjection, cameraModelview);
 
 
 //    water.draw(cameraProjection, cameraModelview, flippedCameraModelview, lightMVP, lightPositionModel);
