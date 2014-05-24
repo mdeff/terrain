@@ -58,7 +58,7 @@ void CameraControl::trackball(const mat4& model) {
     /// View matrix (camera extrinsics) (position in world space).
 
     /// Camera is in the sky, looking down.
-//    vec3 camPos(0.0f, -1.5f, 0.8f);
+    vec3 camPos(0.0f, -1.5f, 0.8f);
 //    vec3 camLookAt(0.0f, 0.0f, 0.0f);
 //    vec3 camUp(0.0f, 0.0f, 1.0f);
 
@@ -73,8 +73,8 @@ void CameraControl::trackball(const mat4& model) {
 //    vec3 camUp(0.0f, 0.0f, 1.0f);
 
     /// Frontal view to observe falling particles.
-    vec3 camPos(0.0f, -4.8f, 1.0f);
-    vec3 camLookAt(0.0f, 0.0f, 1.0f);
+    //vec3 camPos(0.0f, -4.8f, 1.0f);
+    vec3 camLookAt(0.0f, 0.0f, 0.2f);
     vec3 camUp(0.0f, 0.0f, 1.0f);
 
     /// FPS exploration.

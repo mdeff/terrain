@@ -32,9 +32,9 @@ void Terrain::init(Vertices* vertices, GLuint heightMapTexID, GLuint shadowMapTe
     set_texture(3, -1, "iceMoutainTex", GL_TEXTURE_2D);
     load_texture("../../textures/dordona_range.tga");
     set_texture(4, -1, "treeTex", GL_TEXTURE_2D);
-    load_texture("../../textures/forest.tga");
+    load_texture("../../textures/Mossy_Rock.tga");
     set_texture(5, -1, "stoneTex", GL_TEXTURE_2D);
-    load_texture("../../textures/stone_2.tga");
+    load_texture("../../textures/Fault_Zone.tga");
     set_texture(6, -1, "underWaterTex", GL_TEXTURE_2D);
     load_texture("../../textures/under_water.tga");
     set_texture(7, -1, "snowTex", GL_TEXTURE_2D);
