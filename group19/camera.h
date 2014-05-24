@@ -56,7 +56,9 @@ private:
     void rotateUpDown(double& posX, double& posY, double& posZ, double& lookX, double& lookY, double& lookZ,double& recordRotZ,double velocity);
     void rotateLeftRight(double& posX, double& posY, double& posZ, double& lookX, double& lookY, double& lookZ,double& recordRotY,double velocity);
     void InitdeCasteljauSubdivision();
-
+	void InitSubdivision();
+	void Subdivision(double b0,double b1, double b2,double b3, double& l0, double& l1, double& l2, double& l3 ,double& r1,double& r2, double& r3 );
+	void InitdeCasteljau4PointsTest();
 };
 
 #endif /* __camera_h__ */
