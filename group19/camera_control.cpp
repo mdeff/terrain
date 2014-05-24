@@ -19,6 +19,8 @@ static bool KeyQ = false;
 static bool KeySHIFT = false;
 static bool KeySPACE = false;
 
+static double pictorialCameraPos[3];
+static double pictorialCameraLookat[3];
 
 void CameraControl::init(VerticesCameraPath* verticesCameraPath, GLuint heightMapTexID) {
 
@@ -325,7 +327,7 @@ void CameraControl::deCasteljauTest3Points(){
 
 }
 
-void CameraControl::deCasteljauTest4Points(){
+void CameraControl::deCasteljauTest4Points(){ // wrong naming => use to follow the curve with the camera... 
 	static int i = 0;
 	
 	static double lastTime = glfwGetTime();
@@ -346,6 +348,32 @@ void CameraControl::deCasteljauTest4Points(){
 			double lookZ = _bezierCurve[(i+1)*3+2];
 			i++;
 			update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
+		}
+		else{
+			i=0;
+		}
+	}
+}
+
+void CameraControl::animatePictorialCamera(){ // wrong naming => use to follow the curve with the camera... 
+	static int i = 0;
+	
+	static double lastTime = glfwGetTime();
+    double currentTime = glfwGetTime();
+    float deltaT = float(currentTime - lastTime); //deltaT in sc 
+
+	if(deltaT>0.01){
+		lastTime = currentTime;
+    
+		if(i<(_bezierCurve.size()/3)-1){
+			//std::cout<<i<<std::endl;
+			pictorialCameraPos[0] = _bezierCurve[i*3+0];
+			pictorialCameraPos[1] = _bezierCurve[i*3+1];
+			pictorialCameraPos[2] = _bezierCurve[i*3+2];
+			pictorialCameraLookat[0] = _bezierCurve[(i+1)*3+0];
+			pictorialCameraLookat[1] = _bezierCurve[(i+1)*3+1];
+			pictorialCameraLookat[2] = _bezierCurve[(i+1)*3+2];
+			i++;
 		}
 		else{
 			i=0;
@@ -620,6 +648,45 @@ void CameraControl::deCasteljau4PointsChanging(int PointToChange,double changeX,
     _verticesCameraPath ->copy(_bezierCurve.data(), _bezierCurve.size());
 
 }
+
+/*void CameraControl::MultipleBezier() {
+	//test time to compute
+	static double lastTime = glfwGetTime();
+    
+	//hand-out setting
+    //const float b0X = -0.51f,b0Y =  1.09f,b0Z =  0.40f;
+    //const float b1X =  0.57f,b1Y =  1.26f,b1Z =  0.40f;
+    //const float b2X =  1.31f,b2Y =  0.92f,b2Z =  0.40f;
+    //const float b3X =  1.25f,b3Y = -0.41f,b3Z =  0.40f;
+	////other setting flying through
+	const float b0X = -0.51f,b0Y = -0.91f,b0Z =  0.20f;
+    const float b1X = -0.43f,b1Y =  2.66f,b1Z =  0.001f;
+    const float b2X =  0.31f,b2Y = -2.08f,b2Z =  0.50f;
+    const float b3X =  0.55f,b3Y =  0.39f,b3Z =  0.30f;
+
+    /// Choose the resolution.
+    const unsigned int nPoints = 768;
+
+    /// To avoid vector resizing on every loop.
+    _bezierCurve.reserve(3*nPoints);
+
+    /// Generate coordinates.
+    for(int k=0; k<nPoints; ++k) {
+        float t = float(k) / float(nPoints);
+        _bezierCurve.push_back(std::pow((1-t),3)*b0X + 3*t*std::pow((1-t),2)*b1X + 3*std::pow(t,2)*(1-t)*b2X + std::pow(t,3)*b3X);
+        _bezierCurve.push_back(std::pow((1-t),3)*b0Y + 3*t*std::pow((1-t),2)*b1Y + 3*std::pow(t,2)*(1-t)*b2Y + std::pow(t,3)*b3Y);
+        _bezierCurve.push_back(std::pow((1-t),3)*b0Z + 3*t*std::pow((1-t),2)*b1Z + 3*std::pow(t,2)*(1-t)*b2Z + std::pow(t,3)*b3Z);
+    }
+	//end test time to compute
+	double currentTime = glfwGetTime();
+    float deltaT = float(currentTime - lastTime); //deltaT in sc 
+	std::cout<<"decastljau computed in "<<deltaT<<" sc with N = "<< _bezierCurve.size()<<" points"<<std::endl;
+	lastTime = currentTime;
+
+	 /// Copy the vertices to GPU.
+    _verticesCameraPath ->copy(_bezierCurve.data(), _bezierCurve.size());
+
+}*/
 
 void CameraControl::flyingExploration(){
 	
