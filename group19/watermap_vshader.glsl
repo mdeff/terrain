@@ -35,7 +35,7 @@ out vec3 lightDir, viewDir;
 void main() {
 	
 	//fixed height of water surface
-	float waterSurfaceHeight = 0.018f;  
+	float waterSurfaceHeight = 0.008f;  
     float height = waterSurfaceHeight; 
   
     // 3D vertex position : X and Y from vertex array, Z is fixed water surface height

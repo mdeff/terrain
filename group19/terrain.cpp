@@ -64,6 +64,9 @@ void Terrain::init(Vertices* vertices, GLuint heightMapTexID, GLuint shadowMapTe
 void Terrain::draw(const mat4& projection, const mat4& modelview,
                    const mat4& lightMVP, const vec3& lightPositionModel) const {
 
+	// Enable blending
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     /// Common drawing. 
     RenderingContext::draw();
 
@@ -78,6 +81,9 @@ void Terrain::draw(const mat4& projection, const mat4& modelview,
 
     /// Render the terrain from camera point of view to default framebuffer.
     _vertices->draw();
+
+	//Disable blending
+	glDisable(GL_BLEND);
 
 }
 

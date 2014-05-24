@@ -6,7 +6,7 @@
 #include "opengp.h"
 
 
-#define GROUND_HEIGHT 0.018f
+#define GROUND_HEIGHT 0.008f
 
 class WaterReflection : public RenderingContext {
 

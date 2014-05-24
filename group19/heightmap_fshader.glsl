@@ -290,7 +290,7 @@ void main() {
     //Turbulence
     //height = turbulence(position2D, 1.1f, 10.0f, 10) / 2.0f;
 
-    int choice = 3;
+    int choice = 5;
 
     if(choice ==1){ //additive combination
         float heightFBM = (fBm(position2D, 1.1f, 10.0f, 10) / 2.0f) ;
@@ -345,7 +345,7 @@ void main() {
     else if (choice==4)
         height = turbulence(position2D, 1.1f, 10.0f, 10) / 2.0f;
     else if (choice==5)
-        height = (multifractalSimplex(position2D, 0.25f, 4.0f, 5, 0.75f) / 3.0f)-0.14f;
+        height = ((multifractalSimplex(position2D, 0.25f, 4.0f, 8, 0.75f) / 3.0f)-0.13f)/1.25f;
     else if (choice==6)
         height =  0.25f*simplex_noise(2.0f*position2D);
     else if (choice==7)
@@ -363,7 +363,7 @@ void main() {
     //if (height < 0.0f)
         //height = 0.0f;
 
-	//height = (multifractal(position2.xy, 0.25f, 4.0f, 5, 0.75f) / 4.0f)-0.15f;
+	//height = (multifractal(position2D, 0.25f, 4.0f, 5, 0.75f) / 4.0f)-0.15f;
 
 }
 

@@ -24,16 +24,14 @@ in vec3 ShadowCoord;
 in vec3 lightDir, viewDir;
 
 // First output buffer is pixel color (mandatory output, gl_FragColor).
-layout(location = 0) out vec3 color;
+layout(location = 0) out vec4 color;
 
 
 // Different levels of height for texture mapping.
-const float ground = 0.018f;
-const float sandMax = 0.02f;
-const float forestMin = 0.025f;
-const float forestMax = 0.25f;
-const float snowMin= 0.315f;
-const float snowMax = 0.425;
+const float ground = 0.008f;  //water height level
+const float sand = 0.015f;
+const float forest = 0.11f;
+const float snow = 0.1f;
 
 
 vec3 compute_normal(vec3 position) {
@@ -72,23 +70,14 @@ vec3 texture_mapping(vec3 position, vec3 normal) {
 
     if(position.z < ground) {
         mapped = texture2D(sandTex, 60*position.xy).rgb;
-    } else if (position.z < sandMax) {
+    } else if (position.z < sand) {
         mapped = texture2D(sandTex, position.xy).rgb;
-    } else if (position.z < forestMin) {  //mix between sand, rock
-        vec3 stone = texture2D(stoneTex, 10*position.xy).rgb;
-        vec3 sand = texture2D(sandTex, 30*position.xy).rgb;
-        mapped = mix(stone, sand, slope);
-    } else if (position.z  < forestMax) {  //mix between forest and rock
+    } else if (position.z  < forest) {  //mix between forest and rock
         vec3 stone = texture2D(stoneTex, 10*position.xy).rgb;
         vec3 forest = texture2D(treeTex, 10*position.xy).rgb;
         mapped = mix(stone, forest, slope);
-    } else if (position.z < snowMin) { //mix between forest, rock and snow
-        vec3 stone = texture2D(stoneTex, 10*position.xy).rgb;
-        vec3 snow = texture2D(snowTex, 10*position.xy).rgb;
-        //vec3 forest = texture2D(treeTex, 20*position.xy).rgb;
-		mapped = mix(stone, snow, slope);
     } else {
-        mapped = texture2D(snowTex, 60*position.xy).rgb;
+        mapped = texture2D(snowTex, position.xy).rgb;
     }
 
     return mapped;
@@ -133,25 +122,29 @@ void main() {
     vec3 material = texture_mapping(vertexPosition3DModel, normal);
 
     // Specular lightning only relevant for water surfaces.
-    float power = 60.0f;
     float ka, kd, ks;   
     ka = 0.4f;
     kd = 0.7f;
-    ks = 0.0f;
 
+	//Diffuse component
+	vec3 ambient, diffuse;
+
+	// Compute diffuse : "color" of the object.
+	 diffuse = Id * kd * material * max(dot(normal,L),0.0);
+	
     // Compute ambient : simulates indirect lighting.
-    vec3 ambient = Ia * ka * material;
-
-    // Compute diffuse : "color" of the object.
-    vec3 diffuse = Id * kd * material * max(dot(normal,L),0.0);
-
-    // Compute specular : reflective highlight, like a mirror.
-    vec3 specular = Is * ks * material * pow(max(dot(V,reflect(L,normal)),0.0),power);
+	
+	/* different setting for snow */
+	if (vertexPosition3DModel.z >= forest){
+		ambient = vec3(0.9f,0.9f,0.9f)*0.8*material;
+	} else {
+		ambient = Ia * ka * material;
+	}
 
     // Query the visibility.
     float visibility = shadowmap(ShadowCoord);
 
-    // Assemble the colors.
-    color = ambient + visibility * diffuse + visibility * specular;
+    // Assemble the colors. No specular term
+    color = vec4(ambient + visibility * diffuse, 0.8f);
 
 }
