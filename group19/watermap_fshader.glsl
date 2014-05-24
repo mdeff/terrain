@@ -47,8 +47,8 @@ void main()
 
 	//Get the texture value from texture map
 	float time_tmp = time * 0.0002;
-	//vec3 material = vec3(0.0,0.0,1.0);//texture2D(riverSurfaceMap, vec2(cos(UV.x + time_tmp), sin(UV.y-time_tmp))).rgb;
-	vec3 material = texture2D(reflectionTex, ref_UV).rgb;
+	vec3 material = texture2D(riverSurfaceMap,vec2(cos(UV.x + time_tmp), sin(UV.y-time_tmp))).rgb;
+	//vec3 material = texture2D(reflectionTex, ref_UV).rgb;
 	 // Compute the ambient color component based on texture mapping.
     vec3 ambient = Ia * ka * material;
 
@@ -61,5 +61,5 @@ void main()
     // Compute the specular color component.
     vec3 specular = Is * ks * material * pow(max(dot(V,reflect(L,normal)),0.0),power);
 
-	color = vec4(material,1.0);; //vec4(ambient + diffuse + specular, 1.0);
+	color = vec4(material,0.6);; //vec4(ambient + diffuse + specular, 1.0);
 }

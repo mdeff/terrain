@@ -198,8 +198,8 @@ void display() {
     cameraPath.draw(cameraProjection, cameraModelview);
 	
 	//draw water map
-//   reflection.draw(cameraProjection, flippedCameraModelview, lightMVP, lightPositionModel);
-//    water.draw(cameraProjection, cameraModelview, cameraModelView, lightMVP, lightPositionModel);
+	//reflection.draw(cameraProjection, flippedCameraModelview, lightMVP, lightPositionModel);
+    water.draw(cameraProjection, cameraModelview, lightMVP, lightPositionModel);
 
 
 

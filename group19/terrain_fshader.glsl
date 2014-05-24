@@ -68,10 +68,10 @@ vec3 texture_mapping(vec3 position, vec3 normal) {
     // Color dependent on the elevation (similar to texture mapping).
     vec3 mapped;
 
-    float slope = smoothstep(0.35, 0.65 , normal.z);
+    float slope = smoothstep(0.45, 0.55 , normal.z);
 
     if(position.z < ground) {
-        mapped = texture2D(underWaterTex, 60*position.xy).rgb;
+        mapped = texture2D(sandTex, 60*position.xy).rgb;
     } else if (position.z < sandMax) {
         mapped = texture2D(sandTex, position.xy).rgb;
     } else if (position.z < forestMin) {  //mix between sand, rock
@@ -84,16 +84,9 @@ vec3 texture_mapping(vec3 position, vec3 normal) {
         mapped = mix(stone, forest, slope);
     } else if (position.z < snowMin) { //mix between forest, rock and snow
         vec3 stone = texture2D(stoneTex, 10*position.xy).rgb;
-        vec3 ice = texture2D(iceMoutainTex, 10*position.xy).rgb;
-        vec3 forest = texture2D(treeTex, 20*position.xy).rgb;
-        if (slope > 0.5)
-            mapped = mix(stone, forest, slope);
-        else
-            mapped = mix(forest, ice, 2.0*(position.z-forestMax)/(snowMin-forestMax));
-    } else if (position.z < snowMax) {
-        vec3 snow = texture2D(snowTex, 60*position.xy).rgb;
-        vec3 iceMoutain = texture2D(iceMoutainTex, 20*position.xy).rgb;
-        mapped = mix(iceMoutain, snow, (position.z - snowMin)/(snowMax-snowMin));
+        vec3 snow = texture2D(snowTex, 10*position.xy).rgb;
+        //vec3 forest = texture2D(treeTex, 20*position.xy).rgb;
+		mapped = mix(stone, snow, slope);
     } else {
         mapped = texture2D(snowTex, 60*position.xy).rgb;
     }
