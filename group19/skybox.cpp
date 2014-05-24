@@ -20,26 +20,26 @@ Skybox::Skybox(unsigned int width, unsigned int height) :
 void Skybox::init(Vertices* vertices) {
 
     /// Common initialization.
-    RenderingContext::init(vertices, skybox_vshader, skybox_fshader, "vertexPosition3DModel", 0);
+    RenderingContext::init(vertices, skybox_vshader, skybox_fshader, "vertexPosition3DWorld", 0);
 
     /// Bind the Skybox cube map to texture 0.
     set_texture(0, -1, "skyboxTex", GL_TEXTURE_CUBE_MAP);
     loadCubeTexture();
 
     /// Set uniform IDs.
-    _modelviewID = glGetUniformLocation(_programID, "modelview");
+    _viewID = glGetUniformLocation(_programID, "view");
     _projectionID = glGetUniformLocation(_programID, "projection");
 
 }
 
 
-void Skybox::draw(const mat4& projection, const mat4& modelview) const {
+void Skybox::draw(const mat4& projection, const mat4& view) const {
 
     /// Common drawing.
     RenderingContext::draw();
 
     /// Update the content of the uniforms.
-    glProgramUniformMatrix4fv(_programID, _modelviewID, 1, GL_FALSE, modelview.data());
+    glProgramUniformMatrix4fv(_programID, _viewID, 1, GL_FALSE, view.data());
     glProgramUniformMatrix4fv(_programID, _projectionID, 1, GL_FALSE, projection.data());
 
     /// Do not clear the default framebuffer (screen) : done by Terrain.

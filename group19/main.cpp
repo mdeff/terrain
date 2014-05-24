@@ -14,11 +14,13 @@
 #include "terrain.h"
 #include "camera_control.h"
 #include "camera_path.h"
+#include "camera_pictorial.h"
 #include "vertices.h"
 #include "vertices_quad.h"
 #include "vertices_grid.h"
 #include "vertices_skybox.h"
 #include "vertices_camera_path.h"
+#include "vertices_camera_pictorial.h"
 
 
 /// Screen size.
@@ -36,6 +38,7 @@ const unsigned int nParticlesSide(20);
 Skybox skybox(windowWidth, windowHeight);
 Terrain terrain(windowWidth, windowHeight);
 CameraPath cameraPath(windowWidth, windowHeight);
+CameraPictorial cameraPictorial(windowWidth, windowHeight);
 ParticlesRender particlesRender(windowWidth, windowHeight, nParticlesSide);
 
 /// Instanciate the rendering contexts that render to FBO.
@@ -53,13 +56,14 @@ Vertices* verticesQuad = new VerticesQuad();
 Vertices* verticesGrid = new VerticesGrid();
 Vertices* verticesSkybox = new VerticesSkybox();
 VerticesCameraPath* verticesCameraPath = new VerticesCameraPath();
+VerticesCameraPictorial* verticesCameraPictorial = new VerticesCameraPictorial();
 
 /// Matrices that have to be shared between functions.
-static mat4 lightMVP;
-static vec3 lightPositionModel;
+static mat4 lightViewProjection;
+static vec3 lightPositionWorld;
 
 //flip the camera for reflection effect
-static mat4 flippedCameraModelview;
+static mat4 flippedcameraView;
 
 
 
@@ -99,15 +103,15 @@ void GLFWCALL keyboard_callback(int key, int action) {
             float theta = M_PI / 8.0f * float(key-49);
 
             /// Position from sunrise (-r,0,0) to noon (0,0,r).
-            lightPositionModel = vec3(-std::cos(theta)*r, 0.0, std::sin(theta)*r);
+            lightPositionWorld = vec3(-std::cos(theta)*r, 0.0, std::sin(theta)*r);
 
             /// Light source position (model coordinates).
             const vec3 lightLookAt(0.0, 0.0, 0.0);
             const vec3 lightUp(0.0, 1.0, 0.0);
-            mat4 lightView = Eigen::lookAt(lightPositionModel, lightLookAt, lightUp);
+            mat4 lightView = Eigen::lookAt(lightPositionWorld, lightLookAt, lightUp);
 
-            /// Assemble the lightMVP matrix for a spotlight source.
-            lightMVP = lightProjection * lightView;
+            /// Assemble the lightViewProjection matrix for a spotlight source.
+            lightViewProjection = lightProjection * lightView;
         }
     }
     cameraControl.handleCameraControls(key, action);
@@ -133,6 +137,7 @@ void init() {
     verticesGrid->generate();
     verticesSkybox->generate();
     verticesCameraPath->generate();
+    verticesCameraPictorial->generate();
 
     /// Generate the heightmap texture.
     Heightmap heightmap(textureWidth, textureHeight);
@@ -160,6 +165,7 @@ void init() {
     /// Camera is able to change the rendered vertices.
     cameraControl.init(verticesCameraPath, heightMapTexID);
     cameraPath.init(verticesCameraPath);
+    cameraPictorial.init(verticesCameraPictorial);
 
     /// Initialize the light position.
     keyboard_callback(50, GLFW_PRESS);
@@ -181,33 +187,32 @@ void display() {
     }
 
     /// Control the camera position.
-    mat4 cameraModelview;
-    cameraControl.updateCameraPosition(cameraModelview);
-
-	/// Uncomment to render only the boundary (not full triangles).
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-//    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    /// Should come before rendering as it updates the view transformation matrix.
+    mat4 cameraView, cameraPictorialModel;
+    cameraControl.updateCameraPosition(cameraView, cameraPictorialModel);
 
     /// Generate the shadowmap.
-    shadowmap.draw(lightMVP);
+    /// Should come before rendering as it updates the light transformation matrices.
+    shadowmap.draw(lightViewProjection);
+
+    /// Uncomment to render only the boundaries (not full triangles).
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     /// Render opaque primitives on screen.
-    terrain.draw(cameraProjection, cameraModelview, lightMVP, lightPositionModel);
-    skybox.draw(cameraProjection, cameraModelview);
-    cameraPath.draw(cameraProjection, cameraModelview);
+    terrain.draw(cameraProjection, cameraView, lightViewProjection, lightPositionWorld);
+    skybox.draw(cameraProjection, cameraView);
+    cameraPath.draw(cameraProjection, cameraView);
+    cameraPictorial.draw(cameraProjection, cameraView, cameraPictorialModel);
 	
-	//draw water map
-	//reflection.draw(cameraProjection, flippedCameraModelview, lightMVP, lightPositionModel);
-    water.draw(cameraProjection, cameraModelview, lightMVP, lightPositionModel);
+    //draw water map
+//   reflection.draw(cameraProjection, flippedcameraView, lightViewProjection, lightPositionWorld);
+    water.draw(cameraProjection, cameraView, lightViewProjection, lightPositionWorld);
 
-
-
-    /// First control particle positions, then render them on screen.
     /// Render the translucent primitives last. Otherwise opaque objects that
     /// may be visible behind get discarded by the depth test.
+    /// First control particle positions, then render them on screen.
     particlesControl.draw();
-    particlesRender.draw(cameraProjection, cameraModelview);
+    particlesRender.draw(cameraProjection, cameraView);
 
 }
 

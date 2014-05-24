@@ -16,18 +16,17 @@ public:
     Watermap(unsigned int width, unsigned int height);
     //void init(Vertices* vertices, unsigned int heightMapTexID, unsigned int shadowMapTexID);
     void init(Vertices* vertices, GLuint heightMapTexID);
-	void draw(const mat4& projection, const mat4& modelview,
-              const mat4& lightMVP, const vec3& lightPositionModel) const;
+    void draw(const mat4& projection, const mat4& view,
+              const mat4& lightViewProjection, const vec3& lightPositionWorld) const;
 
 private:
 
     /// Uniform IDs.
-    unsigned int _modelviewID;
+    unsigned int _viewID;
     unsigned int _projectionID;
-    unsigned int _lightOffsetMVPID;
-    unsigned int _lightPositionModelID;
+    unsigned int _lightPositionWorldID;
     unsigned int _timeID;
-	unsigned int _lightMVPID;
+    unsigned int _lightViewProjectionID;
 
     /// Helper function.
     unsigned int load_texture(const char * imagepath) const;

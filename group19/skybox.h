@@ -13,12 +13,12 @@ public:
     /// Common methods of all RenderingContext.
     Skybox(unsigned int width, unsigned int height);
     void init(Vertices* vertices);
-    void draw(const mat4& projection, const mat4& modelview) const;
+    void draw(const mat4& projection, const mat4& view) const;
 
 private:
 
     /// Uniform IDs.
-    unsigned int _modelviewID;
+    unsigned int _viewID;
     unsigned int _projectionID;
 
     /// Helper functions.

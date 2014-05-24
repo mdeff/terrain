@@ -16,13 +16,16 @@ public:
     /// Camera control interface.
     void init(VerticesCameraPath* verticesCameraPath, unsigned int heightMapTexID);
     void trackball(const mat4& model);
-    void updateCameraPosition(mat4& cameraModelview);
+    void updateCameraPosition(mat4& cameraModelview, mat4& cameraPictorialModel);
     void handleCameraControls(int key, int action);
 
 private:
 
-    /// Camera model view transformation matrix.
+    /// Camera view transformation matrix.
     mat4 _cameraModelview;
+
+    /// Camera pictorial transformation matrix.
+    mat4 _cameraPictorialModel;
 
     /// Camera path (Bézier curve) coordinates.
     std::vector<float> _bezierCurve;

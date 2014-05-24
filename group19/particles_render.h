@@ -13,12 +13,12 @@ public:
     /// Common methods of all RenderingContext.
     ParticlesRender(unsigned int width, unsigned int height, unsigned int nParticlesSide);
     void init(unsigned int particlePosTexID[]);
-    void draw(const mat4& projection, const mat4& modelview);
+    void draw(const mat4& projection, const mat4& view);
 
 private:
 
     /// Uniform IDs.
-    unsigned int _modelviewID;
+    unsigned int _viewID;
     unsigned int _projectionID;
 
     /// Texture IDs : current and last particle positions.

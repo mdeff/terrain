@@ -14,8 +14,8 @@ uniform sampler2DShadow shadowMapTex;
 // Environmental textures 2-7. Defined by glActiveTexture and passed by glUniform1i.
 uniform sampler2D sandTex, iceMoutainTex, treeTex, stoneTex, underWaterTex, snowTex;
 
-// Vertices 3D position (after heightmap displacement) in model space.
-in vec3 vertexPosition3DModel;
+// Vertices 3D position (after heightmap displacement) in world space.
+in vec3 vertexPosition3DWorld;
 
 // Vertex position in light source clip space.
 in vec3 ShadowCoord;
@@ -116,10 +116,10 @@ void main() {
     vec3 V = normalize(viewDir);
 
     // Compute the normal.
-    vec3 normal = compute_normal(vertexPosition3DModel);
+    vec3 normal = compute_normal(vertexPosition3DWorld);
 
     // Retrieve material properties.
-    vec3 material = texture_mapping(vertexPosition3DModel, normal);
+    vec3 material = texture_mapping(vertexPosition3DWorld, normal);
 
     // Specular lightning only relevant for water surfaces.
     float ka, kd, ks;   

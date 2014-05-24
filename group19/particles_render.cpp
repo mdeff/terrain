@@ -36,13 +36,13 @@ void ParticlesRender::init(GLuint particlePosTexID[]) {
     glProgramUniform1i(_programID, uniformID, 0);
 
     /// Set uniform IDs.
-    _modelviewID = glGetUniformLocation(_programID, "modelview");
+    _viewID = glGetUniformLocation(_programID, "view");
     _projectionID = glGetUniformLocation(_programID, "projection");
 
 }
 
 
-void ParticlesRender::draw(const mat4& projection, const mat4& modelview) {
+void ParticlesRender::draw(const mat4& projection, const mat4& view) {
 
     /// Common drawing. 
     RenderingContext::draw();
@@ -52,7 +52,7 @@ void ParticlesRender::draw(const mat4& projection, const mat4& modelview) {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     /// Update the content of the uniforms.
-    glProgramUniformMatrix4fv(_programID, _modelviewID, 1, GL_FALSE, modelview.data());
+    glProgramUniformMatrix4fv(_programID, _viewID, 1, GL_FALSE, view.data());
     glProgramUniformMatrix4fv(_programID, _projectionID, 1, GL_FALSE, projection.data());
 
     /// Flip the position texture binding : start with 1.
