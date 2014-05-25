@@ -129,9 +129,6 @@ void init() {
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 	glEnable(GL_CLIP_DISTANCE0);
-
-	//glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glEnable(GL_BLEND);
     //glEnable(GL_CULL_FACE);
 
     /// Generate the vertices.

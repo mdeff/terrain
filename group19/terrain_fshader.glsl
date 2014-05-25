@@ -24,7 +24,7 @@ in vec3 ShadowCoord;
 in vec3 lightDir, viewDir;
 
 // First output buffer is pixel color (mandatory output, gl_FragColor).
-layout(location = 0) out vec4 color;
+layout(location = 0) out vec3 color;
 
 
 // Different levels of height for texture mapping.
@@ -126,25 +126,25 @@ void main() {
     ka = 0.4f;
     kd = 0.7f;
 
-	//Diffuse component
-	vec3 ambient, diffuse;
+    //Diffuse component
+    vec3 ambient, diffuse;
 
-	// Compute diffuse : "color" of the object.
-	 diffuse = Id * kd * material * max(dot(normal,L),0.0);
-	
+    // Compute diffuse : "color" of the object.
+     diffuse = Id * kd * material * max(dot(normal,L),0.0);
+
     // Compute ambient : simulates indirect lighting.
-	
-	/* different setting for snow */
-        if (vertexPosition3DWorld.z >= forest){
-		ambient = vec3(0.9f,0.9f,0.9f)*0.8*material;
-	} else {
-		ambient = Ia * ka * material;
-	}
+
+    /* different setting for snow */
+    if (vertexPosition3DWorld.z >= forest){
+            ambient = vec3(0.9f,0.9f,0.9f)*0.8*material;
+    } else {
+            ambient = Ia * ka * material;
+    }
 
     // Query the visibility.
     float visibility = shadowmap(ShadowCoord);
 
     // Assemble the colors. No specular term
-    color = vec4(ambient + visibility * diffuse, 0.8f);
+    color = ambient + visibility * diffuse;
 
 }
