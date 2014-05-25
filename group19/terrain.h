@@ -24,6 +24,7 @@ private:
     unsigned int _lightViewProjectionID;
     unsigned int _lightPositionWorldID;
     unsigned int _clipID;
+	unsigned int _seedID;
 
     /// Texture (second rendering target) size.
     unsigned int _textureWidth;

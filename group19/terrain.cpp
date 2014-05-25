@@ -141,6 +141,10 @@ void Terrain::draw(const mat4& projection, const mat4& view,
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     _vertices->draw();
 
+	//base value for random seed
+	static float seed = 0;
+    glUniform1f(_seedID, int(seed++)%500);
+
     /// Render the terrain from camera point of view to default framebuffer.
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glUniform1f(_clipID, 0.0);

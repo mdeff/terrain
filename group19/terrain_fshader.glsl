@@ -2,6 +2,7 @@
 
 // Light properties.
 uniform vec3 Ia, Id, Is;
+uniform float seed;
 
 // Texture 0. Defined by glActiveTexture and passed by glUniform1i.
 uniform sampler2D heightMapTex;
@@ -34,7 +35,7 @@ const float ground = 0.000;  //water height level
 const float sandMin = 0.000;
 const float sandMax = 0.010;
 const float forest = 0.16;
-const float snowMin = 0.20;
+const float snowMin = 0.19;
 
 
 vec3 compute_normal(vec3 position) {
@@ -64,9 +65,18 @@ vec3 compute_normal(vec3 position) {
 }
 
 float rand(vec2 co){
-    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+    float a = fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+	
+	float b = smoothstep(0.25, 0.75, a);
+	return b;
 }
 
+float offset_calc(vec2 co){
+	float a = 0.2*sin(0.5f*co.x);
+	float b = 0.4*sin(0.5f*co.y);
+
+	return min(max(a+b, -0.04), 0.04);
+}
 
 vec3 texture_mapping(vec3 position, vec3 normal) {
 
@@ -74,6 +84,8 @@ vec3 texture_mapping(vec3 position, vec3 normal) {
     vec3 mapped;
 
     float slope = smoothstep(0.25, 0.55 , normal.z);
+
+	float offset = rand(position.xy)*0.05;
 
     if (position.z < ground) {
         mapped = texture2D(sandTex, 60.0*position.xy).rgb;
@@ -87,18 +99,25 @@ vec3 texture_mapping(vec3 position, vec3 normal) {
         vec3 stone_forest = mix(stone, forest, slope);
 		//float weight = blend_func(w);
         mapped = mix(sand, stone_forest, w);
-    } else if (position.z  < forest) {  //mix between forest and rock
+    } else if (position.z  < (forest)) {  //mix between forest and rock
         vec3 stone = texture2D(stoneTex, 10.0*position.xy).rgb;
         vec3 forest = texture2D(treeTex, 10.0*position.xy).rgb;
         mapped = mix(stone, forest, slope);
-    } else if (position.z < snowMin) {
+    } else if (position.z < (snowMin)) {
         float w = (position.z - forest)/(snowMin-forest) + rand(position.xy)/20.0f;
+		float opacity = rand(position.xy);
         vec4 snow = vec4(texture2D(snowTex, 30.0*position.xy).rgb, w);
         vec3 stone = texture2D(stoneTex, 10.0*position.xy).rgb;
         vec3 forest = texture2D(treeTex, 10.0*position.xy).rgb;
-        vec4 stone_forest = vec4(mix(stone, forest, slope/2.0), 1.0 - w);
+        vec4 stone_forest = vec4(mix(stone, forest, slope), 1-w);
         vec4 tmp = mix(stone_forest, snow, w);
-		mapped = vec3(tmp); //vec3(mix(tmp, snow, 0.8));
+
+		///add random snow on top of the moutain
+		//float noise = rand(0.5*position.xy);
+		//if (noise==1)
+			//mapped = texture2D(snowTex, 30.0*position.xy).rgb;
+		//else
+			mapped = vec3(tmp); //vec3(mix(tmp, snow, 0.8));
     } else {
         float w = (position.z - forest)/(snowMin-forest) + rand(position.xy)/20.0f;
         vec4 snow = vec4(texture2D(snowTex, 60.0*position.xy).rgb, w);
