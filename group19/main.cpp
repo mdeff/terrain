@@ -207,9 +207,9 @@ void display() {
     /// Render opaque primitives on screen.
     terrain.draw(cameraProjection, cameraView, lightViewProjection, lightPositionWorld);
     skybox.draw(cameraProjection, cameraView);
-    cameraPictorial.draw(cameraProjection, cameraView, cameraPictorialModel, vec3(1,1,0));
-    cameraPath.draw(cameraProjection, cameraView, mat4::Identity(), vec3(0,1,0));
-    cameraPathControlPoints.draw(cameraProjection, cameraView, selectedControlPoint);
+    //cameraPictorial.draw(cameraProjection, cameraView, cameraPictorialModel, vec3(1,1,0));
+    //cameraPath.draw(cameraProjection, cameraView, mat4::Identity(), vec3(0,1,0));
+    //cameraPathControlPoints.draw(cameraProjection, cameraView, selectedControlPoint);
 
 
     water.draw(cameraProjection, cameraView, lightViewProjection, lightPositionWorld);
@@ -218,8 +218,8 @@ void display() {
     /// Render the translucent primitives last. Otherwise opaque objects that
     /// may be visible behind get discarded by the depth test.
     /// First control particle positions, then render them on screen.
-    particlesControl.draw();
-    particlesRender.draw(cameraProjection, cameraView);
+    //particlesControl.draw();
+    //particlesRender.draw(cameraProjection, cameraView);
 
 }
 

@@ -31,10 +31,10 @@ layout(location = 0) out vec3 color;
 // Different levels of height for texture mapping.
 const float lowest = -0.05;
 const float ground = 0.000;  //water height level
-const float sandMin = 0.008;
-const float sandMax = 0.025;
+const float sandMin = 0.000;
+const float sandMax = 0.010;
 const float forest = 0.16;
-const float snowMin = 0.19;
+const float snowMin = 0.20;
 
 
 vec3 compute_normal(vec3 position) {
@@ -63,13 +63,17 @@ vec3 compute_normal(vec3 position) {
 
 }
 
+float rand(vec2 co){
+    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+}
+
 
 vec3 texture_mapping(vec3 position, vec3 normal) {
 
     // Color dependent on the elevation (similar to texture mapping).
     vec3 mapped;
 
-    float slope = smoothstep(0.35, 0.75 , normal.z);
+    float slope = smoothstep(0.25, 0.55 , normal.z);
 
     if (position.z < ground) {
         mapped = texture2D(sandTex, 60.0*position.xy).rgb;
@@ -81,6 +85,7 @@ vec3 texture_mapping(vec3 position, vec3 normal) {
         vec3 stone = texture2D(stoneTex, 10.0*position.xy).rgb;
         vec3 forest = texture2D(treeTex, 10.0*position.xy).rgb;
         vec3 stone_forest = mix(stone, forest, slope);
+		//float weight = blend_func(w);
         mapped = mix(sand, stone_forest, w);
     } else if (position.z  < forest) {  //mix between forest and rock
         vec3 stone = texture2D(stoneTex, 10.0*position.xy).rgb;
@@ -88,13 +93,15 @@ vec3 texture_mapping(vec3 position, vec3 normal) {
         mapped = mix(stone, forest, slope);
     } else if (position.z < snowMin) {
         float w = (position.z - forest)/(snowMin-forest);
-        vec3 snow = texture2D(snowTex, 60.0*position.xy).rgb;
+        vec4 snow = vec4(texture2D(snowTex, 30.0*position.xy).rgb, w);
         vec3 stone = texture2D(stoneTex, 10.0*position.xy).rgb;
         vec3 forest = texture2D(treeTex, 10.0*position.xy).rgb;
-        vec3 stone_forest = mix(stone, forest, slope);
-        mapped = mix(stone_forest, snow, w);
+        vec4 stone_forest = vec4(mix(stone, forest, slope), 1.0 - w);
+		float weight = smoothstep(0.35, 0.65, rand(vec2(w,w)));
+        vec4 tmp = mix(stone_forest, snow, w);
+		mapped = vec3(tmp);
     } else {
-        mapped = texture2D(snowTex, 60.0*position.xy).rgb;
+        mapped = texture2D(snowTex, 30.0*position.xy).rgb;
     }
 
     return mapped;
@@ -160,11 +167,11 @@ void main() {
     // Compute ambient : simulates indirect lighting.
 
     /* different setting for snow */
-    if (vertexPosition3DWorld.z >= forest){
-        ambient = vec3(0.9f,0.9f,0.9f)*0.8f*material;
-    } else {
+   /// if (vertexPosition3DWorld.z >= forest){
+        //ambient = vec3(0.9f,0.9f,0.9f)*0.8f*material;
+    //} else {
         ambient = Ia * ka * material;
-    }
+    //}
 
     // Query the visibility.
     float visibility = shadowmap(shadowCoord);
