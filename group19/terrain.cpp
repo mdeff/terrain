@@ -19,11 +19,13 @@ Terrain::Terrain(unsigned int windowWidth, unsigned int windowHeight, unsigned i
 }
 
 
-GLuint Terrain::init(Vertices* vertices, GLuint heightMapTexID, GLuint shadowMapTexID) {
+GLuint Terrain::init(Vertices* vertices, GLuint heightMapTexID, GLuint shadowMapTexID, GLuint& reflectionFramebufferID) {
 
     /// Common initialization.
     /// Render to FBO by default.
     RenderingContext::init(vertices, terrain_vshader, terrain_fshader, NULL, "vertexPosition2DWorld", -1);
+
+    reflectionFramebufferID = _frameBufferID;
 
     /// Allow to manually set a clip distance in the vertex shader (used to cut
     /// under water level geometry when rendering to texture). This could have
@@ -123,28 +125,27 @@ void Terrain::draw(const mat4& projection, const mat4& view,
     /// Common drawing. 
     RenderingContext::draw();
 
-    /// Flip the terrain by multiplying the Z coordinate by -1 in world space.
-    mat4 flip = mat4::Identity();
-    flip(2,2) = -1.0f;
-    mat4 viewFlip = view * flip;
-
     /// Update the content of the uniforms.
     glUniformMatrix4fv(_projectionID, 1, GL_FALSE, projection.data());
     glUniformMatrix4fv(_lightViewProjectionID, 1, GL_FALSE, lightViewProjection.data());
     glUniform3fv(_lightPositionWorldID, 1, lightPositionWorld.data());
 
-    /// Clear the texture binded to FBO.
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    /// Flip the terrain by multiplying the Z coordinate by -1 in world space.
+    mat4 flip = mat4::Identity();
+    flip(2,2) = -1.0f;
+    mat4 viewFlip = view * flip;
 
-    /// Render the terrain from camera point of view to default framebuffer.
+    /// Render the terrain from camera point of view to the reflection FBO.
     glUniform1f(_clipID, 1.0);
     glUniformMatrix4fv(_viewID, 1, GL_FALSE, viewFlip.data());
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     _vertices->draw();
 
     /// Render the terrain from camera point of view to default framebuffer.
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glUniform1f(_clipID, 0.0);
     glUniformMatrix4fv(_viewID, 1, GL_FALSE, view.data());
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     _vertices->draw();
 
 }
