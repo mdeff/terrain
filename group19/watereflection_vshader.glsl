@@ -27,7 +27,7 @@ layout(location = 0) in vec2 vertexPosition2DModel;
 // Vertex position (mandatory output) and clip distance.
 out gl_PerVertex {
     vec4 gl_Position;
-    float gl_ClipDistance[];
+    float gl_ClipDistance[1];
 };
 
 // Vertices 3D position (after heightmap displacement) in model space.
