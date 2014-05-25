@@ -20,7 +20,7 @@ WaterReflection::WaterReflection(unsigned int width, unsigned int height) :
 GLuint WaterReflection::init(Vertices* vertices, GLuint heightMapTexID) {
 
 	/// Common initialization.
-    RenderingContext::init(vertices, watereflection_vshader, watereflection_fshader, "vertexPosition2DWorld", -1);
+    RenderingContext::init(vertices, watereflection_vshader, watereflection_fshader, NULL, "vertexPosition2DWorld", -1);
 
 	/// Bind the heightmap to texture 0.
     set_texture(0, heightMapTexID, "heightMapTex", GL_TEXTURE_2D);

@@ -21,7 +21,7 @@ Heightmap::Heightmap(unsigned int width, unsigned int height) :
 GLuint Heightmap::init(Vertices* vertices) {
 
     /// Common initialization.
-    RenderingContext::init(vertices, heightmap_vshader, heightmap_fshader, "vertexPosition2D", -1);
+    RenderingContext::init(vertices, heightmap_vshader, heightmap_fshader, NULL, "vertexPosition2D", -1);
 
     /// Create and bind the permutation table to texture 0.
     GLuint permTableTexID = gen_permutation_table();

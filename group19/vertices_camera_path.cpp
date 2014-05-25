@@ -55,8 +55,8 @@ void VerticesCameraPath::draw() const {
     glBindVertexArray(_vertexArrayID);
 
     /// Draw the camera path vertices : either points or lines.
-    //glDrawArrays(GL_POINTS, 0, _nVertices);
-    glDrawArrays(GL_LINES, 0, _nVertices);
+    glDrawArrays(GL_POINTS, 0, _nVertices);
+    //glDrawArrays(GL_LINES, 0, _nVertices);
 
 }
 

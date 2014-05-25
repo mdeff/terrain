@@ -1,5 +1,5 @@
 
-#include "rendering_simple.h"
+#include "camera_path_control_points.h"
 #include "vertices.h"
 
 #include <iostream>
@@ -8,30 +8,30 @@
 #include <GL/glfw.h>
 #include "opengp.h"
 
-#include "rendering_simple_vshader.h"
+#include "camera_path_control_points_vshader.h"
 #include "rendering_simple_fshader.h"
+#include "camera_path_control_points_gshader.h"
 
 
-RenderingSimple::RenderingSimple(unsigned int width, unsigned int height) :
+CameraPathControlPoints::CameraPathControlPoints(unsigned int width, unsigned int height) :
     RenderingContext(width, height) {
 }
 
 
-void RenderingSimple::init(Vertices* vertices) {
+void CameraPathControlPoints::init(Vertices* vertices) {
 
     /// Common initialization.
-    RenderingContext::init(vertices, rendering_simple_vshader, rendering_simple_fshader, NULL, "vertexPosition3DModel", 0);
+    RenderingContext::init(vertices, camera_path_control_points_vshader, rendering_simple_fshader, camera_path_control_points_gshader, "vertexPosition3DWorld", 0);
 
     /// Set uniform IDs.
     _projectionID = glGetUniformLocation(_programID, "projection");
     _viewID = glGetUniformLocation(_programID, "view");
-    _modelID = glGetUniformLocation(_programID, "model");
-    _colorID = glGetUniformLocation(_programID, "color");
+    _selectedControlPointID = glGetUniformLocation(_programID, "selectedControlPoint");
 
 }
 
 
-void RenderingSimple::draw(const mat4& projection, const mat4& view, const mat4& model, const vec3& color) const {
+void CameraPathControlPoints::draw(const mat4& projection, const mat4& view, const int& selectedControlPoint) const {
 
     /// Common drawing.
     RenderingContext::draw();
@@ -39,8 +39,7 @@ void RenderingSimple::draw(const mat4& projection, const mat4& view, const mat4&
     /// Update the content of the uniforms.
     glProgramUniformMatrix4fv(_programID, _projectionID, 1, GL_FALSE, projection.data());
     glProgramUniformMatrix4fv(_programID, _viewID, 1, GL_FALSE, view.data());
-    glProgramUniformMatrix4fv(_programID, _modelID, 1, GL_FALSE, model.data());
-    glProgramUniform3fv(_programID, _colorID, 1, color.data());
+    glProgramUniform1i(_programID, _selectedControlPointID, selectedControlPoint);
 
     /// Do not clear the default framebuffer (screen) : done by Terrain.
     /// Otherwise already drawn pixels will be cleared.

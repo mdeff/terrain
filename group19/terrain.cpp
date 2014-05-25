@@ -20,7 +20,7 @@ Terrain::Terrain(unsigned int width, unsigned int height) :
 void Terrain::init(Vertices* vertices, GLuint heightMapTexID, GLuint shadowMapTexID) {
 
     /// Common initialization.
-    RenderingContext::init(vertices, terrain_vshader, terrain_fshader, "vertexPosition2DWorld", 0);
+    RenderingContext::init(vertices, terrain_vshader, terrain_fshader, NULL, "vertexPosition2DWorld", 0);
 
     /// Bind the heightmap and shadowmap to textures 0 and 1.
     set_texture(0, heightMapTexID, "heightMapTex", GL_TEXTURE_2D);

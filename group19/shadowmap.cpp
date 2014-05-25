@@ -20,7 +20,7 @@ Shadowmap::Shadowmap(unsigned int width, unsigned int height) :
 GLuint Shadowmap::init(Vertices* vertices, GLuint heightMapTexID) {
 
     /// Common initialization.
-    RenderingContext::init(vertices, shadowmap_vshader, shadowmap_fshader, "vertexPosition2DModel", -1);
+    RenderingContext::init(vertices, shadowmap_vshader, shadowmap_fshader, NULL, "vertexPosition2DModel", -1);
 
     /// Bind the heightmap to texture 0.
     set_texture(0, heightMapTexID, "heightMapTex", GL_TEXTURE_2D);

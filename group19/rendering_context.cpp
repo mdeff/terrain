@@ -12,7 +12,7 @@ RenderingContext::RenderingContext(unsigned int width, unsigned int height) :
 }
 
 
-void RenderingContext::init(Vertices* vertices, const char* vshader, const char* fshader, const char* vertexAttribName, GLint frameBufferID) {
+void RenderingContext::init(Vertices* vertices, const char* vshader, const char* fshader, const char* gshader, const char* vertexAttribName, GLint frameBufferID) {
 
     _vertices = vertices;
 
@@ -26,13 +26,13 @@ void RenderingContext::init(Vertices* vertices, const char* vshader, const char*
     glBindFramebuffer(GL_FRAMEBUFFER, _frameBufferID);
 
     /// Compile and install the rendering shaders.
-    _programID = opengp::compile_shaders(vshader, fshader, 0, 0, 0);
+    _programID = opengp::compile_shaders(vshader, fshader, gshader, NULL, NULL);
     if(!_programID)
         exit(EXIT_FAILURE);
     glUseProgram(_programID);
 
     /// Bind the vertex attribute ID to vertex data, if they exist.
-    if(vertices != NULL) {
+    if(vertices != NULL && vertexAttribName != NULL) {
         GLuint vertexAttribID = glGetAttribLocation(_programID, vertexAttribName);
         _vertices->bind(vertexAttribID);
     }

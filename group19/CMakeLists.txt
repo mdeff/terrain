@@ -4,8 +4,9 @@ add_executable(${DIR} main.cpp rendering_context.cpp rendering_simple.cpp
                       vertices_grid.cpp vertices_skybox.cpp vertices_quad.cpp
                       vertices_camera_path.cpp vertices_camera_pictorial.cpp
                       heightmap.cpp terrain.cpp skybox.cpp shadowmap.cpp watermap.cpp waterReflection.cpp
-                      camera_control.cpp
+                      camera_control.cpp camera_path_control_points.cpp
                       particles_control.cpp particles_render.cpp
+                      rendering_simple_vshader.glsl rendering_simple_fshader.glsl
                       heightmap_vshader.glsl heightmap_fshader.glsl
                       terrain_vshader.glsl   terrain_fshader.glsl
                       skybox_vshader.glsl    skybox_fshader.glsl
@@ -14,7 +15,7 @@ add_executable(${DIR} main.cpp rendering_context.cpp rendering_simple.cpp
                       watermap_vshader.glsl  watermap_fshader.glsl
                       particles_control_vshader.glsl particles_control_fshader.glsl
                       particles_render_vshader.glsl  particles_render_fshader.glsl
-                      rendering_simple_vshader.glsl rendering_simple_fshader.glsl)
+                      camera_path_control_points_vshader.glsl camera_path_control_points_gshader.glsl)
 
 target_link_libraries(${DIR} ${COMMON_LIBS})
 target_stringify_shader(${DIR} heightmap_vshader)
@@ -35,3 +36,5 @@ target_stringify_shader(${DIR} particles_render_vshader)
 target_stringify_shader(${DIR} particles_render_fshader)
 target_stringify_shader(${DIR} rendering_simple_vshader)
 target_stringify_shader(${DIR} rendering_simple_fshader)
+target_stringify_shader(${DIR} camera_path_control_points_vshader)
+target_stringify_shader(${DIR} camera_path_control_points_gshader)

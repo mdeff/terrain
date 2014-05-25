@@ -14,6 +14,7 @@
 #include "particles_render.h"
 #include "terrain.h"
 #include "camera_control.h"
+#include "camera_path_control_points.h"
 #include "vertices.h"
 #include "vertices_quad.h"
 #include "vertices_grid.h"
@@ -36,8 +37,9 @@ const unsigned int nParticlesSide(20);
 /// Instanciate the rendering contexts that render to the screen.
 Skybox skybox(windowWidth, windowHeight);
 Terrain terrain(windowWidth, windowHeight);
-RenderingSimple cameraPath(windowWidth, windowHeight);
 RenderingSimple cameraPictorial(windowWidth, windowHeight);
+RenderingSimple cameraPath(windowWidth, windowHeight);
+CameraPathControlPoints cameraPathControlPoints(windowWidth, windowHeight);
 ParticlesRender particlesRender(windowWidth, windowHeight, nParticlesSide);
 
 /// Instanciate the rendering contexts that render to FBO.
@@ -165,8 +167,9 @@ void init() {
     /// CameraPath is a rendering object.
     /// Camera is able to change the rendered vertices.
     cameraControl.init(verticesCameraPath, verticesCameraPathControls, heightMapTexID);
-    cameraPath.init(verticesCameraPath);
     cameraPictorial.init(verticesCameraPictorial);
+    cameraPath.init(verticesCameraPath);
+    cameraPathControlPoints.init(verticesCameraPathControls);
 
     /// Initialize the light position.
     keyboard_callback(50, GLFW_PRESS);
@@ -190,7 +193,8 @@ void display() {
     /// Control the camera position.
     /// Should come before rendering as it updates the view transformation matrix.
     mat4 cameraView, cameraPictorialModel;
-    cameraControl.updateCameraPosition(cameraView, cameraPictorialModel);
+    int selectedControlPoint;
+    cameraControl.updateCameraPosition(cameraView, cameraPictorialModel, selectedControlPoint);
 
     /// Generate the shadowmap.
     /// Should come before rendering as it updates the light transformation matrices.
@@ -202,8 +206,9 @@ void display() {
     /// Render opaque primitives on screen.
     terrain.draw(cameraProjection, cameraView, lightViewProjection, lightPositionWorld);
     skybox.draw(cameraProjection, cameraView);
-    cameraPath.draw(cameraProjection, cameraView, mat4::Identity(), vec3(1,0,0));
     cameraPictorial.draw(cameraProjection, cameraView, cameraPictorialModel, vec3(1,1,0));
+    cameraPath.draw(cameraProjection, cameraView, mat4::Identity(), vec3(0,1,0));
+    cameraPathControlPoints.draw(cameraProjection, cameraView, selectedControlPoint);
 
     //draw water map
 //   reflection.draw(cameraProjection, flippedcameraView, lightViewProjection, lightPositionWorld);

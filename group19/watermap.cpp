@@ -23,7 +23,7 @@ Watermap::Watermap(unsigned int width, unsigned int height) :
 void Watermap::init(Vertices* vertices , GLuint reflectionID) {
 
   	 /// Common initialization.
-    RenderingContext::init(vertices, watermap_vshader, watermap_fshader, "vertexPosition2DWorld", 0);
+    RenderingContext::init(vertices, watermap_vshader, watermap_fshader, NULL, "vertexPosition2DWorld", 0);
 
 	//bind the reflection tex to texture 0
 	set_texture(0, reflectionID, "reflectionTex", GL_TEXTURE_2D);

@@ -21,7 +21,7 @@ ParticlesRender::ParticlesRender(unsigned int width, unsigned int height, unsign
 void ParticlesRender::init(GLuint particlePosTexID[]) {
 
     /// Common initialization.
-    RenderingContext::init(NULL, particles_render_vshader, particles_render_fshader, "", 0);
+    RenderingContext::init(NULL, particles_render_vshader, particles_render_fshader, NULL, NULL, 0);
 
     /// Allow programmable point size for the vertex shader to size the sprite.
     glEnable(GL_PROGRAM_POINT_SIZE);
