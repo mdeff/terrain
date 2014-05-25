@@ -653,39 +653,39 @@ void CameraControl::deCasteljau4PointsChanging(int PointToChange,double changeX,
 }
 
 void CameraControl::createBCurve(){
+	int AmountBcurve = int(_userBCurve.size()/12);
 	
-	//other setting flying through
-	float b0X = _userBCurve.at(0) ;
-	float b0Y = _userBCurve.at(1) ;
-	float b0Z = _userBCurve.at(2) ;
-    float b1X = _userBCurve.at(3) ;
-	float b1Y = _userBCurve.at(4) ;
-	float b1Z = _userBCurve.at(5) ;
-    float b2X = _userBCurve.at(6) ;
-	float b2Y = _userBCurve.at(7) ;
-	float b2Z = _userBCurve.at(8) ;
-    float b3X = _userBCurve.at(9) ;
-	float b3Y = _userBCurve.at(10);
-	float b3Z = _userBCurve.at(11);
-
-	//std::cout<<b0X<<" "<<b1X<<" "<<b2X<<" "<<b3X<<std::endl;
-	//std::cout<<b0Y<<" "<<b1Y<<" "<<b2Y<<" "<<b3Y<<std::endl;
-	//std::cout<<b0Z<<" "<<b1Z<<" "<<b2Z<<" "<<b3Z<<std::endl;
 	/// Choose the resolution.
-    const unsigned int nPoints = 500;
+	const unsigned int nPoints = 300*AmountBcurve;
 
 	_bezierCurve.clear();
-    /// To avoid vector resizing on every loop.
-    _bezierCurve.reserve(3*nPoints);
+	/// To avoid vector resizing on every loop.
+	_bezierCurve.reserve(3*nPoints);
 
-    /// Generate coordinates.
-    for(int k=0; k<nPoints; ++k) {
-        float t = float(k) / float(nPoints);
-        _bezierCurve.push_back(std::pow((1-t),3)*b0X + 3*t*std::pow((1-t),2)*b1X + 3*std::pow(t,2)*(1-t)*b2X + std::pow(t,3)*b3X);
-        _bezierCurve.push_back(std::pow((1-t),3)*b0Y + 3*t*std::pow((1-t),2)*b1Y + 3*std::pow(t,2)*(1-t)*b2Y + std::pow(t,3)*b3Y);
-        _bezierCurve.push_back(std::pow((1-t),3)*b0Z + 3*t*std::pow((1-t),2)*b1Z + 3*std::pow(t,2)*(1-t)*b2Z + std::pow(t,3)*b3Z);
-    }
+	for(int i=1;i<=AmountBcurve;i++){
 
+		//other setting flying through
+		float b0X = _userBCurve.at(i*12-12);
+		float b0Y = _userBCurve.at(i*12-11);
+		float b0Z = _userBCurve.at(i*12-10);
+		float b1X = _userBCurve.at(i*12-9);
+		float b1Y = _userBCurve.at(i*12-8);
+		float b1Z = _userBCurve.at(i*12-7);
+		float b2X = _userBCurve.at(i*12-6);
+		float b2Y = _userBCurve.at(i*12-5);
+		float b2Z = _userBCurve.at(i*12-4);
+		float b3X = _userBCurve.at(i*12-3);
+		float b3Y = _userBCurve.at(i*12-2);
+		float b3Z = _userBCurve.at(i*12-1);
+
+		/// Generate coordinates.
+		for(int k=0; k<nPoints; ++k) {
+			float t = float(k) / float(nPoints);
+			_bezierCurve.push_back(std::pow((1-t),3)*b0X + 3*t*std::pow((1-t),2)*b1X + 3*std::pow(t,2)*(1-t)*b2X + std::pow(t,3)*b3X);
+			_bezierCurve.push_back(std::pow((1-t),3)*b0Y + 3*t*std::pow((1-t),2)*b1Y + 3*std::pow(t,2)*(1-t)*b2Y + std::pow(t,3)*b3Y);
+			_bezierCurve.push_back(std::pow((1-t),3)*b0Z + 3*t*std::pow((1-t),2)*b1Z + 3*std::pow(t,2)*(1-t)*b2Z + std::pow(t,3)*b3Z);
+		}
+	}
     /// Copy the vertices to GPU.
     _verticesCameraPath ->copy(_bezierCurve.data(), _bezierCurve.size());
 
@@ -852,6 +852,10 @@ void CameraControl::fpsExploration(){
 	static double lookY = 0.19f;
 	static double lookZ = 0.13f;
 
+	static double tmpCtrlPointX;
+	static double tmpCtrlPointY;
+	static double tmpCtrlPointZ;
+	
 	static double velocityForward = 0;
 	static double velocityBackward = 0;
 	static double velocityLeft = 0;
@@ -1023,75 +1027,86 @@ void CameraControl::fpsExploration(){
 		if(KeyENTER==true & ModeSettingControlPoint==false){
 			KeyENTER=false;
 			ModeSettingControlPoint=true;
-			if(controlPointsCount<=4){//restart creating path
+			/*if(controlPointsCount<=4){//restart creating path
 				controlPointsCount=0;
 				_userBCurve.clear();
+			}*/
+			if (controlPointsCount%4 == 0){
+				if(controlPointsCount>2){// User continue to creat bcurve => push the last controlP of previous Bcurve P0 and the computed control P1
+					_userBCurve.push_back(_userBCurve.at(_userBCurve.size()-3));
+					_userBCurve.push_back(_userBCurve.at(_userBCurve.size()-3));
+					_userBCurve.push_back(_userBCurve.at(_userBCurve.size()-3));
+					_userBCurve.push_back(tmpCtrlPointX);
+					_userBCurve.push_back(tmpCtrlPointY);
+					_userBCurve.push_back(tmpCtrlPointZ);
+					controlPointsCount=controlPointsCount+2;
+				}
+				else{ // User define first control point 
+					std::cout<<"Control point 1 of bezier curve settled"<<std::endl;
+					_userBCurve.push_back(posX-0.02f);
+					_userBCurve.push_back(posY-0.02f);
+					_userBCurve.push_back(posZ-0.02f);
+					controlPointsCount++;
+				}
 			}
-			//1) push the posX,Y,Z as a new control point P0 or P4.
-			if (controlPointsCount==0){
-				_userBCurve.push_back(posX);
-				_userBCurve.push_back(posY);
-				_userBCurve.push_back(posZ);
-				controlPointsCount++;
-			}
-			//2) set the P2 or P3 control point
 		}	
 	
 	if (ModeSettingControlPoint==true){ // set a control point if necessary
-		//use position of lookX,lookY,lookZ to preview curve 
-		if (controlPointsCount==1 & _userBCurve.size()==3){
+		//use look at to define the 2nd control point (P1) only for first Bcurve
+		if (controlPointsCount%4==1 & _userBCurve.size()%12==3 & controlPointsCount<3 ){ 
 			_userBCurve.push_back(lookX);
 			_userBCurve.push_back(lookY);
 			_userBCurve.push_back(lookZ);
-		}
-		else if(controlPointsCount==1 & _userBCurve.size()==6){
-			_userBCurve.pop_back();
-			_userBCurve.pop_back();
-			_userBCurve.pop_back();
-			_userBCurve.push_back(lookX);
-			_userBCurve.push_back(lookY);
-			_userBCurve.push_back(lookZ);
-		}
-		else if(controlPointsCount ==2  & _userBCurve.size()==6){
-			
-			_userBCurve.push_back(lookX);
-			_userBCurve.push_back(lookY);
-			_userBCurve.push_back(lookZ);
-			_userBCurve.push_back(posX);
-			_userBCurve.push_back(posY);
-			_userBCurve.push_back(posZ);
-		}
-		else if(controlPointsCount==2 & _userBCurve.size()==12){
-			_userBCurve.pop_back();
-			_userBCurve.pop_back();
-			_userBCurve.pop_back();
+		}//modify and refresh the look at to define the 2nd control point (P1) only for first Bcurve
+		else if(controlPointsCount%4==1 & _userBCurve.size()%12==6 & controlPointsCount<3){
 			_userBCurve.pop_back();
 			_userBCurve.pop_back();
 			_userBCurve.pop_back();
 			_userBCurve.push_back(lookX);
 			_userBCurve.push_back(lookY);
 			_userBCurve.push_back(lookZ);
-			_userBCurve.push_back(posX);
-			_userBCurve.push_back(posY);
-			_userBCurve.push_back(posZ);
-			std::cout<<"refreshing look at"<<std::endl;
+		}//set P2 and P3 using pos for every Bcurve created
+		else if(controlPointsCount%4 ==2  & _userBCurve.size()%12==6){					
+			_userBCurve.push_back(lookX);
+			_userBCurve.push_back(lookY);
+			_userBCurve.push_back(lookZ);
+			_userBCurve.push_back(posX-0.02f);
+			_userBCurve.push_back(posY-0.02f);
+			_userBCurve.push_back(posZ-0.02f);
+		}//refresh P2 and P3 using pos for every Bcurve created
+		else if(controlPointsCount%4==2 & _userBCurve.size()%12==0){
+			_userBCurve.pop_back();
+			_userBCurve.pop_back();
+			_userBCurve.pop_back();
+			_userBCurve.pop_back();
+			_userBCurve.pop_back();
+			_userBCurve.pop_back();
+			_userBCurve.push_back(lookX);
+			_userBCurve.push_back(lookY);
+			_userBCurve.push_back(lookZ);
+			_userBCurve.push_back(posX-0.02f);
+			_userBCurve.push_back(posY-0.02f);
+			_userBCurve.push_back(posZ-0.02f);
 		}
-		if(_userBCurve.size()>6){//render bezier
+		if(_userBCurve.size()>6){//compute and render bezier
 			createBCurve();
-			std::cout<<"render curve"<<std::endl;
 		}
-		std::cout<<"Wait "<<_userBCurve.size()<<std::endl;
-		if(KeyENTER==true){
-			if(controlPointsCount==1){
+		if(KeyENTER==true){//finish setting ctrl points
+			if(controlPointsCount%4==1){
 				controlPointsCount++;
 			}
-			else if(controlPointsCount==2){
+			else if(controlPointsCount%4==2){ // a bcurve is completly settled
 				controlPointsCount = controlPointsCount+2;
 				ModeSettingControlPoint=false;
+				std::cout<<int(_userBCurve.size()/12)<<" Bezier curves has been created!"<<std::endl;
 			}
-			KeyENTER=false;
+			if(controlPointsCount%4==0 & controlPointsCount>2){ // compute control P1 for next Bcurve, respecting linearity
+				tmpCtrlPointX = 2*_userBCurve.at(_userBCurve.size()-3) - _userBCurve.at(_userBCurve.size()-6);
+				tmpCtrlPointY = 2*_userBCurve.at(_userBCurve.size()-2) - _userBCurve.at(_userBCurve.size()-5);
+				tmpCtrlPointZ = 2*_userBCurve.at(_userBCurve.size()-1) - _userBCurve.at(_userBCurve.size()-4);
+			}										
+			KeyENTER=false;							
 		}
-		//.pop_back()remove last element of vector
 	}
 }
 
@@ -1206,8 +1221,9 @@ void CameraControl::handleCameraControls(int key, int action){
 				MultipleBezier();
 				break;
 			case 294://ENTER => drop control point
-				std::cout<<"control point to set"<<std::endl;
-				KeyENTER = true;
+				if(_explorationMode == FPS){
+					KeyENTER = true;
+				}
 		}
 	}
 }
