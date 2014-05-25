@@ -30,6 +30,8 @@ void RenderingContext::init(Vertices* vertices, const char* vshader, const char*
     if(!_programID)
         exit(EXIT_FAILURE);
 
+	    glUseProgram(_programID);
+
     /// Bind the vertex attribute ID to vertex data, if they exist.
     if(vertices != NULL && vertexAttribName != NULL) {
         GLuint vertexAttribID = glGetAttribLocation(_programID, vertexAttribName);
@@ -92,7 +94,7 @@ void RenderingContext::set_texture(const GLuint textureIndex, int textureID, con
 
     /// Put the texture index value in the Sampler uniform.
     GLuint uniformID = glGetUniformLocation(_programID, uniformName);
-    glProgramUniform1i(_programID, uniformID, textureIndex);
+    glUniform1i( uniformID, textureIndex);
 
     _textures[textureIndex].ID = textureID;
     _textures[textureIndex].target = target;

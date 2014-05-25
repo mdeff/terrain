@@ -78,7 +78,7 @@ void Shadowmap::draw(const mat4& lightViewProjection) const {
     RenderingContext::draw();
 
     /// Update the content of the uniforms.
-    glProgramUniformMatrix4fv(_programID, _lightViewProjectionID, 1, GL_FALSE, lightViewProjection.data());
+    glUniformMatrix4fv( _lightViewProjectionID, 1, GL_FALSE, lightViewProjection.data());
 
     /// Clear the FBO.
     glClear(GL_DEPTH_BUFFER_BIT);

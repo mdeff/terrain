@@ -43,9 +43,9 @@ void Watermap::init(Vertices* vertices , GLuint reflectionID) {
     GLuint _IaID = glGetUniformLocation(_programID, "Ia");
     GLuint _IdID = glGetUniformLocation(_programID, "Id");
     GLuint _IsID = glGetUniformLocation(_programID, "Is");
-    glProgramUniform3fv(_programID, _IaID, 1, Ia.data());
-    glProgramUniform3fv(_programID, _IdID, 1, Id.data());
-    glProgramUniform3fv(_programID, _IsID, 1, Is.data());
+    glUniform3fv( _IaID, 1, Ia.data());
+    glUniform3fv( _IdID, 1, Id.data());
+    glUniform3fv( _IsID, 1, Is.data());
 
     /// Set uniform IDs.
     _viewID = glGetUniformLocation(_programID, "view");
@@ -66,14 +66,14 @@ void Watermap::draw(const mat4& projection, const mat4& view,
     RenderingContext::draw();
 
     /// Update the content of the uniforms.
-    glProgramUniformMatrix4fv(_programID, _viewID, 1, GL_FALSE, view.data());
-    glProgramUniformMatrix4fv(_programID, _projectionID, 1, GL_FALSE, projection.data());
-    glProgramUniformMatrix4fv(_programID, _lightViewProjectionID, 1, GL_FALSE, lightViewProjection.data());
-    glProgramUniform3fv(_programID, _lightPositionWorldID, 1, lightPositionWorld.data());
+    glUniformMatrix4fv(_viewID, 1, GL_FALSE, view.data());
+    glUniformMatrix4fv( _projectionID, 1, GL_FALSE, projection.data());
+    glUniformMatrix4fv( _lightViewProjectionID, 1, GL_FALSE, lightViewProjection.data());
+    glUniform3fv( _lightPositionWorldID, 1, lightPositionWorld.data());
   
 	/// Time value which animates water
     static float time = 0;
-    glProgramUniform1f(_programID, _timeID, int(time++)%5000);
+    glUniform1f(_timeID, int(time++)%5000);
 
     /// Must not clear the buffer since it will delete the pre-drawn terrain
     //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
