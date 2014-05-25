@@ -63,7 +63,8 @@ void CameraControl::trackball(const mat4& model) {
     /// View matrix (camera extrinsics) (position in world space).
 
     /// Camera is in the sky, looking down.
-    vec3 camPos(0.0f, -1.5f, 0.8f);
+    vec3 camPos(0.5f, -0.5f, 0.8f);
+	//vec3 camPos(2.5f, -2.5f, 2.8f);
 //    vec3 camLookAt(0.0f, 0.0f, 0.0f);
 //    vec3 camUp(0.0f, 0.0f, 1.0f);
 

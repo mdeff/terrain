@@ -120,8 +120,6 @@ float turbulence(vec2 position, float H, float lacunarity, int octaves) {
     return height;
 
 }
-
-
 // Multifractal : fractal system which has a different fractal dimension in different regions.
 float multifractal(vec2 position, float H, float lacunarity, float octaves, float offset) {
 
@@ -143,27 +141,6 @@ float multifractal(vec2 position, float H, float lacunarity, float octaves, floa
 
 }
 
-
-// Multifractal : fractal system which has a different fractal dimension in different regions.
-float hybridMultifractal(vec2 position, float H, float lacunarity, float octaves, float offset) {
-
-    float weight =(1-abs(perlin_noise(position))+ offset )  * pow(lacunarity, 0)/3.0f;
-    float signal = 0.0f;
-    float height =  weight;
-
-    // Loop will be unrolled by the compiler (GPU driver).
-    for (int k=0; k<octaves; k++) {
-        if ( weight > 1.0f )
-            weight = 1.0f;
-        signal = (1-abs(perlin_noise(position) )+ offset) * pow(lacunarity, -H*k);
-        height += weight * signal;
-        weight *= signal;
-        position *= lacunarity;
-    }
-
-    return height;
-
-}
 
 
 float simplex_noise(vec2 v) {
@@ -270,6 +247,35 @@ float multifractalSimplex(vec2 position, float H, float lacunarity, float octave
 }
 
 
+
+// Multifractal : fractal system which has a different fractal dimension in different regions.
+float hybridMultifractal(vec2 position, float H, float lacunarity, float octaves, float offset) {
+
+    //float weight =(1-abs(perlin_noise(position))+ offset )  * pow(lacunarity, 0)/7.0f;
+	//first component
+	H = 0.25; lacunarity = 2.0; octaves = 15.0; offset = 0.7;
+	float frequency = 1.0f;
+	//float weight =(1-abs(perlin_noise(0.*position))+ offset )  * pow(frequency, -H);
+	float weight = (perlin_noise(1.5f*position)+ offset )  * pow(frequency, -H);
+    float signal = 0.0f;
+    float height =  weight;
+	position *= lacunarity;
+
+    // Loop will be unrolled by the compiler (GPU driver).
+    for (int k=1; k<octaves; k++) {
+        if ( weight > 1.0f )
+            weight = 1.0f;
+		frequency *= lacunarity;
+        signal = (perlin_noise(1.75f*position)+ offset )  * pow(frequency, -H);;
+        height += weight * signal;
+        weight *= signal;
+        position *= lacunarity;
+    }
+
+    return ((height - 1.5f)/6.0f + 0.035f);
+
+}
+
 void main() {
 
     // Perlin noise.
@@ -290,7 +296,7 @@ void main() {
     //Turbulence
     //height = turbulence(position2D, 1.1f, 10.0f, 10) / 2.0f;
 
-    int choice = 5;
+    /* int choice = 5;
 
     if(choice ==1){ //additive combination
         float heightFBM = (fBm(position2D, 1.1f, 10.0f, 10) / 2.0f) ;
@@ -362,9 +368,9 @@ void main() {
     // Ground floor (lake).
     //if (height < 0.0f)
         //height = 0.0f;
-
-	//height = (multifractal(position2D, 0.25f, 4.0f, 5, 0.75f) / 4.0f)-0.15f;
-
+ */
+		
+		height = hybridMultifractal(position2D, 0.25, 2.0f, 3.0f, 0.7f);
 }
 
 

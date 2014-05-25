@@ -201,8 +201,8 @@ void display() {
     /// Render opaque primitives on screen.
     terrain.draw(cameraProjection, cameraView, lightViewProjection, lightPositionWorld);
     skybox.draw(cameraProjection, cameraView);
-    cameraPath.draw(cameraProjection, cameraView);
-    cameraPictorial.draw(cameraProjection, cameraView, cameraPictorialModel);
+    //cameraPath.draw(cameraProjection, cameraView);
+    //cameraPictorial.draw(cameraProjection, cameraView, cameraPictorialModel);
 	
     //draw water map
 //   reflection.draw(cameraProjection, flippedcameraView, lightViewProjection, lightPositionWorld);
@@ -211,8 +211,8 @@ void display() {
     /// Render the translucent primitives last. Otherwise opaque objects that
     /// may be visible behind get discarded by the depth test.
     /// First control particle positions, then render them on screen.
-    particlesControl.draw();
-    particlesRender.draw(cameraProjection, cameraView);
+    //particlesControl.draw();
+    //particlesRender.draw(cameraProjection, cameraView);
 
 }
 

@@ -49,7 +49,7 @@ void main() {
 
     // View matrix transforms from world space to camera space.
     // Projection matrix transforms from camera space to clip space (homogeneous space).
-    vec4 vertexPositionCamera = view * vec4(vertexPosition3DWorld, 1.0);
+    vec4 vertexPositionCamera = view * vec4(vertexPosition3DWorld.xyz, 1.0);
     gl_Position = projection * vertexPositionCamera;
 
     // Transform vertex position from world space to light source clip space.

@@ -29,9 +29,10 @@ layout(location = 0) out vec4 color;
 
 // Different levels of height for texture mapping.
 const float ground = 0.008f;  //water height level
-const float sand = 0.015f;
-const float forest = 0.11f;
-const float snow = 0.1f;
+const float sandMin = 0.008f;
+const float sandMax = 0.025;
+const float forest = 0.16f;
+const float snowMin = 0.19f;
 
 
 vec3 compute_normal(vec3 position) {
@@ -61,23 +62,37 @@ vec3 compute_normal(vec3 position) {
 }
 
 
-vec3 texture_mapping(vec3 position, vec3 normal) {
+vec4 texture_mapping(vec3 position, vec3 normal) {
 
     // Color dependent on the elevation (similar to texture mapping).
-    vec3 mapped;
+    vec4 mapped;
 
-    float slope = smoothstep(0.45, 0.55 , normal.z);
+    float slope = smoothstep(0.35, 0.75 , normal.z);
 
-    if(position.z < ground) {
-        mapped = texture2D(sandTex, 60*position.xy).rgb;
-    } else if (position.z < sand) {
-        mapped = texture2D(sandTex, position.xy).rgb;
+	if (position.z < ground){
+		mapped = vec4(texture2D(sandTex, 60.0*position.xy).rgb, 0.8f);
+	} else if(position.z < sandMin) {	
+		mapped = vec4(texture2D(sandTex, 60.0*position.xy).rgb, 0.8f);	
+    } else if (position.z < sandMax) {		
+		float w = (position.z - sandMin)/(sandMax-sandMin);
+		vec4 sand = vec4(texture2D(sandTex, 60.0*position.xy).rgb, w);
+		vec4 stone = vec4(texture2D(stoneTex, 10.0*position.xy).rgb, 0.8f);
+        vec4 forest = vec4(texture2D(treeTex, 10.0*position.xy).rgb, 0.8f);
+		vec4 stone_forest = mix(stone, forest, slope);
+		mapped = mix(sand, stone_forest, w);
     } else if (position.z  < forest) {  //mix between forest and rock
-        vec3 stone = texture2D(stoneTex, 10*position.xy).rgb;
-        vec3 forest = texture2D(treeTex, 10*position.xy).rgb;
+        vec4 stone = vec4(texture2D(stoneTex, 10.0*position.xy).rgb, 0.8f);
+        vec4 forest = vec4(texture2D(treeTex, 10.0*position.xy).rgb, 0.8f);
         mapped = mix(stone, forest, slope);
+	} else if (position.z < snowMin) {
+		float w = (position.z - forest)/(snowMin-forest);
+		vec4 snow = vec4(texture2D(snowTex, 60.0*position.xy).rgb, 1-w);
+		vec4 stone = vec4(texture2D(stoneTex, 10.0*position.xy).rgb, w);
+        vec4 forest = vec4(texture2D(treeTex, 10.0*position.xy).rgb, w);
+		vec4 stone_forest = mix(stone, forest, slope);
+		mapped = mix(stone_forest, snow, w);
     } else {
-        mapped = texture2D(snowTex, position.xy).rgb;
+        mapped = vec4(texture2D(snowTex, 60.0*position.xy).rgb, 0.8);
     }
 
     return mapped;
@@ -119,32 +134,35 @@ void main() {
     vec3 normal = compute_normal(vertexPosition3DWorld);
 
     // Retrieve material properties.
-    vec3 material = texture_mapping(vertexPosition3DWorld, normal);
+    vec4 material =  texture_mapping(vertexPosition3DWorld, normal);
+
+	float opacity = 1.0f; //material.a;
 
     // Specular lightning only relevant for water surfaces.
     float ka, kd, ks;   
-    ka = 0.4f;
+    ka = 0.6f;
     kd = 0.7f;
 
 	//Diffuse component
 	vec3 ambient, diffuse;
 
 	// Compute diffuse : "color" of the object.
-	 diffuse = Id * kd * material * max(dot(normal,L),0.0);
+	 diffuse = Id * kd * vec3(material) * max(dot(normal,L),0.0);
 	
     // Compute ambient : simulates indirect lighting.
 	
 	/* different setting for snow */
-	if (vertexPosition3DModel.z >= forest){
-		ambient = vec3(0.9f,0.9f,0.9f)*0.8*material;
+	if (vertexPosition3DWorld.z >= forest){
+		ambient = vec3(0.9f,0.9f,0.9f)*0.8f*vec3(material);
 	} else {
-		ambient = Ia * ka * material;
+		ambient = Ia * ka * vec3(material);
 	}
 
     // Query the visibility.
     float visibility = shadowmap(ShadowCoord);
 
     // Assemble the colors. No specular term
-    color = vec4(ambient + visibility * diffuse, 0.8f);
+    color = vec4(ambient + visibility * diffuse, opacity);
+	//color = vec4(0.0, 0.0, 1.0, 1.0);
 
 }
