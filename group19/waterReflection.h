@@ -27,7 +27,7 @@ private:
 	unsigned int _lightMVPID;
 
 	//helper function
-	GLuint WaterReflection::load_texture(const char * imagepath) const; 
+    GLuint load_texture(const char * imagepath) const;
 
 };
 
