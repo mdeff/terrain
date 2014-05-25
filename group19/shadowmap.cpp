@@ -64,7 +64,7 @@ GLuint Shadowmap::init(Vertices* vertices, GLuint heightMapTexID) {
     }
 
     /// Set uniform IDs.
-    _lightMatrixID = glGetUniformLocation(_programID, "lightMVP");
+    _lightViewProjectionID = glGetUniformLocation(_programID, "lightViewProjection");
 
     /// Return the shadowmap texture ID (for the terrain).
     return shadowMapTexID;
@@ -72,13 +72,13 @@ GLuint Shadowmap::init(Vertices* vertices, GLuint heightMapTexID) {
 }
 
 
-void Shadowmap::draw(const mat4& lightMVP) const {
+void Shadowmap::draw(const mat4& lightViewProjection) const {
 
     /// Common drawing.
     RenderingContext::draw();
 
     /// Update the content of the uniforms.
-    glProgramUniformMatrix4fv(_programID, _lightMatrixID, 1, GL_FALSE, lightMVP.data());
+    glProgramUniformMatrix4fv(_programID, _lightViewProjectionID, 1, GL_FALSE, lightViewProjection.data());
 
     /// Clear the FBO.
     glClear(GL_DEPTH_BUFFER_BIT);

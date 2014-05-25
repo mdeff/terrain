@@ -20,7 +20,7 @@ Terrain::Terrain(unsigned int width, unsigned int height) :
 void Terrain::init(Vertices* vertices, GLuint heightMapTexID, GLuint shadowMapTexID) {
 
     /// Common initialization.
-    RenderingContext::init(vertices, terrain_vshader, terrain_fshader, "vertexPosition2DModel", 0);
+    RenderingContext::init(vertices, terrain_vshader, terrain_fshader, "vertexPosition2DWorld", 0);
 
     /// Bind the heightmap and shadowmap to textures 0 and 1.
     set_texture(0, heightMapTexID, "heightMapTex", GL_TEXTURE_2D);
@@ -52,26 +52,26 @@ void Terrain::init(Vertices* vertices, GLuint heightMapTexID, GLuint shadowMapTe
     glProgramUniform3fv(_programID, _IsID, 1, Is.data());
 
     /// Set uniform IDs.
-    _modelviewID = glGetUniformLocation(_programID, "modelview");
+    _viewID = glGetUniformLocation(_programID, "view");
     _projectionID = glGetUniformLocation(_programID, "projection");
-    _lightMVPID = glGetUniformLocation(_programID, "lightMVP");
-    _lightPositionModelID = glGetUniformLocation(_programID, "lightPositionModel");
+    _lightViewProjectionID = glGetUniformLocation(_programID, "lightViewProjection");
+    _lightPositionWorldID = glGetUniformLocation(_programID, "lightPositionWorld");
     _timeID = glGetUniformLocation(_programID, "time");
 
 }
 
 
-void Terrain::draw(const mat4& projection, const mat4& modelview,
-                   const mat4& lightMVP, const vec3& lightPositionModel) const {
+void Terrain::draw(const mat4& projection, const mat4& view,
+                   const mat4& lightViewProjection, const vec3& lightPositionWorld) const {
 
     /// Common drawing. 
     RenderingContext::draw();
 
     /// Update the content of the uniforms.
-    glProgramUniformMatrix4fv(_programID, _modelviewID, 1, GL_FALSE, modelview.data());
+    glProgramUniformMatrix4fv(_programID, _viewID, 1, GL_FALSE, view.data());
     glProgramUniformMatrix4fv(_programID, _projectionID, 1, GL_FALSE, projection.data());
-    glProgramUniformMatrix4fv(_programID, _lightMVPID, 1, GL_FALSE, lightMVP.data());
-    glProgramUniform3fv(_programID, _lightPositionModelID, 1, lightPositionModel.data());
+    glProgramUniformMatrix4fv(_programID, _lightViewProjectionID, 1, GL_FALSE, lightViewProjection.data());
+    glProgramUniform3fv(_programID, _lightPositionWorldID, 1, lightPositionWorld.data());
 
     /// Clear the default framebuffer (screen).
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

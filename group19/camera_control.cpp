@@ -46,6 +46,11 @@ void CameraControl::init(VerticesCameraPath* verticesCameraPath, GLuint heightMa
     _explorationMode = TRACKBALL;
     trackball(mat4::Identity());
 
+    /// HACK to show pictorial camera.
+    /// Simple translation along z-axis for now.
+    _cameraPictorialModel = mat4::Identity();
+    _cameraPictorialModel(2,3) = 0.5f;
+
 }
 
 void CameraControl::trackball(const mat4& model) {
@@ -381,7 +386,8 @@ void CameraControl::animatePictorialCamera(){ // wrong naming => use to follow t
 		else{
 			i=0;
 		}
-	}
+    }
+
 }
 
 void CameraControl::InitdeCasteljau4Points() {
@@ -1119,7 +1125,7 @@ void CameraControl::fpsExploration(){
 	}
 }
 
-void CameraControl::updateCameraPosition(mat4& cameraModelview) {
+void CameraControl::updateCameraPosition(mat4& cameraModelview, mat4& cameraPictorialModel) {
 
     /// Modify camera position according to the exploration mode.
     switch(_explorationMode) {
@@ -1137,8 +1143,12 @@ void CameraControl::updateCameraPosition(mat4& cameraModelview) {
         break;
     }
 
-    /// Update the transformation matrix.
+    /// Update the view transformation matrix.
     cameraModelview = _cameraModelview;
+
+    /// Update the camera pictorial model transformation matrix.
+    cameraPictorialModel = _cameraPictorialModel;
+
 }
 
 void CameraControl::handleCameraControls(int key, int action){

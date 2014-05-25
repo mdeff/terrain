@@ -11,8 +11,8 @@ uniform sampler2D sandTex, iceMoutainTex, treeTex, stoneTex, underWaterTex, snow
 
 
 
-// Vertices 3D position (after heightmap displacement) in model space.
-in vec3 vertexPosition3DModel;
+// Vertices 3D position (after heightmap displacement) in world space.
+in vec3 vertexPosition3DWorld;
 
 
 // Light and view directions.
@@ -102,10 +102,10 @@ void main() {
     vec3 V = normalize(viewDir);
 
     // Compute the normal.
-    vec3 normal = compute_normal(vertexPosition3DModel);
+    vec3 normal = compute_normal(vertexPosition3DWorld);
 
     // Retrieve material properties.
-    vec3 material = texture_mapping(vertexPosition3DModel, normal);
+    vec3 material = texture_mapping(vertexPosition3DWorld, normal);
 
     // Specular lightning only relevant for water surfaces.
     float power = 60.0f;

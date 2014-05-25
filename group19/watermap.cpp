@@ -23,7 +23,7 @@ Watermap::Watermap(unsigned int width, unsigned int height) :
 void Watermap::init(Vertices* vertices , GLuint reflectionID) {
 
   	 /// Common initialization.
-	RenderingContext::init(vertices, watermap_vshader, watermap_fshader, "vertexPosition2DModel", 0);	
+    RenderingContext::init(vertices, watermap_vshader, watermap_fshader, "vertexPosition2DWorld", 0);
 
 	//bind the reflection tex to texture 0
 	set_texture(0, reflectionID, "reflectionTex", GL_TEXTURE_2D);
@@ -48,17 +48,16 @@ void Watermap::init(Vertices* vertices , GLuint reflectionID) {
     glProgramUniform3fv(_programID, _IsID, 1, Is.data());
 
     /// Set uniform IDs.
-    _modelviewID = glGetUniformLocation(_programID, "modelview");
+    _viewID = glGetUniformLocation(_programID, "view");
     _projectionID = glGetUniformLocation(_programID, "projection");
-    _lightOffsetMVPID = glGetUniformLocation(_programID, "lightOffsetMVP");
-    _lightPositionModelID = glGetUniformLocation(_programID, "lightPositionModel");
+    _lightPositionWorldID = glGetUniformLocation(_programID, "lightPositionWorld");
     _timeID = glGetUniformLocation(_programID, "time");
-	_lightMVPID = glGetUniformLocation(_programID, "lightMVP");
+    _lightViewProjectionID = glGetUniformLocation(_programID, "lightViewProjection");
 }
 
 
-void Watermap::draw(const mat4& projection, const mat4& modelview,
-                   const mat4& lightMVP, const vec3& lightPositionModel) const {
+void Watermap::draw(const mat4& projection, const mat4& view,
+                   const mat4& lightViewProjection, const vec3& lightPositionWorld) const {
 	 // Enable blending
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -67,25 +66,14 @@ void Watermap::draw(const mat4& projection, const mat4& modelview,
     RenderingContext::draw();
 
     /// Update the content of the uniforms.
-    glProgramUniformMatrix4fv(_programID, _modelviewID, 1, GL_FALSE, modelview.data());
+    glProgramUniformMatrix4fv(_programID, _viewID, 1, GL_FALSE, view.data());
     glProgramUniformMatrix4fv(_programID, _projectionID, 1, GL_FALSE, projection.data());
-    glProgramUniformMatrix4fv(_programID, _lightMVPID, 1, GL_FALSE, lightMVP.data());
-    glProgramUniform3fv(_programID, _lightPositionModelID, 1, lightPositionModel.data());
+    glProgramUniformMatrix4fv(_programID, _lightViewProjectionID, 1, GL_FALSE, lightViewProjection.data());
+    glProgramUniform3fv(_programID, _lightPositionWorldID, 1, lightPositionWorld.data());
   
 	/// Time value which animates water
     static float time = 0;
     glProgramUniform1f(_programID, _timeID, int(time++)%5000);
-
-    /// Map from light-coordinates in (-1,-1)x(1,1) to texture
-    /// coordinates in (0,0)x(1,1).
-    mat4 offsetMatrix;
-    offsetMatrix <<
-            0.5f, 0.0f, 0.0f, 0.0f,
-            0.0f, 0.5f, 0.0f, 0.0f,
-            0.0f, 0.0f, 0.5f, 0.0f,
-            0.5f, 0.5f, 0.5f, 1.0f;
-    mat4 lightOffsetMVP = offsetMatrix * lightMVP;
-    glProgramUniformMatrix4fv(_programID, _lightOffsetMVPID, 1, GL_FALSE, lightMVP.data());
 
     /// Must not clear the buffer since it will delete the pre-drawn terrain
     //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

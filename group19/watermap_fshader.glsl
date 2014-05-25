@@ -11,8 +11,8 @@ uniform sampler2D reflectionTex;
 uniform sampler2D waterNormalMap;
 uniform sampler2D riverSurfaceMap;
 
-// Vertices 3D position (after heightmap displacement) in model space.
-in vec3 vertexPosition3DModel;
+// Vertices 3D position (after heightmap displacement) in world space.
+in vec3 vertexPosition3DWorld;
 
 in vec3 reflectionCoord;
 
@@ -30,7 +30,7 @@ void main()
     vec3 V = normalize(viewDir);
 
 	//current UV coordinate
-    vec2 UV = vec2((vertexPosition3DModel.xy +1.0)/2.0);
+    vec2 UV = vec2((vertexPosition3DWorld.xy +1.0)/2.0);
 	
 	//reflection UV
 	vec2 ref_UV = reflectionCoord.xy; //gl_FragCoord.xy * 0.5 + 0.5;	

@@ -20,7 +20,7 @@ WaterReflection::WaterReflection(unsigned int width, unsigned int height) :
 GLuint WaterReflection::init(Vertices* vertices, GLuint heightMapTexID) {
 
 	/// Common initialization.
-    RenderingContext::init(vertices, watereflection_vshader, watereflection_fshader, "vertexPosition2DModel", -1);
+    RenderingContext::init(vertices, watereflection_vshader, watereflection_fshader, "vertexPosition2DWorld", -1);
 
 	/// Bind the heightmap to texture 0.
     set_texture(0, heightMapTexID, "heightMapTex", GL_TEXTURE_2D);
@@ -83,17 +83,17 @@ GLuint WaterReflection::init(Vertices* vertices, GLuint heightMapTexID) {
 	
  
 	 /// Set uniform IDs.
-    _modelviewID = glGetUniformLocation(_programID, "modelview");
+    _viewID = glGetUniformLocation(_programID, "view");
     _projectionID = glGetUniformLocation(_programID, "projection");
     _lightOffsetMVPID = glGetUniformLocation(_programID, "lightOffsetMVP");
-    _lightPositionModelID = glGetUniformLocation(_programID, "lightPositionModel");
+    _lightPositionWorldID = glGetUniformLocation(_programID, "lightPositionWorld");
     
     /// Return the reflection texture ID
     return reflectionID;
 }
 
-void WaterReflection::draw(const mat4& projection, const mat4& modelview,
-                   const mat4& lightMVP, const vec3& lightPositionModel) const {
+void WaterReflection::draw(const mat4& projection, const mat4& view,
+                   const mat4& lightMVP, const vec3& lightPositionWorld) const {
 
 	
     /// Common drawing.
@@ -109,10 +109,10 @@ void WaterReflection::draw(const mat4& projection, const mat4& modelview,
 
     
     /// Update the content of the uniforms.
-    glProgramUniformMatrix4fv(_programID, _modelviewID, 1, GL_FALSE, modelview.data());
+    glProgramUniformMatrix4fv(_programID, _viewID, 1, GL_FALSE, view.data());
     glProgramUniformMatrix4fv(_programID, _projectionID, 1, GL_FALSE, projection.data());
     glProgramUniformMatrix4fv(_programID, _lightMVPID, 1, GL_FALSE, lightMVP.data());
-    glProgramUniform3fv(_programID, _lightPositionModelID, 1, lightPositionModel.data());
+    glProgramUniform3fv(_programID, _lightPositionWorldID, 1, lightPositionWorld.data());
   
 	
     /// Map from light-coordinates in (-1,-1)x(1,1) to texture

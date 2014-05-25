@@ -20,22 +20,22 @@ CameraPath::CameraPath(unsigned int width, unsigned int height) :
 void CameraPath::init(Vertices* vertices) {
 
     /// Common initialization.
-    RenderingContext::init(vertices, camera_path_vshader, camera_path_fshader, "vertexPosition3DModel", 0);
+    RenderingContext::init(vertices, camera_path_vshader, camera_path_fshader, "vertexPosition3DWorld", 0);
 
     /// Set uniform IDs.
-    _modelviewID = glGetUniformLocation(_programID, "modelview");
+    _viewID = glGetUniformLocation(_programID, "view");
     _projectionID = glGetUniformLocation(_programID, "projection");
 
 }
 
 
-void CameraPath::draw(const mat4& projection, const mat4& modelview) const {
+void CameraPath::draw(const mat4& projection, const mat4& view) const {
 
     /// Common drawing. 
     RenderingContext::draw();
 
     /// Update the content of the uniforms.
-    glProgramUniformMatrix4fv(_programID, _modelviewID, 1, GL_FALSE, modelview.data());
+    glProgramUniformMatrix4fv(_programID, _viewID, 1, GL_FALSE, view.data());
     glProgramUniformMatrix4fv(_programID, _projectionID, 1, GL_FALSE, projection.data());
 
     /// Do not clear the default framebuffer (screen) : done by Terrain.
