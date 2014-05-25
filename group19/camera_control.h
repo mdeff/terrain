@@ -69,6 +69,7 @@ private:
 	void animatePictorialCamera();
 	void MultipleBezier();
 	void createBCurve();
+	void MultipleBezier_controlled(int PointToChange, float deltaX, float deltaY, float deltaZ); 
 };
 
 #endif /* __camera_control_h__ */

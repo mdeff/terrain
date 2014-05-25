@@ -3,8 +3,8 @@
 #include <GL/glew.h>
 
 
-const GLfloat width  = 0.05f;
-const GLfloat height = 0.025f;
+const GLfloat width  = 0.025f;
+const GLfloat height = 0.05f;
 const GLfloat depth  = 0.1f;
 
 #define point1  0.00f,  0.000f, 0.0f
