@@ -30,7 +30,7 @@ void RenderingContext::init(Vertices* vertices, const char* vshader, const char*
     if(!_programID)
         exit(EXIT_FAILURE);
 
-	    glUseProgram(_programID);
+	   glUseProgram(_programID);
 
     /// Bind the vertex attribute ID to vertex data, if they exist.
     if(vertices != NULL && vertexAttribName != NULL) {

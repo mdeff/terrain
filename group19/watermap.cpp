@@ -74,6 +74,8 @@ void Watermap::draw(const mat4& projection, const mat4& view,
 	/// Time value which animates water
     static float time = 0;
     glUniform1f(_timeID, int(time++)%5000);
+	//not working 
+	//glProgramUniform1i(_programID, _timeID, int(time++)%5000);
 
     /// Must not clear the buffer since it will delete the pre-drawn terrain
     //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

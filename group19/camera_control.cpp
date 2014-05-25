@@ -21,7 +21,8 @@ static bool KeySPACE = false;
 static bool Key1 = false;
 static bool Key2 = false;
 static bool KeyENTER = false;
-
+static bool flagAnimatePictorialCamera=false;
+		
 static double pictorialCameraPos[3];
 static double pictorialCameraLookat[3];
 
@@ -367,33 +368,37 @@ void CameraControl::deCasteljauTest4Points(){ // wrong naming => use to follow t
 	}
 }
 
-void CameraControl::animatePictorialCamera(){ // wrong naming => use to follow the curve with the camera... 
+void CameraControl::animatePictorialCamera(){
 	static int i = 0;
 	
 	static double lastTime = glfwGetTime();
-    double currentTime = glfwGetTime();
-    float deltaT = float(currentTime - lastTime); //deltaT in sc 
 
-	if(deltaT>0.01){
+    if(i<(_cameraPath.size()/3)-1){
+
+	double currentTime = glfwGetTime();
+    float deltaT = float(currentTime - lastTime); //deltaT in sc 
+	if(deltaT>0.05){
 		lastTime = currentTime;
-    
-        if(i<(_cameraPath.size()/3)-1){
-			//std::cout<<i<<std::endl;
-            pictorialCameraPos[0] = _cameraPath[i*3+0];
-            pictorialCameraPos[1] = _cameraPath[i*3+1];
-            pictorialCameraPos[2] = _cameraPath[i*3+2];
-            pictorialCameraLookat[0] = _cameraPath[(i+1)*3+0];
-            pictorialCameraLookat[1] = _cameraPath[(i+1)*3+1];
-            pictorialCameraLookat[2] = _cameraPath[(i+1)*3+2];
-			i++;
+			std::cout<<i<<std::endl;
+			_cameraPictorialModel(0,3) = _cameraPath[i*3+0];
+			_cameraPictorialModel(1,3) = _cameraPath[i*3+1];
+			_cameraPictorialModel(2,3) = _cameraPath[i*3+2];
+
+        //  pictorialCameraPos[0] = _cameraPath[i*3+0];
+        //  pictorialCameraPos[1] = _cameraPath[i*3+1];
+        //  pictorialCameraPos[2] = _cameraPath[i*3+2];
+        //  pictorialCameraLookat[0] = _cameraPath[(i+1)*3+0];
+        //  pictorialCameraLookat[1] = _cameraPath[(i+1)*3+1];
+        //  pictorialCameraLookat[2] = _cameraPath[(i+1)*3+2];
+		i++;
 		}
-		else{
-			i=0;
-		}
+		
     }
+	else{
+		i=0;
+	}
 
 }
-
 
 void CameraControl::InitdeCasteljauSubdivision(){
 
@@ -1117,6 +1122,8 @@ void CameraControl::updateCameraPosition(mat4& cameraModelview, mat4& cameraPict
         break;
     }
 
+	if(flagAnimatePictorialCamera==true)
+		animatePictorialCamera();
     /// Update the view transformation matrix.
     cameraModelview = _cameraModelview;
 
@@ -1219,6 +1226,9 @@ void CameraControl::handleCameraControls(int key, int action){
 				if(_explorationMode == FLYING){
 					KeyENTER = true;
 				}
+				break;
+			case 309://7
+				flagAnimatePictorialCamera=!flagAnimatePictorialCamera;
 		}
 	}
 }
