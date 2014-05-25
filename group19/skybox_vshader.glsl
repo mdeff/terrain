@@ -5,7 +5,12 @@ uniform mat4 modelview;
 uniform mat4 projection;
 
 // Vertices 3D position in model space.
-in vec3 vertexPosition3DModel;
+layout(location = 0) in vec3 vertexPosition3DModel;
+
+// Vertex position (mandatory output).
+out gl_PerVertex {
+    vec4 gl_Position;
+};
 
 // 3D texture coordinates.
 out vec3 texCoords;

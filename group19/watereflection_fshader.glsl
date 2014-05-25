@@ -18,8 +18,7 @@ in vec3 vertexPosition3DModel;
 // Light and view directions.
 in vec3 lightDir, viewDir;
 
-// First output buffer is pixel color.
-// gl_FragColor
+// First output buffer is pixel color (mandatory output, gl_FragColor).
 layout(location = 0) out vec4 color;
 
 

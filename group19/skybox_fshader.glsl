@@ -6,7 +6,7 @@ uniform samplerCube skyboxTex;
 // 3D texture coordinates.
 in vec3 texCoords;
 
-// First output buffer is pixel color.
+// First output buffer is pixel color (mandatory output, gl_FragColor).
 layout(location = 0) out vec3 color;
 
 

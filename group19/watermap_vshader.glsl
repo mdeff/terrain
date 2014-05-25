@@ -13,10 +13,14 @@ uniform mat4 lightOffsetMVP;
 // Light source position in model space.
 uniform vec3 lightPositionModel;
 
-
 // Vertices 2D position in model space.
 // First input buffer. Defined here, retrieved in C++ by glGetAttribLocation.
 layout(location = 0) in vec2 vertexPosition2DModel;
+
+// Vertex position (mandatory output).
+out gl_PerVertex {
+    vec4 gl_Position;
+};
 
 // Vertices 3D position (after heightmap displacement) in model space.
 out vec3 vertexPosition3DModel;

@@ -1,10 +1,15 @@
 #version 330 core
 
-//Light properties
+// Light properties.
 uniform vec3 Ia, Id, Is;
 
-//Time for water animation
+// Time for water animation.
 uniform float time;
+
+// Textures.
+uniform sampler2D reflectionTex;
+uniform sampler2D waterNormalMap;
+uniform sampler2D riverSurfaceMap;
 
 // Vertices 3D position (after heightmap displacement) in model space.
 in vec3 vertexPosition3DModel;
@@ -14,13 +19,8 @@ in vec3 reflectionCoord;
 // Light and view directions.
 in vec3 lightDir, viewDir;
 
-// First output buffer is pixel color.
-// gl_FragColor
+// First output buffer is pixel color (mandatory output, gl_FragColor).
 layout(location = 0) out vec4 color;
-
-uniform sampler2D reflectionTex;
-uniform sampler2D waterNormalMap;
-uniform sampler2D riverSurfaceMap;
 
 
 void main()

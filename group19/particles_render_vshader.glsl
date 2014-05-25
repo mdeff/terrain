@@ -10,11 +10,11 @@ uniform sampler1D particlesPosTex;
 // Index of the current vertex defines the index in the position texture.
 in int gl_VertexID;
 
-// Vertex position.
-out vec4 gl_Position;
-
-// Size of the point when drawn as GL_POINTS.
-out float gl_PointSize;
+// Vertex position (mandatory output) and point size when drawn as GL_POINTS.
+out gl_PerVertex {
+    vec4 gl_Position;
+    float gl_PointSize;
+};
 
 
 void main() {

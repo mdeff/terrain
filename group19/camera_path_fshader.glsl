@@ -1,6 +1,6 @@
 #version 330 core
 
-// First output buffer is pixel color.
+// First output buffer is pixel color (mandatory output, gl_FragColor).
 layout(location = 0) out vec3 color;
 
 

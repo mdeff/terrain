@@ -24,14 +24,17 @@ uniform sampler2D riverSurfaceMap;
 // First input buffer. Defined here, retrieved in C++ by glGetAttribLocation.
 layout(location = 0) in vec2 vertexPosition2DModel;
 
+// Vertex position (mandatory output) and clip distance.
+out gl_PerVertex {
+    vec4 gl_Position;
+    float gl_ClipDistance[];
+};
+
 // Vertices 3D position (after heightmap displacement) in model space.
 out vec3 vertexPosition3DModel;
 
 // Light and view directions.
 out vec3 lightDir, viewDir;
-
-
-out float gl_ClipDistance[1];
 
 
 void main() {
