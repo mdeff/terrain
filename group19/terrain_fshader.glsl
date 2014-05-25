@@ -92,16 +92,21 @@ vec3 texture_mapping(vec3 position, vec3 normal) {
         vec3 forest = texture2D(treeTex, 10.0*position.xy).rgb;
         mapped = mix(stone, forest, slope);
     } else if (position.z < snowMin) {
-        float w = (position.z - forest)/(snowMin-forest);
+        float w = (position.z - forest)/(snowMin-forest) + rand(position.xy)/20.0f;
         vec4 snow = vec4(texture2D(snowTex, 30.0*position.xy).rgb, w);
         vec3 stone = texture2D(stoneTex, 10.0*position.xy).rgb;
         vec3 forest = texture2D(treeTex, 10.0*position.xy).rgb;
-        vec4 stone_forest = vec4(mix(stone, forest, slope), 1.0 - w);
-		float weight = smoothstep(0.35, 0.65, rand(vec2(w,w)));
+        vec4 stone_forest = vec4(mix(stone, forest, slope/2.0), 1.0 - w);
+        vec4 tmp = mix(stone_forest, snow, w);
+		mapped = vec3(tmp); //vec3(mix(tmp, snow, 0.8));
+    } else {
+        float w = (position.z - forest)/(snowMin-forest) + rand(position.xy)/20.0f;
+        vec4 snow = vec4(texture2D(snowTex, 60.0*position.xy).rgb, w);
+        vec3 stone = texture2D(stoneTex, 10.0*position.xy).rgb;
+        vec3 forest = texture2D(treeTex, 10.0*position.xy).rgb;
+        vec4 stone_forest = vec4(mix(stone, forest, slope/2.0), 1.0 - w + 0.3);
         vec4 tmp = mix(stone_forest, snow, w);
 		mapped = vec3(tmp);
-    } else {
-        mapped = texture2D(snowTex, 30.0*position.xy).rgb;
     }
 
     return mapped;
@@ -154,8 +159,8 @@ void main() {
 
     // Specular lightning only relevant for water surfaces.
     float ka, kd, ks;
-    ka = 0.6f;
-    kd = 0.7f;
+    ka = 0.4f;
+    kd = 0.6f;
 
     //Diffuse component
     vec3 ambient, diffuse;
