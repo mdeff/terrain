@@ -25,11 +25,12 @@ static bool KeyENTER = false;
 static double pictorialCameraPos[3];
 static double pictorialCameraLookat[3];
 
-void CameraControl::init(VerticesCameraPath* verticesCameraPath, GLuint heightMapTexID) {
+void CameraControl::init(VerticesCameraPath* verticesCameraPath, VerticesCameraPath* verticesCameraPathControls, GLuint heightMapTexID) {
 
     /// The camera control can change the camera path. It should thus have
     /// access to the path vertices object.
     _verticesCameraPath = verticesCameraPath;
+    _verticesCameraPathControls = verticesCameraPathControls;
 
     /// Copy the heightmap texture to CPU. Used by FPS exploration mode to
     /// follow the terrain.
@@ -406,6 +407,20 @@ void CameraControl::InitdeCasteljau4Points() {
     const float b2X =  0.31f,b2Y = -2.08f,b2Z =  0.50f;
     const float b3X =  0.55f,b3Y =  0.39f,b3Z =  0.30f;
 
+    /// Fill the control points vector.
+    _userBCurve.push_back(b0X);
+    _userBCurve.push_back(b0Y);
+    _userBCurve.push_back(b0Z);
+    _userBCurve.push_back(b1X);
+    _userBCurve.push_back(b1Y);
+    _userBCurve.push_back(b1Z);
+    _userBCurve.push_back(b2X);
+    _userBCurve.push_back(b2Y);
+    _userBCurve.push_back(b2Z);
+    _userBCurve.push_back(b3X);
+    _userBCurve.push_back(b3Y);
+    _userBCurve.push_back(b3Z);
+
     /// Choose the resolution.
     const unsigned int nPoints = 768;
 
@@ -425,8 +440,9 @@ void CameraControl::InitdeCasteljau4Points() {
 	std::cout<<"decastljau computed in "<<deltaT<<" sc with N = "<< _bezierCurve.size()<<" points"<<std::endl;
 	lastTime = currentTime;
 
-	 /// Copy the vertices to GPU.
-    _verticesCameraPath ->copy(_bezierCurve.data(), _bezierCurve.size());
+     /// Copy the vertices to GPU.
+    _verticesCameraPath->copy(_bezierCurve.data(), _bezierCurve.size());
+    _verticesCameraPathControls->copy(_userBCurve.data(), _userBCurve.size());
 
 }
 

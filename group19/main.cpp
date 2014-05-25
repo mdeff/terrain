@@ -4,6 +4,7 @@
 #include <sstream>
 
 #include "common.h"
+#include "rendering_simple.h"
 #include "heightmap.h"
 #include "shadowmap.h"
 #include "watermap.h"
@@ -13,8 +14,6 @@
 #include "particles_render.h"
 #include "terrain.h"
 #include "camera_control.h"
-#include "camera_path.h"
-#include "camera_pictorial.h"
 #include "vertices.h"
 #include "vertices_quad.h"
 #include "vertices_grid.h"
@@ -37,8 +36,8 @@ const unsigned int nParticlesSide(20);
 /// Instanciate the rendering contexts that render to the screen.
 Skybox skybox(windowWidth, windowHeight);
 Terrain terrain(windowWidth, windowHeight);
-CameraPath cameraPath(windowWidth, windowHeight);
-CameraPictorial cameraPictorial(windowWidth, windowHeight);
+RenderingSimple cameraPath(windowWidth, windowHeight);
+RenderingSimple cameraPictorial(windowWidth, windowHeight);
 ParticlesRender particlesRender(windowWidth, windowHeight, nParticlesSide);
 
 /// Instanciate the rendering contexts that render to FBO.
@@ -56,6 +55,7 @@ Vertices* verticesQuad = new VerticesQuad();
 Vertices* verticesGrid = new VerticesGrid();
 Vertices* verticesSkybox = new VerticesSkybox();
 VerticesCameraPath* verticesCameraPath = new VerticesCameraPath();
+VerticesCameraPath* verticesCameraPathControls = new VerticesCameraPath();
 VerticesCameraPictorial* verticesCameraPictorial = new VerticesCameraPictorial();
 
 /// Matrices that have to be shared between functions.
@@ -137,6 +137,7 @@ void init() {
     verticesGrid->generate();
     verticesSkybox->generate();
     verticesCameraPath->generate();
+    verticesCameraPathControls->generate();
     verticesCameraPictorial->generate();
 
     /// Generate the heightmap texture.
@@ -163,7 +164,7 @@ void init() {
 
     /// CameraPath is a rendering object.
     /// Camera is able to change the rendered vertices.
-    cameraControl.init(verticesCameraPath, heightMapTexID);
+    cameraControl.init(verticesCameraPath, verticesCameraPathControls, heightMapTexID);
     cameraPath.init(verticesCameraPath);
     cameraPictorial.init(verticesCameraPictorial);
 
@@ -201,9 +202,9 @@ void display() {
     /// Render opaque primitives on screen.
     terrain.draw(cameraProjection, cameraView, lightViewProjection, lightPositionWorld);
     skybox.draw(cameraProjection, cameraView);
-    cameraPath.draw(cameraProjection, cameraView);
-    cameraPictorial.draw(cameraProjection, cameraView, cameraPictorialModel);
-	
+    cameraPath.draw(cameraProjection, cameraView, mat4::Identity(), vec3(1,0,0));
+    cameraPictorial.draw(cameraProjection, cameraView, cameraPictorialModel, vec3(1,1,0));
+
     //draw water map
 //   reflection.draw(cameraProjection, flippedcameraView, lightViewProjection, lightPositionWorld);
     water.draw(cameraProjection, cameraView, lightViewProjection, lightPositionWorld);

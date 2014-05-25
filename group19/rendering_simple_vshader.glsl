@@ -8,6 +8,11 @@ uniform mat4 model;
 // Vertices 3D position in model space.
 in vec3 vertexPosition3DModel;
 
+// Vertex position (mandatory output).
+out gl_PerVertex {
+    vec4 gl_Position;
+};
+
 
 void main() {
 

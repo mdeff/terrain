@@ -14,7 +14,7 @@ class CameraControl {
 public:
 
     /// Camera control interface.
-    void init(VerticesCameraPath* verticesCameraPath, unsigned int heightMapTexID);
+    void init(VerticesCameraPath* verticesCameraPath, VerticesCameraPath* verticesCameraPathControls, unsigned int heightMapTexID);
     void trackball(const mat4& model);
     void updateCameraPosition(mat4& cameraModelview, mat4& cameraPictorialModel);
     void handleCameraControls(int key, int action);
@@ -35,6 +35,7 @@ private:
 
     /// Handle to camera path vertices.
     VerticesCameraPath* _verticesCameraPath;
+    VerticesCameraPath* _verticesCameraPathControls;
 
     /// Heightmap texture (copied back to CPU).
     float* _heightmapCPU;

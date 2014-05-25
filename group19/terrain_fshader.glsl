@@ -135,7 +135,7 @@ void main() {
     // Compute ambient : simulates indirect lighting.
 	
 	/* different setting for snow */
-	if (vertexPosition3DModel.z >= forest){
+        if (vertexPosition3DWorld.z >= forest){
 		ambient = vec3(0.9f,0.9f,0.9f)*0.8*material;
 	} else {
 		ambient = Ia * ka * material;
