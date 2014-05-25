@@ -21,7 +21,7 @@ Heightmap::Heightmap(unsigned int width, unsigned int height) :
 GLuint Heightmap::init(Vertices* vertices) {
 
     /// Common initialization.
-    RenderingContext::init(vertices, heightmap_vshader, heightmap_fshader, "vertexPosition2D", -1);
+    RenderingContext::init(vertices, heightmap_vshader, heightmap_fshader, NULL, "vertexPosition2D", -1);
 
     /// Create and bind the permutation table to texture 0.
     GLuint permTableTexID = gen_permutation_table();
@@ -62,7 +62,7 @@ GLuint Heightmap::init(Vertices* vertices) {
     GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0};
     glDrawBuffers(1, drawBuffers);
 
-    /// Check that our framebuffer is complete.
+    /// Check that our framebuffer object (FBO) is complete.
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
         std::cerr << "Heightmap framebuffer not complete." << std::endl;
         exit(EXIT_FAILURE);

@@ -32,6 +32,9 @@ We did implement all the basic
 
 \subsection{Advanced}
 
+\subsubsection{Pictorial camera}
+
+
 \subsubsection{Particle system}
 
 The cheapest way to display particles is to use sprites: polygons that face the camera
@@ -60,6 +63,10 @@ In our implementation, particles that fall below the water level are reseted to 
 
 discard is not used
 
+\subsubsection{Water reflection}
+
+For the water reflection effect, we should render the terrain from a flipped camera position. The terrain is thus rendered two times. It is rendered a first time with the real camera position to the default framebuffer (screen) and a second time with a flipped virtual camera position to a texture which is attached to a framebuffer object. The texture is later used to render the water surface.
+
 \section{Improvements on last stage}
 
 \subsection{Code cleanup}
@@ -68,7 +75,9 @@ As this hand-in is the last opportunity to modify our code, we put great effort 
 
 Redeclare the GLSL built-in blocks : \texttt{gl\_PerVertex} to be able to use separable program objects.\footnote{\url{http://www.geeks3d.com/20130106/nvidia-updates-its-opengl-sdk/}}
 
-By testing our code on Window and Linux with a combination of ATI and Nvidia hardware and drivers, we found quite some interesting corner-cases where the OpenGL specification is not entirely met. An example is the size of the \texttt{gl\_ClipDistance} array of the \texttt{gl\_PerVertex} block. According to the spec\footnote{\url{https://www.opengl.org/sdk/docs/man4/html/gl\_ClipDistance.xhtml}}
+Use \texttt{glProgramUniform} instead of \texttt{glUniform}. The former takes a program ID argument which indicates in which program it should retrieve the uniform ID. Using this function it is no more needed to have the program marked as used by \texttt{glUseProgram}.
+
+By testing our code on Window and Linux with a combination of ATI and Nvidia hardware and drivers, we found quite some interesting corner-cases where the OpenGL specification is not entirely met. An example is the size of the \texttt{gl\_ClipDistance} array of the \texttt{gl\_PerVertex} block. According to the spec\footnote{\url{https://www.opengl.org/sdk/docs/man4/html/gl\_ClipDistance.xhtml}}, the
 
 \subsection{Vertices object}
 

@@ -4,17 +4,16 @@
 #include <sstream>
 
 #include "common.h"
+#include "rendering_simple.h"
 #include "heightmap.h"
 #include "shadowmap.h"
 #include "watermap.h"
-#include "waterReflection.h"
 #include "skybox.h"
 #include "particles_control.h"
 #include "particles_render.h"
 #include "terrain.h"
 #include "camera_control.h"
-#include "camera_path.h"
-#include "camera_pictorial.h"
+#include "camera_path_control_points.h"
 #include "vertices.h"
 #include "vertices_quad.h"
 #include "vertices_grid.h"
@@ -36,9 +35,10 @@ const unsigned int nParticlesSide(20);
 
 /// Instanciate the rendering contexts that render to the screen.
 Skybox skybox(windowWidth, windowHeight);
-Terrain terrain(windowWidth, windowHeight);
-CameraPath cameraPath(windowWidth, windowHeight);
-CameraPictorial cameraPictorial(windowWidth, windowHeight);
+Terrain terrain(windowWidth, windowHeight, textureWidth, textureHeight);
+RenderingSimple cameraPictorial(windowWidth, windowHeight);
+RenderingSimple cameraPath(windowWidth, windowHeight);
+CameraPathControlPoints cameraPathControlPoints(windowWidth, windowHeight);
 ParticlesRender particlesRender(windowWidth, windowHeight, nParticlesSide);
 
 /// Instanciate the rendering contexts that render to FBO.
@@ -46,7 +46,6 @@ Shadowmap shadowmap(textureWidth, textureHeight);
 ParticlesControl particlesControl(nParticlesSide);
 
 Watermap water(windowWidth, windowHeight);
-WaterReflection reflection(windowWidth, windowHeight);
 
 /// Camera position controller.
 CameraControl cameraControl;
@@ -56,6 +55,7 @@ Vertices* verticesQuad = new VerticesQuad();
 Vertices* verticesGrid = new VerticesGrid();
 Vertices* verticesSkybox = new VerticesSkybox();
 VerticesCameraPath* verticesCameraPath = new VerticesCameraPath();
+VerticesCameraPath* verticesCameraPathControls = new VerticesCameraPath();
 VerticesCameraPictorial* verticesCameraPictorial = new VerticesCameraPictorial();
 
 /// Matrices that have to be shared between functions.
@@ -127,9 +127,6 @@ void init() {
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 	glEnable(GL_CLIP_DISTANCE0);
-
-	//glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glEnable(GL_BLEND);
     //glEnable(GL_CULL_FACE);
 
     /// Generate the vertices.
@@ -137,6 +134,7 @@ void init() {
     verticesGrid->generate();
     verticesSkybox->generate();
     verticesCameraPath->generate();
+    verticesCameraPathControls->generate();
     verticesCameraPictorial->generate();
 
     /// Generate the heightmap texture.
@@ -149,12 +147,10 @@ void init() {
 
     /// Initialize the rendering contexts.
     GLuint shadowMapTexID = shadowmap.init(verticesGrid, heightMapTexID);
-    terrain.init(verticesGrid, heightMapTexID, shadowMapTexID);
+    GLuint flippedTerrainTexID = terrain.init(verticesGrid, heightMapTexID, shadowMapTexID);
     skybox.init(verticesSkybox);
-	//init water part
-	GLuint reflectionID = reflection.init(verticesGrid, heightMapTexID);
-    water.init(verticesGrid, reflectionID);
-    
+//    water.init(verticesGrid, flippedTerrainTexID);
+    water.init(verticesQuad, flippedTerrainTexID);
 
     /// Pass the particles position textures from control to render.
     GLuint particlePosTexID[2];
@@ -163,9 +159,10 @@ void init() {
 
     /// CameraPath is a rendering object.
     /// Camera is able to change the rendered vertices.
-    cameraControl.init(verticesCameraPath, heightMapTexID);
-    cameraPath.init(verticesCameraPath);
+    cameraControl.init(verticesCameraPath, verticesCameraPathControls, heightMapTexID);
     cameraPictorial.init(verticesCameraPictorial);
+    cameraPath.init(verticesCameraPath);
+    cameraPathControlPoints.init(verticesCameraPathControls);
 
     /// Initialize the light position.
     keyboard_callback(50, GLFW_PRESS);
@@ -188,8 +185,9 @@ void display() {
 
     /// Control the camera position.
     /// Should come before rendering as it updates the view transformation matrix.
-    mat4 cameraView, cameraPictorialModel;
-    cameraControl.updateCameraPosition(cameraView, cameraPictorialModel);
+    mat4 cameraView, flippedCameraView, cameraPictorialModel;
+    int selectedControlPoint;
+    cameraControl.updateCameraPosition(cameraView, flippedCameraView, cameraPictorialModel, selectedControlPoint);
 
     /// Generate the shadowmap.
     /// Should come before rendering as it updates the light transformation matrices.
@@ -199,13 +197,20 @@ void display() {
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     /// Render opaque primitives on screen.
-    terrain.draw(cameraProjection, cameraView, lightViewProjection, lightPositionWorld);
+    terrain.draw(cameraProjection, cameraView, flippedCameraView, lightViewProjection, lightPositionWorld);
     skybox.draw(cameraProjection, cameraView);
+
     //cameraPath.draw(cameraProjection, cameraView);
     //cameraPictorial.draw(cameraProjection, cameraView, cameraPictorialModel);
 	
     //draw water map
 //   reflection.draw(cameraProjection, flippedcameraView, lightViewProjection, lightPositionWorld);
+
+    cameraPictorial.draw(cameraProjection, cameraView, cameraPictorialModel, vec3(1,1,0));
+    cameraPath.draw(cameraProjection, cameraView, mat4::Identity(), vec3(0,1,0));
+    cameraPathControlPoints.draw(cameraProjection, cameraView, selectedControlPoint);
+
+
     water.draw(cameraProjection, cameraView, lightViewProjection, lightPositionWorld);
 
     /// Render the translucent primitives last. Otherwise opaque objects that

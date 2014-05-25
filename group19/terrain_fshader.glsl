@@ -120,9 +120,7 @@ float shadowmap(vec3 coord) {
     float visibility = texture(shadowMapTex, UVC);
 
     return visibility;
-
 }
-
 
 void main() {
 
@@ -136,16 +134,17 @@ void main() {
     // Retrieve material properties.
     vec4 material =  texture_mapping(vertexPosition3DWorld, normal);
 
-	float opacity = 1.0f; //material.a;
+	float opacity = 0.8f; //material.a;
 
     // Specular lightning only relevant for water surfaces.
     float ka, kd, ks;   
     ka = 0.6f;
     kd = 0.7f;
 
-	//Diffuse component
-	vec3 ambient, diffuse;
+    //Diffuse component
+    vec3 ambient, diffuse;
 
+  
 	// Compute diffuse : "color" of the object.
 	 diffuse = Id * kd * vec3(material) * max(dot(normal,L),0.0);
 	
@@ -157,12 +156,15 @@ void main() {
 	} else {
 		ambient = Ia * ka * vec3(material);
 	}
+	
 
     // Query the visibility.
     float visibility = shadowmap(ShadowCoord);
 
     // Assemble the colors. No specular term
+
     color = vec4(ambient + visibility * diffuse, opacity);
 	//color = vec4(0.0, 0.0, 1.0, 1.0);
+
 
 }

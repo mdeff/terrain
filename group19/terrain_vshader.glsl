@@ -10,27 +10,27 @@ uniform mat4 lightViewProjection;
 // Light source position in world space.
 uniform vec3 lightPositionWorld;
 
-// Time for water animation.
-uniform float time;
+// Indicate if below water level geometry should be rendered or cliped.
+// Clip is 1 for normal rendering and 0 for flipped rendering to texture.
+uniform float clip;
 
 // Texture 0. Defined by glActiveTexture and passed by glUniform1i.
 uniform sampler2D heightMapTex;
-uniform sampler2D riverSurfaceMap;
 
 // Vertices 2D position in world space.
 // First input buffer. Defined here, retrieved in C++ by glGetAttribLocation.
 layout(location = 0) in vec2 vertexPosition2DWorld;
 
-// Vertex position (mandatory output).
+// Vertex position (mandatory output) and distance to clip plane.
 out gl_PerVertex {
     vec4 gl_Position;
+    float gl_ClipDistance[1];
 };
 
 // Vertices 3D position (after heightmap displacement) in world space.
 out vec3 vertexPosition3DWorld;
 
 // Vertex position in light source clip space.
-//out vec4
 out vec3 ShadowCoord;
 
 // Light and view directions.
@@ -63,5 +63,10 @@ void main() {
     // No need to normalize as interpolation will not preserve vector lengths.
     lightDir = lightPositionWorld - vertexPosition3DWorld;
     viewDir = vec3(vertexPositionCamera);
+
+    // Compute clip distance. Vertex is discarded if clip distance is negative.
+    // Our clip plane is simply the water level, i.e. z = 0.
+    // Clip is 1 for normal rendering and 0 for flipped rendering to texture.
+    gl_ClipDistance[0] = vertexPosition3DWorld.z * clip;
 
 }

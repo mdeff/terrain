@@ -21,15 +21,17 @@ static bool KeySPACE = false;
 static bool Key1 = false;
 static bool Key2 = false;
 static bool KeyENTER = false;
-
+static bool flagAnimatePictorialCamera=false;
+		
 static double pictorialCameraPos[3];
 static double pictorialCameraLookat[3];
 
-void CameraControl::init(VerticesCameraPath* verticesCameraPath, GLuint heightMapTexID) {
+void CameraControl::init(VerticesCameraPath* verticesCameraPath, VerticesCameraPath* verticesCameraPathControls, GLuint heightMapTexID) {
 
     /// The camera control can change the camera path. It should thus have
     /// access to the path vertices object.
     _verticesCameraPath = verticesCameraPath;
+    _verticesCameraPathControls = verticesCameraPathControls;
 
     /// Copy the heightmap texture to CPU. Used by FPS exploration mode to
     /// follow the terrain.
@@ -38,7 +40,7 @@ void CameraControl::init(VerticesCameraPath* verticesCameraPath, GLuint heightMa
     glGetTexImage(GL_TEXTURE_2D, 0, GL_RED, GL_FLOAT, _heightmapCPU);
 
     /// Generate the camera path.
-    InitdeCasteljau4Points();
+    bezier_4_points(0, 0, 0, 0);
    // InitdeCasteljauSubdivision();
     //InitSubdivision();
 
@@ -50,6 +52,9 @@ void CameraControl::init(VerticesCameraPath* verticesCameraPath, GLuint heightMa
     /// Simple translation along z-axis for now.
     _cameraPictorialModel = mat4::Identity();
     _cameraPictorialModel(2,3) = 0.5f;
+
+    /// Control point curently modified.
+    _selectedControlPoint = 0;
 
 }
 
@@ -63,8 +68,12 @@ void CameraControl::trackball(const mat4& model) {
     /// View matrix (camera extrinsics) (position in world space).
 
     /// Camera is in the sky, looking down.
+
     vec3 camPos(0.5f, -0.5f, 0.8f);
 	//vec3 camPos(2.5f, -2.5f, 2.8f);
+
+//    vec3 camPos(0.0f, -1.5f, 0.8f);
+
 //    vec3 camLookAt(0.0f, 0.0f, 0.0f);
 //    vec3 camUp(0.0f, 0.0f, 1.0f);
 
@@ -98,16 +107,17 @@ void CameraControl::trackball(const mat4& model) {
 //    vec3 camLookAt(-0.3f, 0.1f, 0.2f);
 //    vec3 camUp(0.0f, 0.0f, 1.0f);
 
-//    vec3 flippedCamPos = vec3(camPos[0], camPos[1],  2*GROUND_HEIGHT - camPos[2]);
 
     /// Assemble the view matrix.
     mat4 view = Eigen::lookAt(camPos, camLookAt, camUp);
-//    mat4 flippedView = Eigen::lookAt(flippedCamPos, camLookAt, camUp);
 
     /// Assemble the "Model View" matrix.
     _cameraModelview = view * model;
-    // Calculate the Model View matrix of flipped camera
-//    flippedCameraModelview = flippedView * model;
+
+    /// Compute the view matrix for a z-axis flipped camera (water reflection).
+    vec3 flippedCamPos = vec3(camPos[0], camPos[1], -camPos[2]);
+    mat4 flippedView = Eigen::lookAt(flippedCamPos, camLookAt, camUp);
+    _flippedCameraModelview = flippedView * model;
 
 }
 
@@ -120,6 +130,11 @@ void CameraControl::update_camera_modelview(double posX,double posY,double posZ,
 	vec3 camUp(0.0f,0.0f,1.0f);
 	
     _cameraModelview = Eigen::lookAt(camPos, camLookAt, camUp);
+
+    /// Compute the view matrix for a z-axis flipped camera (water reflection).
+    vec3 flippedCamPos = vec3(camPos[0], camPos[1], -camPos[2]);
+    _flippedCameraModelview = Eigen::lookAt(flippedCamPos, camLookAt, camUp);
+
 	//std::cout<<(powf(posX-lookX,2)+powf(posY-lookY,2)+powf(posZ-lookZ,2))<<endl;
 
 	/*
@@ -346,15 +361,15 @@ void CameraControl::deCasteljauTest4Points(){ // wrong naming => use to follow t
 	if(deltaT>0.01){
 		lastTime = currentTime;
     
-		if(i<(_bezierCurve.size()/3)-1){
+        if(i<(_cameraPath.size()/3)-1){
 			//std::cout<<i<<std::endl;
-			double posX	= _bezierCurve[i*3+0];
-			double posY	= _bezierCurve[i*3+1];
-			double posZ	= _bezierCurve[i*3+2];
+            double posX	= _cameraPath[i*3+0];
+            double posY	= _cameraPath[i*3+1];
+            double posZ	= _cameraPath[i*3+2];
 
-			double lookX = _bezierCurve[(i+1)*3+0];
-			double lookY = _bezierCurve[(i+1)*3+1];
-			double lookZ = _bezierCurve[(i+1)*3+2];
+            double lookX = _cameraPath[(i+1)*3+0];
+            double lookY = _cameraPath[(i+1)*3+1];
+            double lookZ = _cameraPath[(i+1)*3+2];
 			i++;
 			update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
 		}
@@ -364,70 +379,35 @@ void CameraControl::deCasteljauTest4Points(){ // wrong naming => use to follow t
 	}
 }
 
-void CameraControl::animatePictorialCamera(){ // wrong naming => use to follow the curve with the camera... 
+void CameraControl::animatePictorialCamera(){
 	static int i = 0;
 	
 	static double lastTime = glfwGetTime();
-    double currentTime = glfwGetTime();
-    float deltaT = float(currentTime - lastTime); //deltaT in sc 
 
-	if(deltaT>0.01){
-		lastTime = currentTime;
-    
-		if(i<(_bezierCurve.size()/3)-1){
-			//std::cout<<i<<std::endl;
-			pictorialCameraPos[0] = _bezierCurve[i*3+0];
-			pictorialCameraPos[1] = _bezierCurve[i*3+1];
-			pictorialCameraPos[2] = _bezierCurve[i*3+2];
-			pictorialCameraLookat[0] = _bezierCurve[(i+1)*3+0];
-			pictorialCameraLookat[1] = _bezierCurve[(i+1)*3+1];
-			pictorialCameraLookat[2] = _bezierCurve[(i+1)*3+2];
-			i++;
-		}
-		else{
-			i=0;
-		}
-    }
+    if(i<(_cameraPath.size()/3)-1){
 
-}
-
-void CameraControl::InitdeCasteljau4Points() {
-	//test time to compute
-	static double lastTime = glfwGetTime();
-    
-
-	//hand-out setting
-    //const float b0X = -0.51f,b0Y =  1.09f,b0Z =  0.40f;
-    //const float b1X =  0.57f,b1Y =  1.26f,b1Z =  0.40f;
-    //const float b2X =  1.31f,b2Y =  0.92f,b2Z =  0.40f;
-    //const float b3X =  1.25f,b3Y = -0.41f,b3Z =  0.40f;
-	////other setting flying through
-	const float b0X = -0.51f,b0Y = -0.91f,b0Z =  0.20f;
-    const float b1X = -0.43f,b1Y =  2.66f,b1Z =  0.001f;
-    const float b2X =  0.31f,b2Y = -2.08f,b2Z =  0.50f;
-    const float b3X =  0.55f,b3Y =  0.39f,b3Z =  0.30f;
-
-    /// Choose the resolution.
-    const unsigned int nPoints = 768;
-
-    /// To avoid vector resizing on every loop.
-    _bezierCurve.reserve(3*nPoints);
-
-    /// Generate coordinates.
-    for(int k=0; k<nPoints; ++k) {
-        float t = float(k) / float(nPoints);
-        _bezierCurve.push_back(std::pow((1-t),3)*b0X + 3*t*std::pow((1-t),2)*b1X + 3*std::pow(t,2)*(1-t)*b2X + std::pow(t,3)*b3X);
-        _bezierCurve.push_back(std::pow((1-t),3)*b0Y + 3*t*std::pow((1-t),2)*b1Y + 3*std::pow(t,2)*(1-t)*b2Y + std::pow(t,3)*b3Y);
-        _bezierCurve.push_back(std::pow((1-t),3)*b0Z + 3*t*std::pow((1-t),2)*b1Z + 3*std::pow(t,2)*(1-t)*b2Z + std::pow(t,3)*b3Z);
-    }
-	//end test time to compute
 	double currentTime = glfwGetTime();
     float deltaT = float(currentTime - lastTime); //deltaT in sc 
-	std::cout<<"decastljau computed in "<<deltaT<<" sc with N = "<< _bezierCurve.size()<<" points"<<std::endl;
-	lastTime = currentTime;
+	if(deltaT>0.05){
+		lastTime = currentTime;
+			std::cout<<i<<std::endl;
+			_cameraPictorialModel(0,3) = _cameraPath[i*3+0];
+			_cameraPictorialModel(1,3) = _cameraPath[i*3+1];
+			_cameraPictorialModel(2,3) = _cameraPath[i*3+2];
 
-	 /// Copy the vertices to GPU.
-    _verticesCameraPath ->copy(_bezierCurve.data(), _bezierCurve.size());
+        //  pictorialCameraPos[0] = _cameraPath[i*3+0];
+        //  pictorialCameraPos[1] = _cameraPath[i*3+1];
+        //  pictorialCameraPos[2] = _cameraPath[i*3+2];
+        //  pictorialCameraLookat[0] = _cameraPath[(i+1)*3+0];
+        //  pictorialCameraLookat[1] = _cameraPath[(i+1)*3+1];
+        //  pictorialCameraLookat[2] = _cameraPath[(i+1)*3+2];
+		i++;
+		}
+		
+    }
+	else{
+		i=0;
+	}
 
 }
 
@@ -479,9 +459,9 @@ void CameraControl::InitdeCasteljauSubdivision(){
 		double posY = powf((1-t),3) * tmp0Y + 3*t*powf((1-t),2) * tmp1Y + 3*powf(t,2)*(1-t) *tmp2Y + powf(t,3)*tmp3Y;
 		double posZ = powf((1-t),3) * tmp0Z + 3*t*powf((1-t),2) * tmp1Z + 3*powf(t,2)*(1-t) *tmp2Z + powf(t,3)*tmp3Z;
 		
-        _bezierCurve[i*3+0] = posX;
-        _bezierCurve[i*3+1] = posY;
-        _bezierCurve[i*3+2] = posZ;
+        _cameraPath[i*3+0] = posX;
+        _cameraPath[i*3+1] = posY;
+        _cameraPath[i*3+2] = posZ;
 		//std::cout<<"1 "<<t<<" "<<posX<<" "<<posY<<std::endl;
 	
 		t = t+0.001;
@@ -497,9 +477,9 @@ void CameraControl::InitdeCasteljauSubdivision(){
 		double posY = powf((1-t),3) * tmp0Y + 3*t*powf((1-t),2) * tmp1Y + 3*powf(t,2)*(1-t) *tmp2Y + powf(t,3)*tmp3Y;
 		double posZ = powf((1-t),3) * tmp0Z + 3*t*powf((1-t),2) * tmp1Z + 3*powf(t,2)*(1-t) *tmp2Z + powf(t,3)*tmp3Z;
 		
-        _bezierCurve[i*3+0] = posX;
-        _bezierCurve[i*3+1] = posY;
-        _bezierCurve[i*3+2] = posZ;
+        _cameraPath[i*3+0] = posX;
+        _cameraPath[i*3+1] = posY;
+        _cameraPath[i*3+2] = posZ;
 
 		//std::cout<<"2 "<<t<<" "<<posX<<" "<<posY<<std::endl;
 		
@@ -559,34 +539,34 @@ void CameraControl::InitSubdivision(){
 		}
 	}
 
-	_bezierCurve.clear();
+    _cameraPath.clear();
     /// To avoid vector resizing on every loop.
-    _bezierCurve.reserve(3*nPoints*3);
+    _cameraPath.reserve(3*nPoints*3);
 
     /// Generate coordinates.
     for(int k=0; k<nPoints; ++k) {
-        _bezierCurve.push_back(res0[k][0]);
-        _bezierCurve.push_back(res0[k][1]);
-        _bezierCurve.push_back(res0[k][2]);
+        _cameraPath.push_back(res0[k][0]);
+        _cameraPath.push_back(res0[k][1]);
+        _cameraPath.push_back(res0[k][2]);
 
-		_bezierCurve.push_back(res1[k][0]);
-        _bezierCurve.push_back(res1[k][1]);
-        _bezierCurve.push_back(res1[k][2]);
+        _cameraPath.push_back(res1[k][0]);
+        _cameraPath.push_back(res1[k][1]);
+        _cameraPath.push_back(res1[k][2]);
 		
-		_bezierCurve.push_back(res2[k][0]);
-        _bezierCurve.push_back(res2[k][1]);
-        _bezierCurve.push_back(res2[k][2]);
+        _cameraPath.push_back(res2[k][0]);
+        _cameraPath.push_back(res2[k][1]);
+        _cameraPath.push_back(res2[k][2]);
     }
 
     
 	//end test time to compute
 	double currentTime = glfwGetTime();
     float deltaT = float(currentTime - lastTime); //deltaT in sc 
-	std::cout<<"subdivision computed in "<<deltaT<<" sc with N = "<< _bezierCurve.size()<<" points"<<std::endl;
+    std::cout<<"subdivision computed in "<<deltaT<<" sc with N = "<< _cameraPath.size()<<" points"<<std::endl;
 	lastTime = currentTime;
 
 	/// Copy the vertices to GPU.
-    _verticesCameraPath ->copy(_bezierCurve.data(), _bezierCurve.size());
+    _verticesCameraPath ->copy(_cameraPath.data(), _cameraPath.size());
 
 }
 
@@ -600,101 +580,110 @@ void CameraControl::Subdivision(double b0,double b1, double b2,double b3, double
 	r3 = b3;
 }
 
-void CameraControl::deCasteljau4PointsChanging(int PointToChange,double changeX,double changeY,double changeZ) {
+void CameraControl::bezier_4_points(int PointToChange, float deltaX, float deltaY, float deltaZ) {
 
-	//Hand-out setting
-    //static float b0X = -0.51f,b0Y =  1.09f,b0Z =  0.40f;
-    //static float b1X =  0.57f,b1Y =  1.26f,b1Z =  0.40f;
-    //static float b2X =  1.31f,b2Y =  0.92f,b2Z =  0.40f;
-    //static float b3X =  1.25f,b3Y = -0.41f,b3Z =  0.40f;
-	//other setting flying through
-	static float b0X = -0.51f,b0Y = -0.91f,b0Z =  0.20f;
-    static float b1X = -0.43f,b1Y =  2.66f,b1Z =  0.001f;
-    static float b2X =  0.31f,b2Y = -2.08f,b2Z =  0.50f;
-    static float b3X =  0.55f,b3Y =  0.39f,b3Z =  0.30f;
-
+    /// Bézier curve control points.
+    static float b0X = -0.51f, b0Y = -0.91f, b0Z = 0.20f;
+    static float b1X = -0.43f, b1Y =  2.66f, b1Z = 0.001f;
+    static float b2X =  0.31f, b2Y = -2.08f, b2Z = 0.50f;
+    static float b3X =  0.55f, b3Y =  0.39f, b3Z = 0.30f;
 
 	switch(PointToChange){
 	case 0:
-		b0X +=changeX;
-		b0Y +=changeY;
-		b0Z +=changeZ;
+        b0X += deltaX;
+        b0Y += deltaY;
+        b0Z += deltaZ;
 		break;
 	case 1:
-		b1X +=changeX;
-		b1Y +=changeY;
-		b1Z +=changeZ;
+        b1X += deltaX;
+        b1Y += deltaY;
+        b1Z += deltaZ;
 		break;
 	case 2:
-		b2X +=changeX;
-		b2Y +=changeY;
-		b2Z +=changeZ;
+        b2X += deltaX;
+        b2Y += deltaY;
+        b2Z += deltaZ;
 		break;
 	case 3:
-		b3X +=changeX;
-		b3Y +=changeY;
-		b3Z +=changeZ;
+        b3X += deltaX;
+        b3Y += deltaY;
+        b3Z += deltaZ;
 		break;
-	}
-	//std::cout<<b0X<<" "<<b1X<<" "<<b2X<<" "<<b3X<<std::endl;
-	//std::cout<<b0Y<<" "<<b1Y<<" "<<b2Y<<" "<<b3Y<<std::endl;
-	//std::cout<<b0Z<<" "<<b1Z<<" "<<b2Z<<" "<<b3Z<<std::endl;
+    }
+
+    /// Fill the control points vector.
+    _cameraPathControls.clear();
+    _cameraPathControls.reserve(12);
+    _cameraPathControls.push_back(b0X);
+    _cameraPathControls.push_back(b0Y);
+    _cameraPathControls.push_back(b0Z);
+    _cameraPathControls.push_back(b1X);
+    _cameraPathControls.push_back(b1Y);
+    _cameraPathControls.push_back(b1Z);
+    _cameraPathControls.push_back(b2X);
+    _cameraPathControls.push_back(b2Y);
+    _cameraPathControls.push_back(b2Z);
+    _cameraPathControls.push_back(b3X);
+    _cameraPathControls.push_back(b3Y);
+    _cameraPathControls.push_back(b3Z);
+
 	/// Choose the resolution.
     const unsigned int nPoints = 200;
 
-	_bezierCurve.clear();
     /// To avoid vector resizing on every loop.
-    _bezierCurve.reserve(3*nPoints);
+    _cameraPath.clear();
+    _cameraPath.reserve(3*nPoints);
 
     /// Generate coordinates.
     for(int k=0; k<nPoints; ++k) {
         float t = float(k) / float(nPoints);
-        _bezierCurve.push_back(std::pow((1-t),3)*b0X + 3*t*std::pow((1-t),2)*b1X + 3*std::pow(t,2)*(1-t)*b2X + std::pow(t,3)*b3X);
-        _bezierCurve.push_back(std::pow((1-t),3)*b0Y + 3*t*std::pow((1-t),2)*b1Y + 3*std::pow(t,2)*(1-t)*b2Y + std::pow(t,3)*b3Y);
-        _bezierCurve.push_back(std::pow((1-t),3)*b0Z + 3*t*std::pow((1-t),2)*b1Z + 3*std::pow(t,2)*(1-t)*b2Z + std::pow(t,3)*b3Z);
+        _cameraPath.push_back(std::pow((1-t),3)*b0X + 3*t*std::pow((1-t),2)*b1X + 3*std::pow(t,2)*(1-t)*b2X + std::pow(t,3)*b3X);
+        _cameraPath.push_back(std::pow((1-t),3)*b0Y + 3*t*std::pow((1-t),2)*b1Y + 3*std::pow(t,2)*(1-t)*b2Y + std::pow(t,3)*b3Y);
+        _cameraPath.push_back(std::pow((1-t),3)*b0Z + 3*t*std::pow((1-t),2)*b1Z + 3*std::pow(t,2)*(1-t)*b2Z + std::pow(t,3)*b3Z);
     }
 
     /// Copy the vertices to GPU.
-    _verticesCameraPath ->copy(_bezierCurve.data(), _bezierCurve.size());
+    _verticesCameraPath->copy(_cameraPath.data(), _cameraPath.size());
+    _verticesCameraPathControls->copy(_cameraPathControls.data(), _cameraPathControls.size());
 
 }
 
 void CameraControl::createBCurve(){
-	int AmountBcurve = int(_userBCurve.size()/12);
+    int AmountBcurve = int(_cameraPathControls.size()/12);
 	
 	/// Choose the resolution.
 	const unsigned int nPoints = 300*AmountBcurve;
 
-	_bezierCurve.clear();
+    _cameraPath.clear();
 	/// To avoid vector resizing on every loop.
-	_bezierCurve.reserve(3*nPoints);
+    _cameraPath.reserve(3*nPoints);
 
 	for(int i=1;i<=AmountBcurve;i++){
 
 		//other setting flying through
-		float b0X = _userBCurve.at(i*12-12);
-		float b0Y = _userBCurve.at(i*12-11);
-		float b0Z = _userBCurve.at(i*12-10);
-		float b1X = _userBCurve.at(i*12-9);
-		float b1Y = _userBCurve.at(i*12-8);
-		float b1Z = _userBCurve.at(i*12-7);
-		float b2X = _userBCurve.at(i*12-6);
-		float b2Y = _userBCurve.at(i*12-5);
-		float b2Z = _userBCurve.at(i*12-4);
-		float b3X = _userBCurve.at(i*12-3);
-		float b3Y = _userBCurve.at(i*12-2);
-		float b3Z = _userBCurve.at(i*12-1);
+        float b0X = _cameraPathControls.at(i*12-12);
+        float b0Y = _cameraPathControls.at(i*12-11);
+        float b0Z = _cameraPathControls.at(i*12-10);
+        float b1X = _cameraPathControls.at(i*12-9);
+        float b1Y = _cameraPathControls.at(i*12-8);
+        float b1Z = _cameraPathControls.at(i*12-7);
+        float b2X = _cameraPathControls.at(i*12-6);
+        float b2Y = _cameraPathControls.at(i*12-5);
+        float b2Z = _cameraPathControls.at(i*12-4);
+        float b3X = _cameraPathControls.at(i*12-3);
+        float b3Y = _cameraPathControls.at(i*12-2);
+        float b3Z = _cameraPathControls.at(i*12-1);
 
 		/// Generate coordinates.
 		for(int k=0; k<nPoints; ++k) {
 			float t = float(k) / float(nPoints);
-			_bezierCurve.push_back(std::pow((1-t),3)*b0X + 3*t*std::pow((1-t),2)*b1X + 3*std::pow(t,2)*(1-t)*b2X + std::pow(t,3)*b3X);
-			_bezierCurve.push_back(std::pow((1-t),3)*b0Y + 3*t*std::pow((1-t),2)*b1Y + 3*std::pow(t,2)*(1-t)*b2Y + std::pow(t,3)*b3Y);
-			_bezierCurve.push_back(std::pow((1-t),3)*b0Z + 3*t*std::pow((1-t),2)*b1Z + 3*std::pow(t,2)*(1-t)*b2Z + std::pow(t,3)*b3Z);
+            _cameraPath.push_back(std::pow((1-t),3)*b0X + 3*t*std::pow((1-t),2)*b1X + 3*std::pow(t,2)*(1-t)*b2X + std::pow(t,3)*b3X);
+            _cameraPath.push_back(std::pow((1-t),3)*b0Y + 3*t*std::pow((1-t),2)*b1Y + 3*std::pow(t,2)*(1-t)*b2Y + std::pow(t,3)*b3Y);
+            _cameraPath.push_back(std::pow((1-t),3)*b0Z + 3*t*std::pow((1-t),2)*b1Z + 3*std::pow(t,2)*(1-t)*b2Z + std::pow(t,3)*b3Z);
 		}
 	}
     /// Copy the vertices to GPU.
-    _verticesCameraPath ->copy(_bezierCurve.data(), _bezierCurve.size());
+    _verticesCameraPath ->copy(_cameraPath.data(), _cameraPath.size());
 
 }
 
@@ -717,26 +706,26 @@ void CameraControl::MultipleBezier() {
     /// Choose the resolution.
     const unsigned int nPoints = 500;
 
-	_bezierCurve.clear();
+    _cameraPath.clear();
     /// To avoid vector resizing on every loop.
-    _bezierCurve.reserve(2*3*nPoints);
+    _cameraPath.reserve(2*3*nPoints);
 
     /// Generate coordinates of first bezier curve.
     for(int k=0; k<nPoints; ++k) {
         float t = float(k) / float(nPoints);
-        _bezierCurve.push_back(std::pow((1-t),3)*bA0X + 3*t*std::pow((1-t),2)*bA1X + 3*std::pow(t,2)*(1-t)*bA2X + std::pow(t,3)*bA3X);
-        _bezierCurve.push_back(std::pow((1-t),3)*bA0Y + 3*t*std::pow((1-t),2)*bA1Y + 3*std::pow(t,2)*(1-t)*bA2Y + std::pow(t,3)*bA3Y);
-        _bezierCurve.push_back(std::pow((1-t),3)*bA0Z + 3*t*std::pow((1-t),2)*bA1Z + 3*std::pow(t,2)*(1-t)*bA2Z + std::pow(t,3)*bA3Z);
+        _cameraPath.push_back(std::pow((1-t),3)*bA0X + 3*t*std::pow((1-t),2)*bA1X + 3*std::pow(t,2)*(1-t)*bA2X + std::pow(t,3)*bA3X);
+        _cameraPath.push_back(std::pow((1-t),3)*bA0Y + 3*t*std::pow((1-t),2)*bA1Y + 3*std::pow(t,2)*(1-t)*bA2Y + std::pow(t,3)*bA3Y);
+        _cameraPath.push_back(std::pow((1-t),3)*bA0Z + 3*t*std::pow((1-t),2)*bA1Z + 3*std::pow(t,2)*(1-t)*bA2Z + std::pow(t,3)*bA3Z);
     }
 	/// Generate coordinates of second bezier curve.
 	for(int k=1; k<nPoints; ++k) {
         float t = float(k) / float(nPoints);
-        _bezierCurve.push_back(std::pow((1-t),3)*bB0X + 3*t*std::pow((1-t),2)*bB1X + 3*std::pow(t,2)*(1-t)*bB2X + std::pow(t,3)*bB3X);
-        _bezierCurve.push_back(std::pow((1-t),3)*bB0Y + 3*t*std::pow((1-t),2)*bB1Y + 3*std::pow(t,2)*(1-t)*bB2Y + std::pow(t,3)*bB3Y);
-        _bezierCurve.push_back(std::pow((1-t),3)*bB0Z + 3*t*std::pow((1-t),2)*bB1Z + 3*std::pow(t,2)*(1-t)*bB2Z + std::pow(t,3)*bB3Z);
+        _cameraPath.push_back(std::pow((1-t),3)*bB0X + 3*t*std::pow((1-t),2)*bB1X + 3*std::pow(t,2)*(1-t)*bB2X + std::pow(t,3)*bB3X);
+        _cameraPath.push_back(std::pow((1-t),3)*bB0Y + 3*t*std::pow((1-t),2)*bB1Y + 3*std::pow(t,2)*(1-t)*bB2Y + std::pow(t,3)*bB3Y);
+        _cameraPath.push_back(std::pow((1-t),3)*bB0Z + 3*t*std::pow((1-t),2)*bB1Z + 3*std::pow(t,2)*(1-t)*bB2Z + std::pow(t,3)*bB3Z);
     }
 	 /// Copy the vertices to GPU.
-    _verticesCameraPath ->copy(_bezierCurve.data(), _bezierCurve.size());
+    _verticesCameraPath ->copy(_cameraPath.data(), _cameraPath.size());
 
 }
 
@@ -862,65 +851,65 @@ void CameraControl::flyingExploration(){
 		ModeSettingControlPoint=true;
 		/*if(controlPointsCount<=4){//restart creating path
 			controlPointsCount=0;
-			_userBCurve.clear();
+            _cameraPathControls.clear();
 		}*/
 		if (controlPointsCount%4 == 0){
 			if(controlPointsCount>2){// User continue to creat bcurve => push the last controlP of previous Bcurve P0 and the computed control P1
-				_userBCurve.push_back(_userBCurve.at(_userBCurve.size()-3));
-				_userBCurve.push_back(_userBCurve.at(_userBCurve.size()-3));
-				_userBCurve.push_back(_userBCurve.at(_userBCurve.size()-3));
-				_userBCurve.push_back(tmpCtrlPointX);
-				_userBCurve.push_back(tmpCtrlPointY);
-				_userBCurve.push_back(tmpCtrlPointZ);
+                _cameraPathControls.push_back(_cameraPathControls.at(_cameraPathControls.size()-3));
+                _cameraPathControls.push_back(_cameraPathControls.at(_cameraPathControls.size()-3));
+                _cameraPathControls.push_back(_cameraPathControls.at(_cameraPathControls.size()-3));
+                _cameraPathControls.push_back(tmpCtrlPointX);
+                _cameraPathControls.push_back(tmpCtrlPointY);
+                _cameraPathControls.push_back(tmpCtrlPointZ);
 				controlPointsCount=controlPointsCount+2;
 			}
 			else{ // User define first control point 
 				std::cout<<"Control point 1 of bezier curve settled"<<std::endl;
-				_userBCurve.push_back(posX-0.02f);
-				_userBCurve.push_back(posY-0.02f);
-				_userBCurve.push_back(posZ-0.02f);
+                _cameraPathControls.push_back(posX-0.02f);
+                _cameraPathControls.push_back(posY-0.02f);
+                _cameraPathControls.push_back(posZ-0.02f);
 				controlPointsCount++;
 			}
 		}
 	}	
 	if (ModeSettingControlPoint==true){ // set a control point if necessary
 		//use look at to define the 2nd control point (P1) only for first Bcurve
-		if (controlPointsCount%4==1 & _userBCurve.size()%12==3 & controlPointsCount<3 ){ 
-			_userBCurve.push_back(lookX);
-			_userBCurve.push_back(lookY);
-			_userBCurve.push_back(lookZ);
+        if (controlPointsCount%4==1 & _cameraPathControls.size()%12==3 & controlPointsCount<3 ){
+            _cameraPathControls.push_back(lookX);
+            _cameraPathControls.push_back(lookY);
+            _cameraPathControls.push_back(lookZ);
 		}//modify and refresh the look at to define the 2nd control point (P1) only for first Bcurve
-		else if(controlPointsCount%4==1 & _userBCurve.size()%12==6 & controlPointsCount<3){
-			_userBCurve.pop_back();
-			_userBCurve.pop_back();
-			_userBCurve.pop_back();
-			_userBCurve.push_back(lookX);
-			_userBCurve.push_back(lookY);
-			_userBCurve.push_back(lookZ);
+        else if(controlPointsCount%4==1 & _cameraPathControls.size()%12==6 & controlPointsCount<3){
+            _cameraPathControls.pop_back();
+            _cameraPathControls.pop_back();
+            _cameraPathControls.pop_back();
+            _cameraPathControls.push_back(lookX);
+            _cameraPathControls.push_back(lookY);
+            _cameraPathControls.push_back(lookZ);
 		}//set P2 and P3 using pos for every Bcurve created
-		else if(controlPointsCount%4 ==2  & _userBCurve.size()%12==6){					
-			_userBCurve.push_back(lookX);
-			_userBCurve.push_back(lookY);
-			_userBCurve.push_back(lookZ);
-			_userBCurve.push_back(posX-0.02f);
-			_userBCurve.push_back(posY-0.02f);
-			_userBCurve.push_back(posZ-0.02f);
+        else if(controlPointsCount%4 ==2  & _cameraPathControls.size()%12==6){
+            _cameraPathControls.push_back(lookX);
+            _cameraPathControls.push_back(lookY);
+            _cameraPathControls.push_back(lookZ);
+            _cameraPathControls.push_back(posX-0.02f);
+            _cameraPathControls.push_back(posY-0.02f);
+            _cameraPathControls.push_back(posZ-0.02f);
 		}//refresh P2 and P3 using pos for every Bcurve created
-		else if(controlPointsCount%4==2 & _userBCurve.size()%12==0){
-			_userBCurve.pop_back();
-			_userBCurve.pop_back();
-			_userBCurve.pop_back();
-			_userBCurve.pop_back();
-			_userBCurve.pop_back();
-			_userBCurve.pop_back();
-			_userBCurve.push_back(lookX);
-			_userBCurve.push_back(lookY);
-			_userBCurve.push_back(lookZ);
-			_userBCurve.push_back(posX-0.02f);
-			_userBCurve.push_back(posY-0.02f);
-			_userBCurve.push_back(posZ-0.02f);
+        else if(controlPointsCount%4==2 & _cameraPathControls.size()%12==0){
+            _cameraPathControls.pop_back();
+            _cameraPathControls.pop_back();
+            _cameraPathControls.pop_back();
+            _cameraPathControls.pop_back();
+            _cameraPathControls.pop_back();
+            _cameraPathControls.pop_back();
+            _cameraPathControls.push_back(lookX);
+            _cameraPathControls.push_back(lookY);
+            _cameraPathControls.push_back(lookZ);
+            _cameraPathControls.push_back(posX-0.02f);
+            _cameraPathControls.push_back(posY-0.02f);
+            _cameraPathControls.push_back(posZ-0.02f);
 		}
-		if(_userBCurve.size()>6){//compute and render bezier
+        if(_cameraPathControls.size()>6){//compute and render bezier
 			createBCurve();
 		}
 		if(KeyENTER==true){//finish setting ctrl points
@@ -930,12 +919,12 @@ void CameraControl::flyingExploration(){
 			else if(controlPointsCount%4==2){ // a bcurve is completly settled
 				controlPointsCount = controlPointsCount+2;
 				ModeSettingControlPoint=false;
-				std::cout<<int(_userBCurve.size()/12)<<" Bezier curves has been created!"<<std::endl;
+                std::cout<<int(_cameraPathControls.size()/12)<<" Bezier curves has been created!"<<std::endl;
 			}
 			if(controlPointsCount%4==0 & controlPointsCount>2){ // compute control P1 for next Bcurve, respecting linearity
-				tmpCtrlPointX = 2*_userBCurve.at(_userBCurve.size()-3) - _userBCurve.at(_userBCurve.size()-6);
-				tmpCtrlPointY = 2*_userBCurve.at(_userBCurve.size()-2) - _userBCurve.at(_userBCurve.size()-5);
-				tmpCtrlPointZ = 2*_userBCurve.at(_userBCurve.size()-1) - _userBCurve.at(_userBCurve.size()-4);
+                tmpCtrlPointX = 2*_cameraPathControls.at(_cameraPathControls.size()-3) - _cameraPathControls.at(_cameraPathControls.size()-6);
+                tmpCtrlPointY = 2*_cameraPathControls.at(_cameraPathControls.size()-2) - _cameraPathControls.at(_cameraPathControls.size()-5);
+                tmpCtrlPointZ = 2*_cameraPathControls.at(_cameraPathControls.size()-1) - _cameraPathControls.at(_cameraPathControls.size()-4);
 			}										
 			KeyENTER=false;							
 		}
@@ -1126,7 +1115,7 @@ void CameraControl::fpsExploration(){
 	}
 }
 
-void CameraControl::updateCameraPosition(mat4& cameraModelview, mat4& cameraPictorialModel) {
+void CameraControl::updateCameraPosition(mat4& cameraModelview, mat4& flippedCameraModelview, mat4& cameraPictorialModel, int& selectedControlPoint) {
 
     /// Modify camera position according to the exploration mode.
     switch(_explorationMode) {
@@ -1144,11 +1133,18 @@ void CameraControl::updateCameraPosition(mat4& cameraModelview, mat4& cameraPict
         break;
     }
 
-    /// Update the view transformation matrix.
+	if(flagAnimatePictorialCamera==true)
+        animatePictorialCamera();
+
+    /// Update the view transformation matrices.
     cameraModelview = _cameraModelview;
+    flippedCameraModelview = _flippedCameraModelview;
 
     /// Update the camera pictorial model transformation matrix.
     cameraPictorialModel = _cameraPictorialModel;
+
+    /// Update the selected control point.
+    selectedControlPoint = _selectedControlPoint;
 
 }
 
@@ -1198,15 +1194,14 @@ void CameraControl::handleCameraControls(int key, int action){
         std::cout << "Exploration mode : TRACKBALL" << std::endl;
         _explorationMode = TRACKBALL;
         trackball(mat4::Identity());
-	}
-	static int controlPointModify = 0;
+    }
 	if(action==1){
 		switch(key){
 			case 90: //Z=> change control point under modification
-				controlPointModify++;
-				if(controlPointModify>3)
-					controlPointModify=0;
-				std::cout<<"Changing control point nB"<<controlPointModify<<std::endl;
+                _selectedControlPoint++;
+                if(_selectedControlPoint>3)
+                    _selectedControlPoint=0;
+                std::cout<<"Changing control point nB"<<_selectedControlPoint<<std::endl;
 				std::cout<<"Control list :"<<std::endl<<"Key Z : change point to set"<<std::endl;
 				std::cout<<"Key U : position X + 0.1"<<std::endl;
 				std::cout<<"Key J : position X - 0.1"<<std::endl;
@@ -1217,22 +1212,22 @@ void CameraControl::handleCameraControls(int key, int action){
 
 				break;
 			case 85: //U=> X+
-				deCasteljau4PointsChanging(controlPointModify,0.1f,0.0f,0.0f);
+                bezier_4_points(_selectedControlPoint,0.1f,0.0f,0.0f);
 				break;
 			case 74: //J=> X-
-				deCasteljau4PointsChanging(controlPointModify,-0.1f,0.0f,0.0f);
+                bezier_4_points(_selectedControlPoint,-0.1f,0.0f,0.0f);
 				break;
 			case 73: //I=> Y+
-				deCasteljau4PointsChanging(controlPointModify,0.0f,0.1f,0.0f);
+                bezier_4_points(_selectedControlPoint,0.0f,0.1f,0.0f);
 				break;
 			case 75: //K=> Y-
-				deCasteljau4PointsChanging(controlPointModify,0.0f,-0.1f,0.0f);
+                bezier_4_points(_selectedControlPoint,0.0f,-0.1f,0.0f);
 				break;
 			case 79: //O=> Z+
-				deCasteljau4PointsChanging(controlPointModify,0.0f,0.0f,0.1f);
+                bezier_4_points(_selectedControlPoint,0.0f,0.0f,0.1f);
 				break;
 			case 76: //L=> Z-
-				deCasteljau4PointsChanging(controlPointModify,0.0f,0.0f,-0.1f);
+                bezier_4_points(_selectedControlPoint,0.0f,0.0f,-0.1f);
 				break;
 			case 307: //5
 				InitSubdivision();
@@ -1244,6 +1239,9 @@ void CameraControl::handleCameraControls(int key, int action){
 				if(_explorationMode == FLYING){
 					KeyENTER = true;
 				}
+				break;
+			case 309://7
+				flagAnimatePictorialCamera=!flagAnimatePictorialCamera;
 		}
 	}
 }

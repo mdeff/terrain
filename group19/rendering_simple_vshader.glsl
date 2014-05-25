@@ -5,8 +5,19 @@ uniform mat4 projection;
 uniform mat4 view;
 uniform mat4 model;
 
+// Pixel color.
+uniform vec3 color;
+
 // Vertices 3D position in model space.
 in vec3 vertexPosition3DModel;
+
+// Vertex position (mandatory output).
+out gl_PerVertex {
+    vec4 gl_Position;
+};
+
+// Pixel color for fragment shader.
+out vec3 color_f;
 
 
 void main() {
@@ -18,4 +29,6 @@ void main() {
     vec4 vertexPositionCamera = view * vertexPositionWorld;
     gl_Position = projection * vertexPositionCamera;
 
+    // Pixel color;
+    color_f = color;
 }

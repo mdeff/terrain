@@ -20,7 +20,7 @@ Shadowmap::Shadowmap(unsigned int width, unsigned int height) :
 GLuint Shadowmap::init(Vertices* vertices, GLuint heightMapTexID) {
 
     /// Common initialization.
-    RenderingContext::init(vertices, shadowmap_vshader, shadowmap_fshader, "vertexPosition2DModel", -1);
+    RenderingContext::init(vertices, shadowmap_vshader, shadowmap_fshader, NULL, "vertexPosition2DModel", -1);
 
     /// Bind the heightmap to texture 0.
     set_texture(0, heightMapTexID, "heightMapTex", GL_TEXTURE_2D);
@@ -78,7 +78,7 @@ void Shadowmap::draw(const mat4& lightViewProjection) const {
     RenderingContext::draw();
 
     /// Update the content of the uniforms.
-    glProgramUniformMatrix4fv(_programID, _lightViewProjectionID, 1, GL_FALSE, lightViewProjection.data());
+    glUniformMatrix4fv( _lightViewProjectionID, 1, GL_FALSE, lightViewProjection.data());
 
     /// Clear the FBO.
     glClear(GL_DEPTH_BUFFER_BIT);
