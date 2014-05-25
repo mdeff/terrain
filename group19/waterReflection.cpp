@@ -46,9 +46,9 @@ GLuint WaterReflection::init(Vertices* vertices, GLuint heightMapTexID) {
     GLuint _IaID = glGetUniformLocation(_programID, "Ia");
     GLuint _IdID = glGetUniformLocation(_programID, "Id");
     GLuint _IsID = glGetUniformLocation(_programID, "Is");
-    glUniform3fv(_IaID, 1, Ia.data());
-    glUniform3fv(_IdID, 1, Id.data());
-    glUniform3fv(_IsID, 1, Is.data());
+    glProgramUniform3fv(_programID, _IaID, 1, Ia.data());
+    glProgramUniform3fv(_programID, _IdID, 1, Id.data());
+    glProgramUniform3fv(_programID, _IsID, 1, Is.data());
 
 
 
@@ -105,14 +105,14 @@ void WaterReflection::draw(const mat4& projection, const mat4& modelview,
     
     //glEnable(GL_CLIP_DISTANCE0);
 	GLuint _clipPlaneID = glGetUniformLocation(_programID, "clipPlane");
-	glUniform4fv(_clipPlaneID, 1, &clipEqn[0]);
+    glProgramUniform4fv(_programID, _clipPlaneID, 1, &clipEqn[0]);
 
     
     /// Update the content of the uniforms.
-    glUniformMatrix4fv(_modelviewID, 1, GL_FALSE, modelview.data());
-    glUniformMatrix4fv(_projectionID, 1, GL_FALSE, projection.data());
-	glUniformMatrix4fv(_lightMVPID, 1, GL_FALSE, lightMVP.data());
-    glUniform3fv(_lightPositionModelID, 1, lightPositionModel.data());
+    glProgramUniformMatrix4fv(_programID, _modelviewID, 1, GL_FALSE, modelview.data());
+    glProgramUniformMatrix4fv(_programID, _projectionID, 1, GL_FALSE, projection.data());
+    glProgramUniformMatrix4fv(_programID, _lightMVPID, 1, GL_FALSE, lightMVP.data());
+    glProgramUniform3fv(_programID, _lightPositionModelID, 1, lightPositionModel.data());
   
 	
     /// Map from light-coordinates in (-1,-1)x(1,1) to texture
@@ -124,7 +124,7 @@ void WaterReflection::draw(const mat4& projection, const mat4& modelview,
             0.0f, 0.0f, 0.5f, 0.0f,
             0.5f, 0.5f, 0.5f, 1.0f;
     mat4 lightOffsetMVP = offsetMatrix * lightMVP;
-    glUniformMatrix4fv(_lightOffsetMVPID, 1, GL_FALSE, lightMVP.data());
+    glProgramUniformMatrix4fv(_programID, _lightOffsetMVPID, 1, GL_FALSE, lightMVP.data());
 
     /// Must not clear the buffer since it will delete the pre-drawn terrain
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

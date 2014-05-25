@@ -33,7 +33,7 @@ void ParticlesRender::init(GLuint particlePosTexID[]) {
     /// The Sampler uniform always refer to texture index 0.
     /// The binding to texture 0 is however flipped every frame.
     GLuint uniformID = glGetUniformLocation(_programID, "particlesPosTex");
-    glUniform1i(uniformID, 0);
+    glProgramUniform1i(_programID, uniformID, 0);
 
     /// Set uniform IDs.
     _modelviewID = glGetUniformLocation(_programID, "modelview");
@@ -52,8 +52,8 @@ void ParticlesRender::draw(const mat4& projection, const mat4& modelview) {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     /// Update the content of the uniforms.
-    glUniformMatrix4fv(_modelviewID, 1, GL_FALSE, modelview.data());
-    glUniformMatrix4fv(_projectionID, 1, GL_FALSE, projection.data());
+    glProgramUniformMatrix4fv(_programID, _modelviewID, 1, GL_FALSE, modelview.data());
+    glProgramUniformMatrix4fv(_programID, _projectionID, 1, GL_FALSE, projection.data());
 
     /// Flip the position texture binding : start with 1.
     static int pingpong = 0;

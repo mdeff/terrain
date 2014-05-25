@@ -28,9 +28,9 @@ void ParticlesControl::init(Vertices* vertices, GLuint particlePosTexID[]) {
     /// The Sampler uniforms always refer to texture indices 0 and 1.
     /// The binding to textures 0 and 1 are however flipped every frame.
     GLuint uniformID = glGetUniformLocation(_programID, "particlePosTex");
-    glUniform1i(uniformID, 0);
+    glProgramUniform1i(_programID, uniformID, 0);
     uniformID = glGetUniformLocation(_programID, "particleVelTex");
-    glUniform1i(uniformID, 1);
+    glProgramUniform1i(_programID, uniformID, 1);
 
     /// Generate the two position and velocity textures (last and current).
     glGenTextures(4, _particleTexID);
@@ -86,7 +86,7 @@ void ParticlesControl::draw() const {
     double currentTime = glfwGetTime();
     float deltaT = float(currentTime - lastTime);
     lastTime = currentTime;
-    glUniformMatrix4fv(_deltaTID, 1, GL_FALSE, &deltaT);
+    glProgramUniformMatrix4fv(_programID, _deltaTID, 1, GL_FALSE, &deltaT);
 
     /// Binary [0,1] variable to switch between input / output textures : start with 0.
     static int pingpong = 1;
