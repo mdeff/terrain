@@ -11,7 +11,7 @@ uniform mat4 lightViewProjection;
 uniform vec3 lightPositionWorld;
 
 // Indicate if below water level geometry should be rendered or cliped.
-// Clip is 1 for normal rendering and 0 for flipped rendering to texture.
+// Clip is 0 for normal rendering and 1 for flipped rendering to texture.
 uniform float clip;
 
 // Texture 0. Defined by glActiveTexture and passed by glUniform1i.
@@ -31,7 +31,8 @@ out gl_PerVertex {
 out vec3 vertexPosition3DWorld;
 
 // Vertex position in light source clip space.
-out vec3 ShadowCoord;
+// Coordinates for shadowmap texture look-up.
+out vec3 shadowCoord;
 
 // Light and view directions.
 out vec3 lightDir, viewDir;
@@ -56,7 +57,7 @@ void main() {
     // Account for perspective by dividing by w. Map from light coordinates in
     // (-1,-1)x(1,1) to texture coordinates in (0,0)x(1,1).
     vec4 vertexPositionShadow = lightViewProjection * vec4(vertexPosition3DWorld, 1.0);
-    ShadowCoord = vertexPositionShadow.xyz / vertexPositionShadow.w * 0.5 + 0.5;
+    shadowCoord = vertexPositionShadow.xyz / vertexPositionShadow.w * 0.5 + 0.5;
 
     // Light and view directions : subtraction of 2 points gives vector.
     // Camera space --> camera position at origin --> subtraction by [0,0,0].
@@ -66,7 +67,7 @@ void main() {
 
     // Compute clip distance. Vertex is discarded if clip distance is negative.
     // Our clip plane is simply the water level, i.e. z = 0.
-    // Clip is 1 for normal rendering and 0 for flipped rendering to texture.
+    // Clip is 0 for normal rendering and 1 for flipped rendering to texture.
     gl_ClipDistance[0] = vertexPosition3DWorld.z * clip;
 
 }

@@ -4,6 +4,9 @@
 uniform mat4 projection;
 uniform mat4 view;
 
+// Transformation matrix from world space to flipped camera view space.
+uniform mat4 flippedCameraView;
+
 // Transformation matrix from world space to light clip space.
 uniform mat4 lightViewProjection;
 
@@ -22,8 +25,10 @@ out gl_PerVertex {
 // Vertices 3D position (after heightmap displacement) in world space.
 out vec3 vertexPosition3DWorld;
 
-// Vertex position in light source clip space.
-out vec3 reflectionCoord;
+// Coordinates for flipped camera texture look-up.
+// Vertex position in flipped camera clip space.
+//out vec2 flippedCameraCoord;
+//out vec4 vertexPositionFlippedCamera;
 
 // Light and view directions.
 out vec3 lightDir, viewDir;
@@ -31,24 +36,13 @@ out vec3 lightDir, viewDir;
 
 void main() {
 
-    //fixed height of water surface
-    float waterSurfaceHeight = 0.008f;
-    float height = waterSurfaceHeight;
-
     // 3D vertex position : X and Y from vertex array, Z is fixed water surface height
-    vertexPosition3DWorld = vec3(vertexPosition2DWorld.xy, height);
+    vertexPosition3DWorld = vec3(vertexPosition2DWorld.xy, 0.0);
 
     // View matrix transforms from world space to camera space.
     // Projection matrix transforms from camera space to clip space (homogeneous space).
     vec4 vertexPositionCamera = view * vec4(vertexPosition3DWorld, 1.0);
     gl_Position = projection * vertexPositionCamera;
-
-    // Vertex position in light source clip space.
-    //vec4 vertexPositionReflection = lightViewProjection * vec4(vertexPosition3DWorld, 1.0);
-    // Reflection map texture coordinates with w division for perspective.
-    //reflectionCoord = vertexPositionReflection.xyz / vertexPositionReflection.w * 0.5 + 0.5;
-
-    reflectionCoord = vertexPositionCamera.xyz/vertexPositionCamera.z *0.5 + 0.5;
 
     // Light and view directions : subtraction of 2 points gives vector.
     // Camera space --> camera position at origin --> subtraction by [0,0,0].

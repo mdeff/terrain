@@ -13,7 +13,7 @@ public:
     /// Common methods of all RenderingContext.
     Terrain(unsigned int windowWidth, unsigned int windowHeight, unsigned int textureWidth, unsigned int textureHeight);
     unsigned int init(Vertices* vertices, unsigned int heightMapTexID, unsigned int shadowMapTexID);
-    void draw(const mat4& projection, const mat4& view, const mat4& flippedCameraView,
+    void draw(const mat4& projection, const mat4& view,
               const mat4& lightViewProjection, const vec3& lightPositionWorld) const;
 
 private:
@@ -28,8 +28,6 @@ private:
     /// Texture (second rendering target) size.
     unsigned int _textureWidth;
     unsigned int _textureHeight;
-
-    unsigned int _flippedTerrainFrameBufferID;
 
     /// Helper function.
     unsigned int load_texture(const char * imagepath) const;

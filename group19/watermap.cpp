@@ -1,8 +1,6 @@
 #include "watermap.h"
 #include "vertices.h"
 
-
-
 #include <cstdlib>
 #include <iostream>
 
@@ -11,50 +9,48 @@
 #include "opengp.h"
 
 #include "particles_control_vshader.h"
-#include "watermap_fshader.h"
 #include "watermap_vshader.h"
+#include "watermap_fshader.h"
+
 
 Watermap::Watermap(unsigned int width, unsigned int height) :
-    RenderingContext(width, height){
-     //initialization the reflection class as well
-
+    RenderingContext(width, height) {
 }
 
 
-void Watermap::init(Vertices* vertices , GLuint reflectionID) {
+void Watermap::init(Vertices* vertices , GLuint flippedTerrainTexID) {
 
     /// Common initialization.
     RenderingContext::init(vertices, watermap_vshader, watermap_fshader, NULL, "vertexPosition2DWorld", 0);
-    //RenderingContext::init(vertices, particles_control_vshader, watermap_fshader, NULL, "vertexPosition2D", 0);
 
     //bind the reflection tex to texture 0
-    set_texture(0, reflectionID, "reflectionTex", GL_TEXTURE_2D);
+    set_texture(0, flippedTerrainTexID, "flippedTerrainTex", GL_TEXTURE_2D);
 
-    /* Load texture for water surface */
-    set_texture(1, -1, "waterNormalMap", GL_TEXTURE_2D);
-    load_texture("../../textures/water_normal_map_2.tga");
+//    /* Load texture for water surface */
+//    set_texture(1, -1, "waterNormalMap", GL_TEXTURE_2D);
+//    load_texture("../../textures/water_normal_map_2.tga");
 
-    set_texture(2, -1, "riverSurfaceMap", GL_TEXTURE_2D);
-    load_texture("../../textures/water_2.tga");
+//    set_texture(2, -1, "riverSurfaceMap", GL_TEXTURE_2D);
+//    load_texture("../../textures/water_2.tga");
 
 
     /// Define light properties and pass them to the shaders.
-    vec3 Ia(1.0f, 1.0f, 1.0f);
-    vec3 Id(1.0f, 1.0f, 1.0f);
-    vec3 Is(1.0f, 1.0f, 1.0f);
-    GLuint _IaID = glGetUniformLocation(_programID, "Ia");
-    GLuint _IdID = glGetUniformLocation(_programID, "Id");
-    GLuint _IsID = glGetUniformLocation(_programID, "Is");
-    glUniform3fv( _IaID, 1, Ia.data());
-    glUniform3fv( _IdID, 1, Id.data());
-    glUniform3fv( _IsID, 1, Is.data());
+//    vec3 Ia(1.0f, 1.0f, 1.0f);
+//    vec3 Id(1.0f, 1.0f, 1.0f);
+//    vec3 Is(1.0f, 1.0f, 1.0f);
+//    GLuint _IaID = glGetUniformLocation(_programID, "Ia");
+//    GLuint _IdID = glGetUniformLocation(_programID, "Id");
+//    GLuint _IsID = glGetUniformLocation(_programID, "Is");
+//    glUniform3fv( _IaID, 1, Ia.data());
+//    glUniform3fv( _IdID, 1, Id.data());
+//    glUniform3fv( _IsID, 1, Is.data());
 
     /// Set uniform IDs.
     _viewID = glGetUniformLocation(_programID, "view");
     _projectionID = glGetUniformLocation(_programID, "projection");
+    _lightViewProjectionID = glGetUniformLocation(_programID, "lightViewProjection");
     _lightPositionWorldID = glGetUniformLocation(_programID, "lightPositionWorld");
     _timeID = glGetUniformLocation(_programID, "time");
-    _lightViewProjectionID = glGetUniformLocation(_programID, "lightViewProjection");
 
 }
 
@@ -75,8 +71,8 @@ void Watermap::draw(const mat4& projection, const mat4& view,
     glUniform3fv(_lightPositionWorldID, 1, lightPositionWorld.data());
 
     /// Time value which animates water
-    static float time = 0;
-    glUniform1f(_timeID, int(time++)%5000);
+//    static float time = 0;
+//    glUniform1f(_timeID, int(time++)%5000);
 
     /// Do not clear the default framebuffer (screen) : done by Terrain.
     /// Otherwise already drawn pixels will be cleared.

@@ -22,7 +22,8 @@ Terrain::Terrain(unsigned int windowWidth, unsigned int windowHeight, unsigned i
 GLuint Terrain::init(Vertices* vertices, GLuint heightMapTexID, GLuint shadowMapTexID) {
 
     /// Common initialization.
-    RenderingContext::init(vertices, terrain_vshader, terrain_fshader, NULL, "vertexPosition2DWorld", 0);
+    /// Render to FBO by default.
+    RenderingContext::init(vertices, terrain_vshader, terrain_fshader, NULL, "vertexPosition2DWorld", -1);
 
     /// Bind the heightmap and shadowmap to textures 0 and 1.
     set_texture(0, heightMapTexID, "heightMapTex", GL_TEXTURE_2D);
@@ -62,14 +63,12 @@ GLuint Terrain::init(Vertices* vertices, GLuint heightMapTexID, GLuint shadowMap
 
     /// The terrain will be rendered a second time from a flipped camera
     /// point of view to a texture which is attached to a FBO.
-    glGenFramebuffers(1, &_flippedTerrainFrameBufferID);
-    glBindFramebuffer(GL_FRAMEBUFFER, _flippedTerrainFrameBufferID);
     GLuint flippedTerrainTexID;
     glGenTextures(1, &flippedTerrainTexID);
     glBindTexture(GL_TEXTURE_2D, flippedTerrainTexID);
 
     /// Empty image (no data), three color components, clamped [0,1] 32 bits float.
-    /// Same size as the screen, no need to change the view port.
+    /// Same size as the screen : no need to change the view port, same projection matrix.
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _width, _height, 0, GL_RGB, GL_FLOAT, 0);
 
     /// Clamp texture coordinates to the [0,1] range. It is wrapped by default
@@ -94,6 +93,13 @@ GLuint Terrain::init(Vertices* vertices, GLuint heightMapTexID, GLuint shadowMap
     GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0};
     glDrawBuffers(1, drawBuffers);
 
+    /// Create a depth buffer for the FBO.
+    GLuint depthRenderbufferID;
+    glGenRenderbuffers(1, &depthRenderbufferID);
+    glBindRenderbuffer(GL_RENDERBUFFER, depthRenderbufferID);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, _width, _height);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderbufferID);
+
     /// Check that our framebuffer object (FBO) is complete.
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
         std::cerr << "Flipped terrain framebuffer not complete." << std::endl;
@@ -106,34 +112,39 @@ GLuint Terrain::init(Vertices* vertices, GLuint heightMapTexID, GLuint shadowMap
 }
 
 
-void Terrain::draw(const mat4& projection, const mat4& view, const mat4& flippedCameraView,
+void Terrain::draw(const mat4& projection, const mat4& view,
                    const mat4& lightViewProjection, const vec3& lightPositionWorld) const {
+
+    /// This could have been used instead of the clip uniform. But some drivers ignore it.
+    glEnable(GL_CLIP_DISTANCE0);
 
     /// Common drawing. 
     RenderingContext::draw();
 
+    /// Flip the terrain by multiplying the Z coordinate by -1 in world space.
+    mat4 flip = mat4::Identity();
+    flip(2,2) = -1.0f;
+    mat4 viewFlip = view * flip;
+
     /// Update the content of the uniforms.
-    glUniform1f(_clipID, 0.0);
     glUniformMatrix4fv(_projectionID, 1, GL_FALSE, projection.data());
-    glUniformMatrix4fv(_viewID, 1, GL_FALSE, view.data());
     glUniformMatrix4fv(_lightViewProjectionID, 1, GL_FALSE, lightViewProjection.data());
     glUniform3fv(_lightPositionWorldID, 1, lightPositionWorld.data());
 
-
-    /// Clear the default framebuffer (screen).
+    /// Clear the texture binded to FBO.
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     /// Render the terrain from camera point of view to default framebuffer.
+    glUniform1f(_clipID, 1.0);
+    glUniformMatrix4fv(_viewID, 1, GL_FALSE, viewFlip.data());
     _vertices->draw();
 
-    /// Render the terrain from the flipped camera point of view to a texture.
-    glUniform1f(_clipID, 1.0);
-    glUniformMatrix4fv(_viewID, 1, GL_FALSE, flippedCameraView.data());
-    glBindFramebuffer(GL_FRAMEBUFFER, _flippedTerrainFrameBufferID);
-    glClear(GL_COLOR_BUFFER_BIT);
-    // This could have been used instead of the clip uniform. But some drivers ignore it.
-    glEnable(GL_CLIP_DISTANCE0);
+    /// Render the terrain from camera point of view to default framebuffer.
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glUniform1f(_clipID, 0.0);
+    glUniformMatrix4fv(_viewID, 1, GL_FALSE, view.data());
     _vertices->draw();
+
     glDisable(GL_CLIP_DISTANCE0);
 
 }

@@ -3,7 +3,6 @@
 #define __watermap_h__
 
 #include "rendering_context.h"
-#include "waterReflection.h"
 
 #include <GL/glew.h>
 #include "opengp.h"
@@ -24,9 +23,9 @@ private:
     /// Uniform IDs.
     unsigned int _viewID;
     unsigned int _projectionID;
+    unsigned int _lightViewProjectionID;
     unsigned int _lightPositionWorldID;
     unsigned int _timeID;
-    unsigned int _lightViewProjectionID;
 
     /// Helper function.
     unsigned int load_texture(const char * imagepath) const;

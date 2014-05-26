@@ -69,7 +69,7 @@ void CameraControl::trackball(const mat4& model) {
 
     /// Camera is in the sky, looking down.
 
-    vec3 camPos(0.5f, -0.5f, 0.8f);
+//    vec3 camPos(0.5f, -0.5f, 0.8f);
 	//vec3 camPos(2.5f, -2.5f, 2.8f);
 
 //    vec3 camPos(0.0f, -1.5f, 0.8f);
@@ -88,8 +88,13 @@ void CameraControl::trackball(const mat4& model) {
 //    vec3 camUp(0.0f, 0.0f, 1.0f);
 
     /// Frontal view to observe falling particles.
-    //vec3 camPos(0.0f, -4.8f, 1.0f);
-    vec3 camLookAt(0.0f, 0.0f, 0.2f);
+//    vec3 camPos(0.0f, -4.8f, 1.0f);
+//    vec3 camLookAt(0.0f, 0.0f, 0.2f);
+//    vec3 camUp(0.0f, 0.0f, 1.0f);
+
+    /// Frontal view to observe water reflection.
+    vec3 camPos(-3.0f, 0.0f, 1.0f);
+    vec3 camLookAt(0.0f, 0.0f, 0.0f);
     vec3 camUp(0.0f, 0.0f, 1.0f);
 
     /// FPS exploration.
@@ -114,11 +119,6 @@ void CameraControl::trackball(const mat4& model) {
     /// Assemble the "Model View" matrix.
     _cameraModelview = view * model;
 
-    /// Compute the view matrix for a z-axis flipped camera (water reflection).
-    vec3 flippedCamPos = vec3(camPos[0], camPos[1], -camPos[2]);
-    mat4 flippedView = Eigen::lookAt(flippedCamPos, camLookAt, camUp);
-    _flippedCameraModelview = flippedView * model;
-
 }
 
 void CameraControl::update_camera_modelview(double posX,double posY,double posZ,double lookX,double lookY,double lookZ){
@@ -130,10 +130,6 @@ void CameraControl::update_camera_modelview(double posX,double posY,double posZ,
 	vec3 camUp(0.0f,0.0f,1.0f);
 	
     _cameraModelview = Eigen::lookAt(camPos, camLookAt, camUp);
-
-    /// Compute the view matrix for a z-axis flipped camera (water reflection).
-    vec3 flippedCamPos = vec3(camPos[0], camPos[1], -camPos[2]);
-    _flippedCameraModelview = Eigen::lookAt(flippedCamPos, camLookAt, camUp);
 
 	//std::cout<<(powf(posX-lookX,2)+powf(posY-lookY,2)+powf(posZ-lookZ,2))<<endl;
 
@@ -1115,7 +1111,7 @@ void CameraControl::fpsExploration(){
 	}
 }
 
-void CameraControl::updateCameraPosition(mat4& cameraModelview, mat4& flippedCameraModelview, mat4& cameraPictorialModel, int& selectedControlPoint) {
+void CameraControl::updateCameraPosition(mat4& cameraModelview, mat4& cameraPictorialModel, int& selectedControlPoint) {
 
     /// Modify camera position according to the exploration mode.
     switch(_explorationMode) {
@@ -1136,9 +1132,8 @@ void CameraControl::updateCameraPosition(mat4& cameraModelview, mat4& flippedCam
 	if(flagAnimatePictorialCamera==true)
         animatePictorialCamera();
 
-    /// Update the view transformation matrices.
+    /// Update the view transformation matrix.
     cameraModelview = _cameraModelview;
-    flippedCameraModelview = _flippedCameraModelview;
 
     /// Update the camera pictorial model transformation matrix.
     cameraPictorialModel = _cameraPictorialModel;
