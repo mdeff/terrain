@@ -122,6 +122,7 @@ void init() {
 	
     /// OpenGL parameters.
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+//    glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_MULTISAMPLE);
     glEnable(GL_TEXTURE_2D);
@@ -151,8 +152,8 @@ void init() {
     skybox.init(verticesSkybox);
 
     // Grid or quad : interpolation ?
-//    water.init(verticesGrid, flippedTerrainTexID);
-    water.init(verticesQuad, flippedTerrainTexID);
+    water.init(verticesGrid, flippedTerrainTexID);
+//    water.init(verticesQuad, flippedTerrainTexID);
 
     /// Pass the particles position textures from control to render.
     GLuint particlePosTexID[2];

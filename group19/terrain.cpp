@@ -25,6 +25,11 @@ GLuint Terrain::init(Vertices* vertices, GLuint heightMapTexID, GLuint shadowMap
     /// Render to FBO by default.
     RenderingContext::init(vertices, terrain_vshader, terrain_fshader, NULL, "vertexPosition2DWorld", -1);
 
+    /// Allow to manually set a clip distance in the vertex shader (used to cut
+    /// under water level geometry when rendering to texture). This could have
+    /// been used instead of the clip uniform. But some drivers ignore it.
+    glEnable(GL_CLIP_DISTANCE0);
+
     /// Bind the heightmap and shadowmap to textures 0 and 1.
     set_texture(0, heightMapTexID, "heightMapTex", GL_TEXTURE_2D);
     set_texture(1, shadowMapTexID, "shadowMapTex", GL_TEXTURE_2D);
@@ -115,9 +120,6 @@ GLuint Terrain::init(Vertices* vertices, GLuint heightMapTexID, GLuint shadowMap
 void Terrain::draw(const mat4& projection, const mat4& view,
                    const mat4& lightViewProjection, const vec3& lightPositionWorld) const {
 
-    /// This could have been used instead of the clip uniform. But some drivers ignore it.
-    glEnable(GL_CLIP_DISTANCE0);
-
     /// Common drawing. 
     RenderingContext::draw();
 
@@ -144,8 +146,6 @@ void Terrain::draw(const mat4& projection, const mat4& view,
     glUniform1f(_clipID, 0.0);
     glUniformMatrix4fv(_viewID, 1, GL_FALSE, view.data());
     _vertices->draw();
-
-    glDisable(GL_CLIP_DISTANCE0);
 
 }
 

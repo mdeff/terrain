@@ -57,9 +57,6 @@ void Watermap::init(Vertices* vertices , GLuint flippedTerrainTexID) {
 
 void Watermap::draw(const mat4& projection, const mat4& view,
                    const mat4& lightViewProjection, const vec3& lightPositionWorld) const {
-     // Enable blending
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     /// Common drawing.
     RenderingContext::draw();
@@ -74,14 +71,16 @@ void Watermap::draw(const mat4& projection, const mat4& view,
 //    static float time = 0;
 //    glUniform1f(_timeID, int(time++)%5000);
 
-    /// Do not clear the default framebuffer (screen) : done by Terrain.
-    /// Otherwise already drawn pixels will be cleared.
+    /// Blending for particle transparency.
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     /// Render the terrain from camera point of view to default framebuffer.
     _vertices->draw();
 
-
+    /// Disable blending : other primitives are opaque.
     glDisable(GL_BLEND);
+
 }
 
 
