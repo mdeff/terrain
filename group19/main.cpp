@@ -148,8 +148,9 @@ void init() {
 
     /// Initialize the rendering contexts.
     GLuint shadowMapTexID = shadowmap.init(verticesGrid, heightMapTexID);
-    GLuint flippedTerrainTexID = terrain.init(verticesGrid, heightMapTexID, shadowMapTexID);
-    skybox.init(verticesSkybox);
+    GLuint reflectionFramebufferID;
+    GLuint flippedTerrainTexID = terrain.init(verticesGrid, heightMapTexID, shadowMapTexID, reflectionFramebufferID);
+    skybox.init(verticesSkybox, reflectionFramebufferID);
 
     // Grid or quad : interpolation ?
     water.init(verticesGrid, flippedTerrainTexID);
@@ -199,18 +200,15 @@ void display() {
     /// Uncomment to render only the boundaries (not full triangles).
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-    /// Clear the default framebuffer (screen). Do it only once before
-    /// objects drawing, otherwise already drawn pixels will be cleared.
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     /// Render opaque primitives on screen.
+    /// These are also rendered in a texture for water reflection.
     terrain.draw(cameraProjection, cameraView, lightViewProjection, lightPositionWorld);
     skybox.draw(cameraProjection, cameraView);
-    //cameraPictorial.draw(cameraProjection, cameraView, cameraPictorialModel, vec3(1,1,0));
-    //cameraPath.draw(cameraProjection, cameraView, mat4::Identity(), vec3(0,1,0));
-    //cameraPathControlPoints.draw(cameraProjection, cameraView, selectedControlPoint);
 
+    /// Render opaque primitives on screen.
+    cameraPictorial.draw(cameraProjection, cameraView, cameraPictorialModel, vec3(1,1,0));
+    cameraPath.draw(cameraProjection, cameraView, mat4::Identity(), vec3(0,1,0));
+    cameraPathControlPoints.draw(cameraProjection, cameraView, selectedControlPoint);
 
     water.draw(cameraProjection, cameraView, lightViewProjection, lightPositionWorld);
 
@@ -218,8 +216,8 @@ void display() {
     /// Render the translucent primitives last. Otherwise opaque objects that
     /// may be visible behind get discarded by the depth test.
     /// First control particle positions, then render them on screen.
-    //particlesControl.draw();
-    //particlesRender.draw(cameraProjection, cameraView);
+    particlesControl.draw();
+    particlesRender.draw(cameraProjection, cameraView);
 
 }
 

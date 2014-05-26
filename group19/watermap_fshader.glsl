@@ -96,7 +96,7 @@ void main() {
 
     // Balance between reflected and refrative light. Transparent when N
     // and V are parallel, purely reflective when they are perpendicular.
-    float alpha = 1.0 - 1.0 * dot(normalCamera,-V);
+    float alpha = 1.0 - 1.0 * dot(-V, normalCamera);
 
 
 //    vec2 flippedCameraCoord = vertexPositionFlippedCamera.xy / vertexPositionFlippedCamera.w * 0.5 + 0.5;
@@ -126,6 +126,6 @@ void main() {
 
 //    color = vec4(vec3(dot(vec3(0,0,1),L)), 1.0);
     // Texture test (need to pass a fullscreen quad to be called on every pixel).
-//    color = vec4(texelFetch(flippedTerrainTex, ivec2(gl_FragCoord.xy), 0).rgb, 0.5);
+//    color = vec4(texelFetch(flippedTerrainTex, ivec2(gl_FragCoord.xy), 0).rgb, 1.0);
 
 }

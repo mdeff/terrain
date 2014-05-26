@@ -30,10 +30,14 @@ protected:
     /// Pointer : vertices object can be shared between RenderingContext.
     Vertices* _vertices;
 
-private:
+protected:
 
     /// Common properties of all RenderingContext.
     unsigned int _frameBufferID;
+
+
+private:
+
 
     /// Textures.
     struct texture {
