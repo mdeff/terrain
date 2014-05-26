@@ -16,6 +16,21 @@ void RenderingContext::init(Vertices* vertices, const char* vshader, const char*
 
     _vertices = vertices;
 
+    /// Compile and install the rendering shaders.
+    _programID = opengp::compile_shaders(vshader, fshader, gshader, NULL, NULL);
+    if(!_programID)
+        exit(EXIT_FAILURE);
+
+    /// Needed for glUniform* as glProgramUniform* does not work on AMD/ATI.
+    /// Direct state access (DSA) was only lately implemented by them.
+    glUseProgram(_programID);
+
+    /// Bind the vertex attribute ID to vertex data, if they exist.
+    if(vertices != NULL && vertexAttribName != NULL) {
+        GLuint vertexAttribID = glGetAttribLocation(_programID, vertexAttribName);
+        _vertices->bind(vertexAttribID);
+    }
+
     /// Create a framebuffer (container for textures, and an optional depth buffer).
     /// The created FBO (instead of the screen) will contain the rendering results.
     if(frameBufferID < 0)
@@ -25,30 +40,10 @@ void RenderingContext::init(Vertices* vertices, const char* vshader, const char*
     /// Set the context FBO as the rendering target.
     glBindFramebuffer(GL_FRAMEBUFFER, _frameBufferID);
 
-    /// Compile and install the rendering shaders.
-    _programID = opengp::compile_shaders(vshader, fshader, gshader, NULL, NULL);
-    if(!_programID)
-        exit(EXIT_FAILURE);
-
-	   glUseProgram(_programID);
-
-    /// Bind the vertex attribute ID to vertex data, if they exist.
-    if(vertices != NULL && vertexAttribName != NULL) {
-        GLuint vertexAttribID = glGetAttribLocation(_programID, vertexAttribName);
-        _vertices->bind(vertexAttribID);
-    }
-
 }
 
 
 void RenderingContext::draw() const {
-
-    /// Set the context FBO as the rendering target.
-    glBindFramebuffer(GL_FRAMEBUFFER, _frameBufferID);
-
-    /// Specify the transformation from normalized device coordinates
-    /// to texture/window coordinates.
-    glViewport(0, 0, _width, _height);
 
     /// Select the shader program.
     glUseProgram(_programID);
@@ -60,6 +55,14 @@ void RenderingContext::draw() const {
             glBindTexture(_textures[i].target, (GLuint)_textures[i].ID);
         }
     }
+
+    /// Specify the transformation from normalized device coordinates
+    /// to texture/window coordinates.
+    glViewport(0, 0, _width, _height);
+
+    /// Set the context FBO as the rendering target.
+    glBindFramebuffer(GL_FRAMEBUFFER, _frameBufferID);
+
 }
 
 

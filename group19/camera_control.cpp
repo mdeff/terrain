@@ -102,16 +102,17 @@ void CameraControl::trackball(const mat4& model) {
 //    vec3 camLookAt(-0.3f, 0.1f, 0.2f);
 //    vec3 camUp(0.0f, 0.0f, 1.0f);
 
-//    vec3 flippedCamPos = vec3(camPos[0], camPos[1],  2*GROUND_HEIGHT - camPos[2]);
 
     /// Assemble the view matrix.
     mat4 view = Eigen::lookAt(camPos, camLookAt, camUp);
-//    mat4 flippedView = Eigen::lookAt(flippedCamPos, camLookAt, camUp);
 
     /// Assemble the "Model View" matrix.
     _cameraModelview = view * model;
-    // Calculate the Model View matrix of flipped camera
-//    flippedCameraModelview = flippedView * model;
+
+    /// Compute the view matrix for a z-axis flipped camera (water reflection).
+    vec3 flippedCamPos = vec3(camPos[0], camPos[1], -camPos[2]);
+    mat4 flippedView = Eigen::lookAt(flippedCamPos, camLookAt, camUp);
+    _flippedCameraModelview = flippedView * model;
 
 }
 
@@ -124,6 +125,11 @@ void CameraControl::update_camera_modelview(double posX,double posY,double posZ,
 	vec3 camUp(0.0f,0.0f,1.0f);
 	
     _cameraModelview = Eigen::lookAt(camPos, camLookAt, camUp);
+
+    /// Compute the view matrix for a z-axis flipped camera (water reflection).
+    vec3 flippedCamPos = vec3(camPos[0], camPos[1], -camPos[2]);
+    _flippedCameraModelview = Eigen::lookAt(flippedCamPos, camLookAt, camUp);
+
 	//std::cout<<(powf(posX-lookX,2)+powf(posY-lookY,2)+powf(posZ-lookZ,2))<<endl;
 
 	/*
@@ -1104,7 +1110,7 @@ void CameraControl::fpsExploration(){
 	}
 }
 
-void CameraControl::updateCameraPosition(mat4& cameraModelview, mat4& cameraPictorialModel, int& selectedControlPoint) {
+void CameraControl::updateCameraPosition(mat4& cameraModelview, mat4& flippedCameraModelview, mat4& cameraPictorialModel, int& selectedControlPoint) {
 
     /// Modify camera position according to the exploration mode.
     switch(_explorationMode) {
@@ -1123,9 +1129,11 @@ void CameraControl::updateCameraPosition(mat4& cameraModelview, mat4& cameraPict
     }
 
 	if(flagAnimatePictorialCamera==true)
-		animatePictorialCamera();
-    /// Update the view transformation matrix.
+        animatePictorialCamera();
+
+    /// Update the view transformation matrices.
     cameraModelview = _cameraModelview;
+    flippedCameraModelview = _flippedCameraModelview;
 
     /// Update the camera pictorial model transformation matrix.
     cameraPictorialModel = _cameraPictorialModel;

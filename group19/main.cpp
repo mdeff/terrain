@@ -8,7 +8,6 @@
 #include "heightmap.h"
 #include "shadowmap.h"
 #include "watermap.h"
-#include "waterReflection.h"
 #include "skybox.h"
 #include "particles_control.h"
 #include "particles_render.h"
@@ -36,7 +35,7 @@ const unsigned int nParticlesSide(20);
 
 /// Instanciate the rendering contexts that render to the screen.
 Skybox skybox(windowWidth, windowHeight);
-Terrain terrain(windowWidth, windowHeight);
+Terrain terrain(windowWidth, windowHeight, textureWidth, textureHeight);
 RenderingSimple cameraPictorial(windowWidth, windowHeight);
 RenderingSimple cameraPath(windowWidth, windowHeight);
 CameraPathControlPoints cameraPathControlPoints(windowWidth, windowHeight);
@@ -47,7 +46,6 @@ Shadowmap shadowmap(textureWidth, textureHeight);
 ParticlesControl particlesControl(nParticlesSide);
 
 Watermap water(windowWidth, windowHeight);
-WaterReflection reflection(windowWidth, windowHeight);
 
 /// Camera position controller.
 CameraControl cameraControl;
@@ -149,12 +147,10 @@ void init() {
 
     /// Initialize the rendering contexts.
     GLuint shadowMapTexID = shadowmap.init(verticesGrid, heightMapTexID);
-    terrain.init(verticesGrid, heightMapTexID, shadowMapTexID);
+    GLuint flippedTerrainTexID = terrain.init(verticesGrid, heightMapTexID, shadowMapTexID);
     skybox.init(verticesSkybox);
-	//init water part
-	GLuint reflectionID = reflection.init(verticesGrid, heightMapTexID);
-    water.init(verticesGrid, reflectionID);
-    
+//    water.init(verticesGrid, flippedTerrainTexID);
+    water.init(verticesQuad, flippedTerrainTexID);
 
     /// Pass the particles position textures from control to render.
     GLuint particlePosTexID[2];
@@ -189,9 +185,9 @@ void display() {
 
     /// Control the camera position.
     /// Should come before rendering as it updates the view transformation matrix.
-    mat4 cameraView, cameraPictorialModel;
+    mat4 cameraView, flippedCameraView, cameraPictorialModel;
     int selectedControlPoint;
-    cameraControl.updateCameraPosition(cameraView, cameraPictorialModel, selectedControlPoint);
+    cameraControl.updateCameraPosition(cameraView, flippedCameraView, cameraPictorialModel, selectedControlPoint);
 
     /// Generate the shadowmap.
     /// Should come before rendering as it updates the light transformation matrices.
@@ -201,14 +197,13 @@ void display() {
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     /// Render opaque primitives on screen.
-    terrain.draw(cameraProjection, cameraView, lightViewProjection, lightPositionWorld);
+    terrain.draw(cameraProjection, cameraView, flippedCameraView, lightViewProjection, lightPositionWorld);
     skybox.draw(cameraProjection, cameraView);
     cameraPictorial.draw(cameraProjection, cameraView, cameraPictorialModel, vec3(1,1,0));
     cameraPath.draw(cameraProjection, cameraView, mat4::Identity(), vec3(0,1,0));
     cameraPathControlPoints.draw(cameraProjection, cameraView, selectedControlPoint);
 
-    //draw water map
-//   reflection.draw(cameraProjection, flippedcameraView, lightViewProjection, lightPositionWorld);
+
     water.draw(cameraProjection, cameraView, lightViewProjection, lightPositionWorld);
 
     /// Render the translucent primitives last. Otherwise opaque objects that

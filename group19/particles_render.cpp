@@ -47,10 +47,6 @@ void ParticlesRender::draw(const mat4& projection, const mat4& view) {
     /// Common drawing. 
     RenderingContext::draw();
 
-    /// Blending for particle transparency.
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
     /// Update the content of the uniforms.
     glUniformMatrix4fv( _viewID, 1, GL_FALSE, view.data());
     glUniformMatrix4fv( _projectionID, 1, GL_FALSE, projection.data());
@@ -64,11 +60,15 @@ void ParticlesRender::draw(const mat4& projection, const mat4& view) {
     /// Do not clear the default framebuffer (screen) : done by Terrain.
     /// Otherwise already drawn pixels will be cleared.
 
+    /// Blending for particle transparency.
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     /// Render the particles from camera point of view to default framebuffer.
     unsigned int nVertices = _nParticlesSide*_nParticlesSide*_nParticlesSide;
     glDrawArrays(GL_POINTS, 0, nVertices);
 
-    /// Disable blending : all the other primitives are opaque.
+    /// Disable blending : other primitives are opaque.
     glDisable(GL_BLEND);
 
 }

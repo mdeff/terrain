@@ -63,6 +63,10 @@ In our implementation, particles that fall below the water level are reseted to 
 
 discard is not used
 
+\subsubsection{Water reflection}
+
+For the water reflection effect, we should render the terrain from a flipped camera position. The terrain is thus rendered two times. It is rendered a first time with the real camera position to the default framebuffer (screen) and a second time with a flipped virtual camera position to a texture which is attached to a framebuffer object. The texture is later used to render the water surface.
+
 \section{Improvements on last stage}
 
 \subsection{Code cleanup}

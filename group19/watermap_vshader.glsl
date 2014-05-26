@@ -30,11 +30,11 @@ out vec3 lightDir, viewDir;
 
 
 void main() {
-	
-	//fixed height of water surface
-	float waterSurfaceHeight = 0.008f;  
-    float height = waterSurfaceHeight; 
-  
+
+    //fixed height of water surface
+    float waterSurfaceHeight = 0.008f;
+    float height = waterSurfaceHeight;
+
     // 3D vertex position : X and Y from vertex array, Z is fixed water surface height
     vertexPosition3DWorld = vec3(vertexPosition2DWorld.xy, height);
 

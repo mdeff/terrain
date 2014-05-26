@@ -62,7 +62,7 @@ GLuint Heightmap::init(Vertices* vertices) {
     GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0};
     glDrawBuffers(1, drawBuffers);
 
-    /// Check that our framebuffer is complete.
+    /// Check that our framebuffer object (FBO) is complete.
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
         std::cerr << "Heightmap framebuffer not complete." << std::endl;
         exit(EXIT_FAILURE);
