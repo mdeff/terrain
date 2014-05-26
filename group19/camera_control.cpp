@@ -41,7 +41,9 @@ void CameraControl::init(VerticesCameraPath* verticesCameraPath, VerticesCameraP
     glGetTexImage(GL_TEXTURE_2D, 0, GL_RED, GL_FLOAT, _heightmapCPU);
 
     /// Generate the camera path.
-    bezier_4_points(0, 0, 0, 0);
+    //bezier_4_points(0, 0, 0, 0);
+	//MultipleBezier();
+	MultipleBezier_controlled(0,0, 0, 0);
    // InitdeCasteljauSubdivision();
     //InitSubdivision();
 
@@ -725,7 +727,7 @@ void CameraControl::MultipleBezier() {
     const float bB3X =  1.00f,bB3Y =  0.00f,bB3Z =  0.40f;
 
     /// Choose the resolution.
-    const unsigned int nPoints = 500;
+    const unsigned int nPoints = 200;
 
     _cameraPath.clear();
     /// To avoid vector resizing on every loop.
@@ -749,6 +751,131 @@ void CameraControl::MultipleBezier() {
     _verticesCameraPath ->copy(_cameraPath.data(), _cameraPath.size());
 
 }
+
+void CameraControl::MultipleBezier_controlled(int PointToChange, float deltaX, float deltaY, float deltaZ) {
+
+	//// setting first bezier curve
+	static float bA0X = -1.00f,bA0Y =  0.00f,bA0Z =  0.40f;
+    static float bA1X = -0.50f,bA1Y = -1.00f,bA1Z =  0.40f;
+    static float bA2X = -0.50f,bA2Y =  1.00f,bA2Z =  0.40f;
+    static float bA3X =  0.00f,bA3Y =  0.00f,bA3Z =  0.40f;
+
+	//// setting second bezier curve
+	static float bB0X =  bA3X ,bB0Y =  bA3Y ,bB0Z =  bA3Z ; // PB0 = PA3
+    static float bB1X = 2*bB0X - bA2X;//PB1 = 2PB0 - PA2
+	static float bB1Y = 2*bB0Y - bA2Y;//PB1 is the PA2 mirrored on PB0
+	static float bB1Z = 2*bB0Z - bA2Z;
+    static float bB2X =  0.50f,bB2Y =  1.00f,bB2Z =  0.40f;
+    static float bB3X =  1.00f,bB3Y =  0.00f,bB3Z =  0.40f;
+
+
+	switch(PointToChange){
+	case 0:
+        bA0X += deltaX;
+        bA0Y += deltaY;
+        bA0Z += deltaZ;
+		break;
+	case 1:
+        bA1X += deltaX;
+        bA1Y += deltaY;
+        bA1Z += deltaZ;
+		break;
+	case 2:
+        bA2X += deltaX;
+        bA2Y += deltaY;
+        bA2Z += deltaZ;
+		
+		//refresh other control points 
+		bB1X = 2*bB0X - bA2X;
+		bB1Y = 2*bB0Y - bA2Y;
+		bB1Z = 2*bB0Z - bA2Z;
+		break;
+	case 3:
+        bA3X += deltaX;
+        bA3Y += deltaY;
+        bA3Z += deltaZ;
+
+		//refresh other control points 
+		bB0X =  bA3X ,bB0Y =  bA3Y ,bB0Z =  bA3Z ;
+
+		bB1X = 2*bB0X - bA2X;
+		bB1Y = 2*bB0Y - bA2Y;
+		bB1Z = 2*bB0Z - bA2Z;
+		break;
+	case 4:
+		bB1X += deltaX;
+		bB1Y += deltaY;
+		bB1Z += deltaZ;
+
+		//refresh other control points 
+		bA2X = - bB1X + 2*bB0X;
+		bA2Y = - bB1Y + 2*bB0Y;
+		bA2Z = - bB1Z + 2*bB0Z;
+		break;
+	case 5:
+        bB2X += deltaX;
+        bB2Y += deltaY;
+        bB2Z += deltaZ;
+		break;
+	case 6:
+        bB3X += deltaX;
+        bB3Y += deltaY;
+        bB3Z += deltaZ;
+		break;
+    }
+
+    /// Fill the control points vector.
+    _cameraPathControls.clear();
+    _cameraPathControls.reserve(21);
+    _cameraPathControls.push_back(bA0X);
+    _cameraPathControls.push_back(bA0Y);
+    _cameraPathControls.push_back(bA0Z);
+    _cameraPathControls.push_back(bA1X);
+    _cameraPathControls.push_back(bA1Y);
+    _cameraPathControls.push_back(bA1Z);
+    _cameraPathControls.push_back(bA2X);
+    _cameraPathControls.push_back(bA2Y);
+    _cameraPathControls.push_back(bA2Z);
+    _cameraPathControls.push_back(bA3X);
+    _cameraPathControls.push_back(bA3Y);
+    _cameraPathControls.push_back(bA3Z);
+
+	_cameraPathControls.push_back(bB1X);
+    _cameraPathControls.push_back(bB1Y);
+    _cameraPathControls.push_back(bB1Z);
+    _cameraPathControls.push_back(bB2X);
+    _cameraPathControls.push_back(bB2Y);
+    _cameraPathControls.push_back(bB2Z);
+    _cameraPathControls.push_back(bB3X);
+    _cameraPathControls.push_back(bB3Y);
+    _cameraPathControls.push_back(bB3Z);
+	
+    /// Choose the resolution.
+    const unsigned int nPoints = 200;
+
+    _cameraPath.clear();
+    /// To avoid vector resizing on every loop.
+    _cameraPath.reserve(2*3*nPoints);
+
+    /// Generate coordinates of first bezier curve.
+    for(int k=0; k<nPoints; ++k) {
+        float t = float(k) / float(nPoints);
+        _cameraPath.push_back(std::pow((1-t),3)*bA0X + 3*t*std::pow((1-t),2)*bA1X + 3*std::pow(t,2)*(1-t)*bA2X + std::pow(t,3)*bA3X);
+        _cameraPath.push_back(std::pow((1-t),3)*bA0Y + 3*t*std::pow((1-t),2)*bA1Y + 3*std::pow(t,2)*(1-t)*bA2Y + std::pow(t,3)*bA3Y);
+        _cameraPath.push_back(std::pow((1-t),3)*bA0Z + 3*t*std::pow((1-t),2)*bA1Z + 3*std::pow(t,2)*(1-t)*bA2Z + std::pow(t,3)*bA3Z);
+    }
+	/// Generate coordinates of second bezier curve.
+	for(int k=1; k<nPoints; ++k) {
+        float t = float(k) / float(nPoints);
+        _cameraPath.push_back(std::pow((1-t),3)*bB0X + 3*t*std::pow((1-t),2)*bB1X + 3*std::pow(t,2)*(1-t)*bB2X + std::pow(t,3)*bB3X);
+        _cameraPath.push_back(std::pow((1-t),3)*bB0Y + 3*t*std::pow((1-t),2)*bB1Y + 3*std::pow(t,2)*(1-t)*bB2Y + std::pow(t,3)*bB3Y);
+        _cameraPath.push_back(std::pow((1-t),3)*bB0Z + 3*t*std::pow((1-t),2)*bB1Z + 3*std::pow(t,2)*(1-t)*bB2Z + std::pow(t,3)*bB3Z);
+    }
+	/// Copy the vertices to GPU.
+    _verticesCameraPath->copy(_cameraPath.data(), _cameraPath.size());
+    _verticesCameraPathControls->copy(_cameraPathControls.data(), _cameraPathControls.size());
+}
+
 
 void CameraControl::flyingExploration(){
 	static double straightMaxSpeed = 0.5f; 	
@@ -1219,7 +1346,7 @@ void CameraControl::handleCameraControls(int key, int action){
 		switch(key){
 			case 90: //Z=> change control point under modification
                 _selectedControlPoint++;
-                if(_selectedControlPoint>3)
+                if(_selectedControlPoint>6)
                     _selectedControlPoint=0;
                 std::cout<<"Changing control point nB"<<_selectedControlPoint<<std::endl;
 				std::cout<<"Control list :"<<std::endl<<"Key Z : change point to set"<<std::endl;
@@ -1232,22 +1359,28 @@ void CameraControl::handleCameraControls(int key, int action){
 
 				break;
 			case 85: //U=> X+
-                bezier_4_points(_selectedControlPoint,0.1f,0.0f,0.0f);
+                //bezier_4_points(_selectedControlPoint,0.1f,0.0f,0.0f);
+				MultipleBezier_controlled(_selectedControlPoint,0.1f,0.0f,0.0f);
 				break;
 			case 74: //J=> X-
-                bezier_4_points(_selectedControlPoint,-0.1f,0.0f,0.0f);
+                //bezier_4_points(_selectedControlPoint,-0.1f,0.0f,0.0f);
+				MultipleBezier_controlled(_selectedControlPoint,-0.1f,0.0f,0.0f);
 				break;
 			case 73: //I=> Y+
-                bezier_4_points(_selectedControlPoint,0.0f,0.1f,0.0f);
+                //bezier_4_points(_selectedControlPoint,0.0f,0.1f,0.0f);
+				MultipleBezier_controlled(_selectedControlPoint,0.0f,0.1f,0.0f);
 				break;
 			case 75: //K=> Y-
-                bezier_4_points(_selectedControlPoint,0.0f,-0.1f,0.0f);
+                //bezier_4_points(_selectedControlPoint,0.0f,-0.1f,0.0f);
+				MultipleBezier_controlled(_selectedControlPoint,0.0f,-0.1f,0.0f);
 				break;
 			case 79: //O=> Z+
-                bezier_4_points(_selectedControlPoint,0.0f,0.0f,0.1f);
+                //bezier_4_points(_selectedControlPoint,0.0f,0.0f,0.1f);
+				MultipleBezier_controlled(_selectedControlPoint,0.0f,0.0f,0.1f);
 				break;
 			case 76: //L=> Z-
-                bezier_4_points(_selectedControlPoint,0.0f,0.0f,-0.1f);
+                //bezier_4_points(_selectedControlPoint,0.0f,0.0f,-0.1f);
+				MultipleBezier_controlled(_selectedControlPoint,0.0f,0.0f,-0.1f);
 				break;
 			case 307: //5
 				InitSubdivision();
