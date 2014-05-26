@@ -91,6 +91,7 @@ void CameraControl::trackball(const mat4& model) {
 //    vec3 camUp(0.0f, 0.0f, 1.0f);
 
     /// Frontal view to observe falling particles.
+
   /*  vec3 camPos(0.0f, -3.0f, 1.3f);
     vec3 camLookAt(0.0f, 0.0f, 0.2f);
     vec3 camUp(0.0f, 0.0f, 1.0f);
@@ -100,6 +101,13 @@ void CameraControl::trackball(const mat4& model) {
     //vec3 camPos(0.0f, -2.8f, 1.7f);
     vec3 camLookAt(0.0f, 0.0f, 0.0f);
     vec3 camUp(0.0f, 0.0f, 1.0f);
+
+
+    /// Frontal view to observe water reflection.
+    //vec3 camPos(-3.0f, 0.0f, 1.0f);
+//    vec3 camLookAt(0.0f, 0.0f, 0.0f);
+//    vec3 camUp(0.0f, 0.0f, 1.0f);
+
 
     //vec3 camPos(-3.0f, 0.0f, 1.0f);
 //    vec3 camLookAt(0.0f, 0.0f, 0.0f);

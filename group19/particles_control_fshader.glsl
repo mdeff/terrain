@@ -1,7 +1,6 @@
 #version 330 core
 
 // Time in seconds between two executions (frames).
-
 uniform float deltaT;
 
 // Particules last position and velocity textures.
