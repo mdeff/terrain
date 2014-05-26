@@ -7,6 +7,7 @@
 #include <GL/glew.h>
 #include <GL/glfw.h>
 #include "opengp.h"
+#include <Eigen/Geometry> 
 
 
 //key status 
@@ -390,13 +391,37 @@ void CameraControl::animatePictorialCamera(){
 			_cameraPictorialModel(0,3) = _cameraPath[i*3+0];
 			_cameraPictorialModel(1,3) = _cameraPath[i*3+1];
 			_cameraPictorialModel(2,3) = _cameraPath[i*3+2];
+			
+			float dirX= _cameraPath[(i+1)*3+0]-_cameraPath[i*3+0];
+			float dirY= _cameraPath[(i+1)*3+1]-_cameraPath[i*3+1];
+			float dirZ= _cameraPath[(i+1)*3+2]-_cameraPath[i*3+2];
 
-        //  pictorialCameraPos[0] = _cameraPath[i*3+0];
-        //  pictorialCameraPos[1] = _cameraPath[i*3+1];
-        //  pictorialCameraPos[2] = _cameraPath[i*3+2];
-        //  pictorialCameraLookat[0] = _cameraPath[(i+1)*3+0];
-        //  pictorialCameraLookat[1] = _cameraPath[(i+1)*3+1];
-        //  pictorialCameraLookat[2] = _cameraPath[(i+1)*3+2];
+			float length = sqrt(dirX*dirX+dirY*dirY+dirZ*dirZ);
+			
+			float dirXnorm = dirX/length;
+			float dirYnorm = dirY/length;
+			float dirZnorm = dirZ/length;
+
+			float angleZ = atan2(dirYnorm,dirXnorm);
+			float angleY = atan2(sqrt(dirYnorm*dirYnorm+dirXnorm*dirXnorm),dirZnorm);
+
+			//vec3 vecDir = vec3(dirXnorm,dirYnorm,dirZnorm);
+			//vec3 camDir = vec3(0,0,1);
+			// 
+			//vec3 crossT =(vecDir).cross((camDir));
+				
+			//float camera_angle = 0.1f*i;
+			
+			mat3 rot = Eigen::AngleAxisf(angleZ, Eigen::Vector3f::UnitZ()).toRotationMatrix() 
+				* Eigen::AngleAxisf(angleY, Eigen::Vector3f::UnitY()).toRotationMatrix();
+			
+			for (int j=0; j<3;j++){
+				for(int k=0; k<3;k++){
+					_cameraPictorialModel(k,j)=rot(k,j);
+				}
+			}
+
+
 		i++;
 		}
 		
