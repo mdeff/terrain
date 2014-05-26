@@ -28,14 +28,55 @@ We did implement all the basic
 
 \section{Implementation}
 
-\subsection{Basics}
+\subsection{Basic - Fly through mode}
 
-\subsection{Advanced}
+In order to freely fly through our scene, the camera mode free fly provide 3 possible actions:
+\begin{itemize}
+\item go forward/backward.
+\item turn left/right.
+\item turn up/down.
+\end{itemize}
+To have all possible rotation, the camera has to rotate on virtual axis, see figure \ref{freefly_rotation} present the behavior of a user turning up and then right creating a virtual axis of rotation.
+\begin{figure}[ht]
+	\centering
+	\includegraphics[height=4cm]{{{img_stage3/cameraFreeFly}}}
+ 	\caption{Free flying rotation example}
+ 	\label{freefly_rotation}
+\end{figure}
+To achieve such rotations,the look at point has to be displaced staying always at equal distance to the camera position. We proceed this rotation in 3 steps: 
+translate to origin, undo previous rotations, do new rotations, return to initial placement. Rotations are proceeded only in two axis, Y and Z, using rotation matrix computed according to inputs angle. A velocity has been added, the acceleration is gradual until a maximum value, same behavior for deceleration. 
 
-\subsubsection{Pictorial camera}
+\subsection{Basic - FPS exploration mode}
+
+The FPS exploration mode has slightly different rotation behavior. Camera's rotations are expected to reproduce similar effect as the head rotation of a human body. In this purpose the lateral rotations will always be proceeded on a virtual axis parallel to the world horizontal axis. An example of such behavior is represented figure \ref{fps_rotation}.  
+\begin{figure}[ht]
+	\centering
+	\includegraphics[height=4cm]{{{img_stage3/cameraFPS}}}
+ 	\caption{Fps rotation example}
+ 	\label{fps_rotation}
+\end{figure}
+Thus, transformation is simplified for lateral rotations compared to free flying mode. Vertical rotation stays similar.
+In order to have a smooth walk in our scene, the Z component of the camera position is equal to the mean of the 24 positions around camera x-y position, avoiding camera shaking in sharp terrain.
+
+\subsection{Advanced - Physically realistic movements}
+
+In order to have movement physically more realistic, an acceleration/deceleration has been added to every movement, body will not instantaneously move. An additional running function has been added to increase a maximum forward speed higher.
+A simple jump function has been created, it uses a sinus to shape the jump z variations. Jumping speed vary according to the jump stage, beginning/ending of the jump has a higher speed then higher steps.In the case of jumping from the top of a mountain, the falling speed will reach a maximum value and keep falling at constant speed until it reach the floor.
+While jumping the trajectory is computed using the action settled just before the jump. For example, if a user was turning, the rotation will continue during jump making a spinning effect, which will decelerate once the users reach the floor again. 
+
+\subsection{Advanced - Camera path control}
 
 
-\subsubsection{Particle system}
+\subsection{Advanced - Pictorial camera}
+
+
+\subsection{Advanced - Water modeling}
+
+Water refraction, reflection and depth
+
+For the water reflection effect, we should render the terrain from a flipped camera position. The terrain is thus rendered two times. It is rendered a first time with the real camera position to the default framebuffer (screen) and a second time with a flipped virtual camera position to a texture which is attached to a framebuffer object. The texture is later used to render the water surface.
+
+\subsection{Advanced - Particle system}
 
 The cheapest way to display particles is to use sprites: polygons that face the camera
 in any orientation.
@@ -61,11 +102,18 @@ Window and textures are of size \texttt{nParticles} times 1 pixels.
 
 In our implementation, particles that fall below the water level are reseted to the top and will fall down again, indefinitely. In order to keep the aggregate compact and so as it does not spread out in the space, particles that go too far in x or y direction get moved to the oder side.
 
-discard is not used
+discard is used
 
-\subsubsection{Water reflection}
+\subsection{Advanced - Two simultaneous views}
 
-For the water reflection effect, we should render the terrain from a flipped camera position. The terrain is thus rendered two times. It is rendered a first time with the real camera position to the default framebuffer (screen) and a second time with a flipped virtual camera position to a texture which is attached to a framebuffer object. The texture is later used to render the water surface.
+By two simultaneous views, we mean the rendering of the seen from two points of views. In our case, a control view and a camera view (fig.). The control view is used to set the camera path Bézier curve control points and have a global view with an animated pictorial camera. The camera view actually shows what the camera sees.
+
+The keyboad ENTER key can be used to exchange the two views (fig.).
+
+From an implementation point of view, almost each object of the scene (skybox, terrain, water, shadowmap, skybox, particles) should be drawn from two different points of view. They are thus rendered to two FBOs (with attached output texture and depth buffer) instead of the default framebuffer (the screen). The \texttt{Display} class eventually uses the texture to assemble the final screen view.
+
+For performance reason, it is crucial to render the two points of view one after the other as shader program switch is expensive.
+
 
 \section{Improvements on last stage}
 

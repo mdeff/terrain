@@ -23,7 +23,7 @@ GLuint Terrain::init(Vertices* vertices, GLuint heightMapTexID, GLuint shadowMap
 
     /// Common initialization.
     /// Render to FBO by default.
-    RenderingContext::init(vertices, terrain_vshader, terrain_fshader, NULL, "vertexPosition2DWorld", -1);
+    preinit(vertices, terrain_vshader, terrain_fshader, NULL, "vertexPosition2DWorld", -1);
 
     reflectionFramebufferID = _frameBufferID;
 
@@ -62,8 +62,8 @@ GLuint Terrain::init(Vertices* vertices, GLuint heightMapTexID, GLuint shadowMap
     glUniform3fv( _IsID, 1, Is.data());
 
     /// Set uniform IDs.
-    _viewID = glGetUniformLocation(_programID, "view");
     _projectionID = glGetUniformLocation(_programID, "projection");
+    _viewID = glGetUniformLocation(_programID, "view");
     _lightViewProjectionID = glGetUniformLocation(_programID, "lightViewProjection");
     _lightPositionWorldID = glGetUniformLocation(_programID, "lightPositionWorld");
     _clipID = glGetUniformLocation(_programID, "clip");
@@ -83,7 +83,7 @@ GLuint Terrain::init(Vertices* vertices, GLuint heightMapTexID, GLuint shadowMap
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    /// Simple filtering (needed).
+    /// Simple linear filtering (needed).
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     // Filtering
@@ -100,7 +100,7 @@ GLuint Terrain::init(Vertices* vertices, GLuint heightMapTexID, GLuint shadowMap
     GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0};
     glDrawBuffers(1, drawBuffers);
 
-    /// Create a depth buffer for the FBO.
+    /// Create and attach a depth buffer for the FBO.
     GLuint depthRenderbufferID;
     glGenRenderbuffers(1, &depthRenderbufferID);
     glBindRenderbuffer(GL_RENDERBUFFER, depthRenderbufferID);
@@ -123,7 +123,7 @@ void Terrain::draw(const mat4& projection, const mat4& view,
                    const mat4& lightViewProjection, const vec3& lightPositionWorld) const {
 
     /// Common drawing. 
-    RenderingContext::draw();
+    predraw();
 
     /// Update the content of the uniforms.
     glUniformMatrix4fv(_projectionID, 1, GL_FALSE, projection.data());
@@ -151,23 +151,5 @@ void Terrain::draw(const mat4& projection, const mat4& view,
     glUniformMatrix4fv(_viewID, 1, GL_FALSE, view.data());
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     _vertices->draw();
-
-}
-
-
-GLuint Terrain::load_texture(const char * imagepath) const {
-
-    // Read the file, call glTexImage2D with the right parameters
-    if (glfwLoadTexture2D(imagepath, 0)) {
-        // Nice trilinear filtering.
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    } else {
-        std::cout << "Cannot load texture file : " << imagepath << std::endl;
-        exit(EXIT_FAILURE);
-    }
 
 }

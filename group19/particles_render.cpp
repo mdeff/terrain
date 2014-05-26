@@ -21,7 +21,7 @@ ParticlesRender::ParticlesRender(unsigned int width, unsigned int height, unsign
 void ParticlesRender::init(GLuint particlePosTexID[]) {
 
     /// Common initialization.
-    RenderingContext::init(NULL, particles_render_vshader, particles_render_fshader, NULL, NULL, 0);
+    preinit(NULL, particles_render_vshader, particles_render_fshader, NULL, NULL, 0);
 
     /// Allow programmable point size for the vertex shader to size the sprite.
     glEnable(GL_PROGRAM_POINT_SIZE);
@@ -45,7 +45,7 @@ void ParticlesRender::init(GLuint particlePosTexID[]) {
 void ParticlesRender::draw(const mat4& projection, const mat4& view) {
 
     /// Common drawing. 
-    RenderingContext::draw();
+    predraw();
 
     /// Update the content of the uniforms.
     glUniformMatrix4fv( _viewID, 1, GL_FALSE, view.data());

@@ -20,7 +20,7 @@ RenderingSimple::RenderingSimple(unsigned int width, unsigned int height) :
 void RenderingSimple::init(Vertices* vertices) {
 
     /// Common initialization.
-    RenderingContext::init(vertices, rendering_simple_vshader, rendering_simple_fshader, NULL, "vertexPosition3DModel", 0);
+    preinit(vertices, rendering_simple_vshader, rendering_simple_fshader, NULL, "vertexPosition3DModel", 0);
 
     /// Set uniform IDs.
     _projectionID = glGetUniformLocation(_programID, "projection");
@@ -34,7 +34,7 @@ void RenderingSimple::init(Vertices* vertices) {
 void RenderingSimple::draw(const mat4& projection, const mat4& view, const mat4& model, const vec3& color) const {
 
     /// Common drawing.
-    RenderingContext::draw();
+    predraw();
 
     /// Update the content of the uniforms.
     glUniformMatrix4fv( _projectionID, 1, GL_FALSE, projection.data());

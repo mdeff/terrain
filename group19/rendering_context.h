@@ -17,11 +17,12 @@ protected:
 
     /// Common methods of all RenderingContext.
     RenderingContext(unsigned int width, unsigned int height);
-    void init(Vertices* vertices, const char* vshader, const char* fshader, const char* gshader, const char* vertexAttribName, int frameBufferID);
-    void draw() const;
+    void preinit(Vertices* vertices, const char* vshader, const char* fshader, const char* gshader, const char* vertexAttribName, int frameBufferID);
+    void predraw() const;
 
     /// Helper function.
     void set_texture(unsigned int textureIndex, int textureID, const char* uniformName, unsigned int target);
+    void load_texture(const char * imagepath) const;
 
     /// Common properties of all RenderingContext.
     const unsigned int _width, _height;
@@ -29,8 +30,6 @@ protected:
 
     /// Pointer : vertices object can be shared between RenderingContext.
     Vertices* _vertices;
-
-protected:
 
     /// Common properties of all RenderingContext.
     unsigned int _frameBufferID;

@@ -23,7 +23,7 @@ in vec3 vertexPosition3DWorld;
 in vec3 shadowCoord;
 
 // Light and view directions.
-in vec3 lightDir, viewDir;
+in vec3 lightDirWorld, viewDirCamera;
 
 // First output buffer is pixel color (mandatory output, gl_FragColor).
 layout(location = 0) out vec3 color;
@@ -109,7 +109,7 @@ vec3 texture_mapping(vec3 position, vec3 normal) {
         vec3 stone = texture2D(stoneTex, 10.0*position.xy).rgb;
         vec3 forest = texture2D(treeTex, 10.0*position.xy).rgb;
         mapped = mix(stone, forest, slope);
-    } else if (position.z < (snowMin + min(Cosine(position.xy, slope), -0.2f))) {
+    } else if (position.z < (snowMin + min(Cosine(position.xy, slope), 0.2f))) {
         float w = (position.z - forest)/(snowMin-forest) ;
 		float opacity = rand(position.xy);
         vec4 snow = vec4(texture2D(snowTex, 30.0*position.xy).rgb, w);
@@ -159,9 +159,9 @@ float shadowmap(vec3 coord) {
 
 void main() {
 
-    // Normalize the vectors.
-    vec3 L = normalize(lightDir);
-    vec3 V = normalize(viewDir);
+    // Normalize light and view directions.
+    vec3 L = normalize(lightDirWorld);
+    vec3 V = normalize(viewDirCamera);
 
     // Compute the normal.
     vec3 normal = compute_normal(vertexPosition3DWorld);
@@ -178,20 +178,17 @@ void main() {
     }
 
     // Specular lightning only relevant for water surfaces.
-    float ka, kd, ks;
+    float ka, kd;
     ka = 0.4f;
     kd = 0.6f;
 
-    //Diffuse component
-    vec3 ambient, diffuse;
-
-
     // Compute diffuse : "color" of the object.
-     diffuse = Id * kd * vec3(material) * max(dot(normal,L),0.0);
+    vec3 diffuse = Id * kd * material * max(dot(normal,L),0.0);
 
     // Compute ambient : simulates indirect lighting.
 
     /* different setting for snow */
+    vec3 ambient;
    /// if (vertexPosition3DWorld.z >= forest){
         //ambient = vec3(0.9f,0.9f,0.9f)*0.8f*material;
     //} else {

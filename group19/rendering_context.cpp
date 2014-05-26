@@ -1,7 +1,11 @@
 
 #include "rendering_context.h"
 #include "vertices.h"
+
+#include <iostream>
+
 #include <GL/glew.h>
+#include <GL/glfw.h>
 #include "opengp.h"
 
 
@@ -12,7 +16,7 @@ RenderingContext::RenderingContext(unsigned int width, unsigned int height) :
 }
 
 
-void RenderingContext::init(Vertices* vertices, const char* vshader, const char* fshader, const char* gshader, const char* vertexAttribName, GLint frameBufferID) {
+void RenderingContext::preinit(Vertices* vertices, const char* vshader, const char* fshader, const char* gshader, const char* vertexAttribName, GLint frameBufferID) {
 
     _vertices = vertices;
 
@@ -43,7 +47,7 @@ void RenderingContext::init(Vertices* vertices, const char* vshader, const char*
 }
 
 
-void RenderingContext::draw() const {
+void RenderingContext::predraw() const {
 
     /// Select the shader program.
     glUseProgram(_programID);
@@ -101,5 +105,27 @@ void RenderingContext::set_texture(const GLuint textureIndex, int textureID, con
 
     _textures[textureIndex].ID = textureID;
     _textures[textureIndex].target = target;
+
+}
+
+
+void RenderingContext::load_texture(const char * imagepath) const {
+
+    /// Read the file.
+    if(glfwLoadTexture2D(imagepath, 0)) {
+
+        /// We want to repeat the texture for texture and normal mapping.
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+        /// Nice trilinear filtering.
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+    } else {
+        std::cout << "Cannot load texture file : " << imagepath << std::endl;
+        exit(EXIT_FAILURE);
+    }
 
 }

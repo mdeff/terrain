@@ -9,7 +9,7 @@
 #include <GL/glfw.h>
 #include "opengp.h"
 
-#include "heightmap_vshader.h"
+#include "passthrough_vshader.h"
 #include "heightmap_fshader.h"
 
 
@@ -21,7 +21,7 @@ Heightmap::Heightmap(unsigned int width, unsigned int height) :
 GLuint Heightmap::init(Vertices* vertices) {
 
     /// Common initialization.
-    RenderingContext::init(vertices, heightmap_vshader, heightmap_fshader, NULL, "vertexPosition2D", -1);
+    preinit(vertices, passthrough_vshader, heightmap_fshader, NULL, "vertexPosition2D", -1);
 
     /// Create and bind the permutation table to texture 0.
     GLuint permTableTexID = gen_permutation_table();
@@ -77,7 +77,7 @@ GLuint Heightmap::init(Vertices* vertices) {
 void Heightmap::draw() const {
 
     /// Common drawing.
-    RenderingContext::draw();
+    predraw();
 
     /// Update the content of the uniforms.
 

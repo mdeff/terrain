@@ -1,28 +1,26 @@
-#include "watermap.h"
-#include "vertices.h"
 
-#include <cstdlib>
-#include <iostream>
+#include "water.h"
+#include "vertices.h"
 
 #include <GL/glew.h>
 #include <GL/glfw.h>
 #include "opengp.h"
 
 #include "particles_control_vshader.h"
-#include "watermap_vshader.h"
-#include "watermap_fshader.h"
+#include "water_vshader.h"
+#include "water_fshader.h"
 
 
-Watermap::Watermap(unsigned int width, unsigned int height) :
+Water::Water(unsigned int width, unsigned int height) :
     RenderingContext(width, height) {
 }
 
 
-void Watermap::init(Vertices* vertices , GLuint flippedTerrainTexID) {
+void Water::init(Vertices* vertices, GLuint flippedTerrainTexID) {
 
     /// Common initialization.
-//    RenderingContext::init(vertices, particles_control_vshader, watermap_fshader, NULL, "vertexPosition2DWorld", 0);
-    RenderingContext::init(vertices, watermap_vshader, watermap_fshader, NULL, "vertexPosition2DWorld", 0);
+//    RenderingContext::init(vertices, particles_control_vshader, water_fshader, NULL, "vertexPosition2DWorld", 0);
+    preinit(vertices, water_vshader, water_fshader, NULL, "vertexPosition2DWorld", 0);
 
     //bind the reflection tex to texture 0
     set_texture(0, flippedTerrainTexID, "flippedTerrainTex", GL_TEXTURE_2D);
@@ -56,11 +54,11 @@ void Watermap::init(Vertices* vertices , GLuint flippedTerrainTexID) {
 }
 
 
-void Watermap::draw(const mat4& projection, const mat4& view,
-                   const mat4& lightViewProjection, const vec3& lightPositionWorld) const {
+void Water::draw(const mat4& projection, const mat4& view,
+                 const mat4& lightViewProjection, const vec3& lightPositionWorld) const {
 
     /// Common drawing.
-    RenderingContext::draw();
+    predraw();
 
     /// Update the content of the uniforms.
     glUniformMatrix4fv(_viewID, 1, GL_FALSE, view.data());
@@ -81,23 +79,5 @@ void Watermap::draw(const mat4& projection, const mat4& view,
 
     /// Disable blending : other primitives are opaque.
     glDisable(GL_BLEND);
-
-}
-
-
-GLuint Watermap::load_texture(const char * imagepath) const {
-
-    // Read the file, call glTexImage2D with the right parameters
-    if (glfwLoadTexture2D(imagepath, 0)) {
-        // Nice trilinear filtering.
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    } else {
-        std::cout << "Cannot load texture file : " << imagepath << std::endl;
-        exit(EXIT_FAILURE);
-    }
 
 }

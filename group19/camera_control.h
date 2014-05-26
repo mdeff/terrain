@@ -51,7 +51,6 @@ private:
     void update_camera_modelview(double posX,double posY,double posZ,double lookX,double lookY,double lookZ);
     void handleKeyboard();
     void rotate2D(double pos1, double pos2, double& look1, double& look2, double angle);
-    void rotate3D(double& posX, double& posY, double& posZ, double& lookX, double& lookY, double& lookZ,double& recordRotY,double& recordRotZ);
     void moveAlongAxis(double& posX, double& posY, double& posZ, double& lookX, double& lookY, double& lookZ, double velocity);
     void fpsExplorationForwardBackward(double& posX, double& posY, double& posZ, double& lookX, double& lookY, double& lookZ,double dispX,double dispY);
     void deCasteljauTest3Points();
@@ -70,6 +69,8 @@ private:
 	void MultipleBezier();
 	void createBCurve();
 	void MultipleBezier_controlled(int PointToChange, float deltaX, float deltaY, float deltaZ); 
+	void N_MultipleBezier_controlled(int PointToChange, float deltaX, float deltaY, float deltaZ); 
+	void Add_Bcurve();
 };
 
 #endif /* __camera_control_h__ */

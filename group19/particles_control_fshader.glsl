@@ -1,7 +1,8 @@
 #version 330 core
 
 // Time in seconds between two executions (frames).
-uniform float deltaT = 0.01;
+
+uniform float deltaT;
 
 // Particules last position and velocity textures.
 uniform sampler1D particlePosTex;
@@ -17,7 +18,7 @@ layout(location = 1) out vec3 particleVel;
 
 
 // Earth acceleration.
-const vec3 acc = vec3(0, 0, -0.01);
+const vec3 acc = vec3(0, 0, -0.03);
 
 
 // Pseudo-random generator, using high precision.
@@ -34,8 +35,8 @@ highp float rand(vec2 co) {
 void main() {
 
     // Retrieve particle position and velocity.
-    vec3 lastPos = texelFetch(particlePosTex, int(gl_FragCoord.x), 0).rgb;
     vec3 lastVel = texelFetch(particleVelTex, int(gl_FragCoord.x), 0).rgb;
+    vec3 lastPos = texelFetch(particlePosTex, int(gl_FragCoord.x), 0).rgb;
 
     // Random acceleration vector.
     float rx = (0.5-rand(lastPos.xy)) / 100.0;
@@ -44,9 +45,8 @@ void main() {
     vec3 r = vec3(rx, ry, rz);
 
     // Compute new position and velocity.
-    vec3 pos = lastPos + deltaT * lastVel;
     vec3 vel = lastVel + deltaT * (acc + r);
-
+    vec3 pos = lastPos + deltaT * lastVel;
 
     // Initialize particles that start above skybox.
     // Goal : particles ar initialized the same way than reseted.
