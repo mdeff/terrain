@@ -1,7 +1,7 @@
 #version 330 core
 
 // Time in seconds between two executions (frames).
-uniform float deltaT = 1.0;
+uniform float deltaT = 0.01;
 
 // Particules last position and velocity textures.
 uniform sampler1D particlePosTex;
