@@ -44,7 +44,7 @@ To have all possible rotation, the camera has to rotate on virtual axis, see fig
  	\label{freefly_rotation}
 \end{figure}
 To achieve such rotations,the look at point has to be displaced staying always at equal distance to the camera position. We proceed this rotation in 3 steps: 
-translate to origin, undo previous rotations, do new rotations, return to initial placement. Rotations are proceeded only in two axis, Y and Z, using rotation matrix computed according to inputs angle. A velocity has been added, the acceleration is gradual until a maximum value, same behavior for deceleration. 
+translate to origin, undo previous rotations, do new rotations, return to initial placement. Rotations are proceeded only in two axis, Y and Z, using rotation matrix computed according to inputs angle. A velocity has been added, the acceleration is gradual until a maximum value, same behavior for deceleration.
 
 \subsection{Basic - FPS exploration mode}
 
@@ -66,10 +66,85 @@ While jumping the trajectory is computed using the action settled just before th
 
 \subsection{Advanced - Camera path control}
 
+The camera trajectory has been modeled using cubics Bezier curves, therefor we implemented several computation methods: 
+\begin{itemize}
+\item Bezier with 4 control points using de Casteljau algorithm (see figure ~\ref{bezier4points})
+\item subdivision algorithm with 5 splits at 0.5 (very similar result as 4 point de casteljau, see figure ~\ref{subdivision})
+\item concatenated Bezier curves with infinite maximum of Bezier curves (see figure ~\ref{2_multiple_Bezier} and ~\ref{3_multiple_Bezier})
+\end{itemize} 
+In order to observe correctly the Bezier curves, we render every control points and the path of each curves. 
+\begin{figure}[ht]
+	\centering
+	\subfloat[4 points Bezier]{
+		\label{bezier4points}
+		\includegraphics[height=3cm]{{{img_stage3/simpleBezier}}}
+	} \quad
+	\subfloat[Bezier using subdivision algorithm]{
+		\label{subdivision}
+		\includegraphics[height=3cm]{{{img_stage3/subdivision}}}
+	} \\
+	\subfloat[Two bezier curves concatenated]{
+		\label{2_multiple_Bezier}
+		\includegraphics[height=3cm]{{{img_stage3/2Bcurves}}}
+	} \quad
+	\subfloat[Three bezier curves concatenated]{
+		\label{3_multiple_Bezier}
+		\includegraphics[height=3cm]{{{img_stage3/3Bcurves}}}
+	} \\
+	\caption{Bezier curves}
+	\label{bezier_curves}
+\end{figure}
+The curves can be edited during execution, to know the controls to set it please refer to section "how to use".
 
 \subsection{Advanced - Pictorial camera}
+On top of the bezier curve, we added a pictorial representation of the camera. This camera allow the user to previously see what will be the camera path and rotations while moving along bezier curves. The pictorial camera is shown figure \ref{pictorial_cam}
+\begin{figure}[ht]
+	\centering
+	\includegraphics[height=4cm]{{{img_stage3/pictorial_camera2}}}
+ 	\caption{Pictorial camera example}
+ 	\label{pictorial_cam}
+\end{figure}
 
+\subsection{How to use}
+Along the project, many different controls has been created to use several functionality, we will present them in the following section.
+The user can change exploration modes using numerical pad: 
+\begin{itemize}
+\item Key "1": free flying exploration mode.
+\item Key "2": first person exploration mode.
+\item Key "3": camera follow bezier curves.
+\item Key "4": trackball mode.  
+\end{itemize}
 
+\subsubsection{Free flying controls}
+During free flying, user can use followings controls:
+\begin{itemize}
+\item Key "W": go forward.
+\item Key "S": go backward.
+\item Key "A": turn left.
+\item Key "D": turn right.
+\item Key "Q": turn up.
+\item Key "E": turn down.
+\end{itemize}
+If during free flying user press key "ENTER", it will drop a control point to create a bezier curve, then the controls will be slightly modified: key "W" will increase the distance between camera and control point, key "S" will decrease this distance and rotation controls will stay similar. Pressing ENTER again will then set the control point. The user has now settled 2 control points, when he will change position, a bezier curve preview will be rendered. At the new location user can press ENTER again to set the 2 last control points and repeat this operation as much as he wants.
+
+\subsubsection{FPS exploration controls}
+The rotation control stay similar as free flying exploration with additional controls: key "SPACE" will start a jump, if at this moment the user was moving, this move will influence the jump. During jump, user can't change rotation or speed until he reach the floor again.  Key "LEFT SHIFT" while going forward will increase its speed (running).
+
+\subsubsection{Bezier curve control}
+User can freely modify and create new control points with the followings controls:  
+\begin{itemize}
+\item Key "Z" : Select next control point to modify.
+\item Key "U" : add 0.1 to position X.
+\item Key "J" : remove 0.1 to position X.
+\item Key "I" : add 0.1 to position Y.
+\item Key "K" : remove 0.1 to position Y.
+\item Key "O" : add 0.1 to position Z.
+\item Key "L" : remove 0.1 to position Z.
+\item Key "+" : add a new bezier curve at the end of the existing.
+\item Key "-" : remove bezier curve at the end of the existing.
+\item Key "7" : Start/stop pictorial camera animation.
+\end{itemize}
+During user modifications, curve will adapt its shape to respect a continuity constraint.
 \subsection{Advanced - Water modeling}
 
 Water refraction, reflection and depth

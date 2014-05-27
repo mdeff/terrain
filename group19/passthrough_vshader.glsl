@@ -1,3 +1,6 @@
+// Pass-through vertex shader intended for GPGPU computations.
+// This kind of computations are better suited for compute shaders. They are
+// however not available with OpenGL 3.3.
 #version 330 core
 
 // Pass-through vertex shader intended for GPGPU computations.
@@ -20,3 +23,4 @@ void main() {
     gl_Position = vec4(vertexPosition2D, 0.0, 1.0);
 
 }
+

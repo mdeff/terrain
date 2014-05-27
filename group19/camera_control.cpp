@@ -72,8 +72,8 @@ void CameraControl::trackball(const mat4& model) {
 
     /// Camera is in the sky, looking down.
 
-//    vec3 camPos(0.5f, -0.5f, 0.8f);
-	//vec3 camPos(2.5f, -2.5f, 2.8f);
+    //vec3 camPos(0.5f, -0.5f, 0.8f);
+	vec3 camPos(2.5f, -2.5f, 2.8f);
 
 //    vec3 camPos(0.0f, -1.5f, 0.8f);
 
@@ -91,14 +91,28 @@ void CameraControl::trackball(const mat4& model) {
 //    vec3 camUp(0.0f, 0.0f, 1.0f);
 
     /// Frontal view to observe falling particles.
-    vec3 camPos(0.0f, -3.0f, 1.3f);
+
+  /*  vec3 camPos(0.0f, -3.0f, 1.3f);
     vec3 camLookAt(0.0f, 0.0f, 0.2f);
     vec3 camUp(0.0f, 0.0f, 1.0f);
+*/
+    /// Frontal view to observe water reflection.
+
+    //vec3 camPos(0.0f, -2.8f, 1.7f);
+    vec3 camLookAt(0.0f, 0.0f, 0.0f);
+    vec3 camUp(0.0f, 0.0f, 1.0f);
+
 
     /// Frontal view to observe water reflection.
     //vec3 camPos(-3.0f, 0.0f, 1.0f);
 //    vec3 camLookAt(0.0f, 0.0f, 0.0f);
 //    vec3 camUp(0.0f, 0.0f, 1.0f);
+
+
+    //vec3 camPos(-3.0f, 0.0f, 1.0f);
+//    vec3 camLookAt(0.0f, 0.0f, 0.0f);
+//    vec3 camUp(0.0f, 0.0f, 1.0f);
+
 
     /// FPS exploration.
 //	  vec3 camPos(0.78f, 0.42f, 0.30f);
@@ -361,10 +375,15 @@ void CameraControl::animatePictorialCamera(){
     float deltaT = float(currentTime - lastTime); //deltaT in sc 
 	if(deltaT>0.05){
 		lastTime = currentTime;
-			std::cout<<i<<std::endl;
+			//std::cout<<i<<std::endl;
 			_cameraPictorialModel(0,3) = _cameraPath[i*3+0];
 			_cameraPictorialModel(1,3) = _cameraPath[i*3+1];
 			_cameraPictorialModel(2,3) = _cameraPath[i*3+2];
+
+			//hide pictorial camera
+			//_cameraPictorialModel(0,3) =-10;
+			//_cameraPictorialModel(1,3) =-10;
+			//_cameraPictorialModel(2,3) =-10;
 			
 			float dirX= _cameraPath[(i+1)*3+0]-_cameraPath[i*3+0];
 			float dirY= _cameraPath[(i+1)*3+1]-_cameraPath[i*3+1];
@@ -726,7 +745,7 @@ void CameraControl::MultipleBezier() {//init
     _verticesCameraPathControls->copy(_cameraPathControls.data(), _cameraPathControls.size());
 
     /// Choose the resolution.
-    const unsigned int nPoints = 200;
+    const unsigned int nPoints = 350;
 
     _cameraPath.clear();
     /// To avoid vector resizing on every loop.
@@ -768,21 +787,23 @@ void CameraControl::N_MultipleBezier_controlled(int PointToChange, float deltaX,
 		_cameraPathControls.at(PointToChange*3+0) += deltaX;	//6					
         _cameraPathControls.at(PointToChange*3+1) += deltaY;	//7 						
         _cameraPathControls.at(PointToChange*3+2) += deltaZ;	//8							
-										
-		//refresh other control points to respect contstraint								
-		_cameraPathControls.at(PointToChange*3+0+6) = 2*_cameraPathControls.at(PointToChange*3+0+3) - _cameraPathControls.at(PointToChange*3+0);											
-		_cameraPathControls.at(PointToChange*3+1+6) = 2*_cameraPathControls.at(PointToChange*3+1+3) - _cameraPathControls.at(PointToChange*3+1);											
-		_cameraPathControls.at(PointToChange*3+2+6) = 2*_cameraPathControls.at(PointToChange*3+2+3) - _cameraPathControls.at(PointToChange*3+2);											
+		if(_cameraPathControls.size()>12){							
+			//refresh other control points to respect contstraint								
+			_cameraPathControls.at(PointToChange*3+0+6) = 2*_cameraPathControls.at(PointToChange*3+0+3) - _cameraPathControls.at(PointToChange*3+0);											
+			_cameraPathControls.at(PointToChange*3+1+6) = 2*_cameraPathControls.at(PointToChange*3+1+3) - _cameraPathControls.at(PointToChange*3+1);											
+			_cameraPathControls.at(PointToChange*3+2+6) = 2*_cameraPathControls.at(PointToChange*3+2+3) - _cameraPathControls.at(PointToChange*3+2);	
+		}
 	}																	
 	else if (PointToChange==3){											
 		_cameraPathControls.at(PointToChange*3+0) += deltaX;													
         _cameraPathControls.at(PointToChange*3+1) += deltaY;													
         _cameraPathControls.at(PointToChange*3+2) += deltaZ;													
-										
-		//refresh other control points to respect contstraint								
-		_cameraPathControls.at(PointToChange*3+0+3) = 2*_cameraPathControls.at(PointToChange*3+0+0) - _cameraPathControls.at(PointToChange*3+0-3);											
-		_cameraPathControls.at(PointToChange*3+1+3) = 2*_cameraPathControls.at(PointToChange*3+1+0) - _cameraPathControls.at(PointToChange*3+1-3);											
-		_cameraPathControls.at(PointToChange*3+2+3) = 2*_cameraPathControls.at(PointToChange*3+2+0) - _cameraPathControls.at(PointToChange*3+2-3);											
+		if(_cameraPathControls.size()>12){						
+			//refresh other control points to respect contstraint								
+			_cameraPathControls.at(PointToChange*3+0+3) = 2*_cameraPathControls.at(PointToChange*3+0+0) - _cameraPathControls.at(PointToChange*3+0-3);											
+			_cameraPathControls.at(PointToChange*3+1+3) = 2*_cameraPathControls.at(PointToChange*3+1+0) - _cameraPathControls.at(PointToChange*3+1-3);											
+			_cameraPathControls.at(PointToChange*3+2+3) = 2*_cameraPathControls.at(PointToChange*3+2+0) - _cameraPathControls.at(PointToChange*3+2-3);	
+		}
 	}																	
 	else if((PointToChange>1) & ((PointToChange-1)%3) ==0){
 		_cameraPathControls.at(PointToChange*3+0) += deltaX;													
@@ -872,6 +893,26 @@ void CameraControl::Add_Bcurve(){
 	N_MultipleBezier_controlled(0,0,0,0);
 	//_verticesCameraPathControls->copy(_cameraPathControls.data(), _cameraPathControls.size());
 }
+
+void CameraControl::Remove_Bcurve(){
+
+	//add control point 1 under constraint of the two previous ctrl point to keep continuity
+	_cameraPathControls.pop_back();
+	_cameraPathControls.pop_back();	
+	_cameraPathControls.pop_back();	
+
+	_cameraPathControls.pop_back();	
+	_cameraPathControls.pop_back();	
+	_cameraPathControls.pop_back();	
+	
+	_cameraPathControls.pop_back();	
+	_cameraPathControls.pop_back();	
+	_cameraPathControls.pop_back();		
+	
+	//display Bcurve
+	N_MultipleBezier_controlled(0,0,0,0);
+}
+
 
 void CameraControl::MultipleBezier_controlled(int PointToChange, float deltaX, float deltaY, float deltaZ) {
 
@@ -1525,6 +1566,15 @@ void CameraControl::handleCameraControls(int key, int action){
 				break;
 			case 315://+
 				Add_Bcurve();
+				break;
+			case 314://-
+				if(_cameraPathControls.size()>12){
+					if(((_cameraPathControls.size()/3)-4)<_selectedControlPoint){
+						_selectedControlPoint=0;
+					}
+					Remove_Bcurve();
+
+				}
 				break;
 		}
 	}
