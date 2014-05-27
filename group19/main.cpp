@@ -2,6 +2,8 @@
 
 #include <iostream>
 #include <sstream>
+#include <map>
+#include <string>
 
 #include "common.h"
 #include "rendering_simple.h"
@@ -23,8 +25,10 @@
 #include "vertices_camera_pictorial.h"
 
 
-/// Number of different views.
-const unsigned int Nviews = 2;
+/// OpenGL object references (global by definition, part of the OpenGL context).
+std::map<std::string, unsigned int> framebufferIDs;
+std::map<std::string, unsigned int> textureIDs;
+std::map<std::string, unsigned int> viewIDs;
 
 /// Screen (and rendering framebuffers) size.
 const unsigned int windowWidth(1024);
@@ -139,7 +143,6 @@ void gen_rendering_framebuffers(GLuint framebufferIDs[], unsigned int N) {
 
     /// Generate framebuffers and renderbuffers.
     GLuint colorBufIDs[N], depthBufIDs[N];
-    glGenFramebuffers(N, framebufferIDs);
     glGenRenderbuffers(N, colorBufIDs);
     glGenRenderbuffers(N, depthBufIDs);
 
@@ -193,40 +196,40 @@ void init() {
 //    verticesQuad->clean();
 //    delete verticesQuad;
 
+    /// Generate OpenGL global objects.
+    GLuint framebufferIDs_tmp[3];
+    glGenFramebuffers(3, framebufferIDs_tmp);
+    framebufferIDs["controllerView"] = framebufferIDs_tmp[0];
+    framebufferIDs["cameraView"] = framebufferIDs_tmp[1];
+    framebufferIDs["waterReflection"] = framebufferIDs_tmp[2];
+
     /// Two rendering framebuffers and two view matrices.
     /// 1) Overall view for control purpose.
     /// 2) Camera actual view.
     /// No more direct drawing to the default framebuffer. All drawings go
     /// to textures and Display arranges the textures on screen.
-    GLuint framebufferIDs[Nviews];
-    gen_rendering_framebuffers(framebufferIDs, Nviews);
-
-
-//    renderedTexIDs[0] = heightMapTexID;
-    screenDisplay.init(verticesQuad, framebufferIDs);
-
+    gen_rendering_framebuffers(framebufferIDs_tmp, 2);
 
     /// Initialize the rendering contexts.
     GLuint shadowMapTexID = shadowmap.init(verticesGrid, heightMapTexID);
-    GLuint reflectionFramebufferID;
-    GLuint flippedTerrainTexID = terrain.init(verticesGrid, framebufferIDs, heightMapTexID, shadowMapTexID, reflectionFramebufferID);
-    skybox.init(verticesSkybox, framebufferIDs, reflectionFramebufferID);
+    GLuint flippedTerrainTexID = terrain.init(verticesGrid, heightMapTexID, shadowMapTexID);
+    skybox.init(verticesSkybox);
 
     // Grid or quad : interpolation ?
-    water.init(verticesGrid, framebufferIDs, flippedTerrainTexID);
-//    water.init(verticesQuad, framebufferIDs, flippedTerrainTexID);
+    water.init(verticesGrid, flippedTerrainTexID);
+//    water.init(verticesQuad, flippedTerrainTexID);
 
     /// Pass the particles position textures from control to render.
     GLuint particlePosTexID[2];
     particlesControl.init(verticesQuad, particlePosTexID);
-    particlesRender.init(framebufferIDs, particlePosTexID);
+    particlesRender.init(particlePosTexID);
 
     /// CameraPath is a rendering object.
     /// Camera is able to change the rendered vertices.
     cameraControl.init(verticesCameraPath, verticesCameraPathControls, heightMapTexID);
-    cameraPictorial.init(verticesCameraPictorial, framebufferIDs);
-    cameraPath.init(verticesCameraPath, framebufferIDs);
-    cameraPathControls.init(verticesCameraPathControls, framebufferIDs);
+    cameraPictorial.init(verticesCameraPictorial);
+    cameraPath.init(verticesCameraPath);
+    cameraPathControls.init(verticesCameraPathControls);
 
     /// Initialize the light position.
     keyboard_callback(50, GLFW_PRESS);
@@ -252,7 +255,7 @@ void display() {
     float deltaT = float(currentTime - lastFrameTime);
     lastFrameTime = currentTime;
 
-    mat4 views[Nviews];
+//    mat4 views[Nviews];
 
     /// Control the camera position.
     /// Should come before rendering as it updates the view transformation matrix.

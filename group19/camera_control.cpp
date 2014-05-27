@@ -72,8 +72,8 @@ void CameraControl::trackball(const mat4& model) {
 
     /// Camera is in the sky, looking down.
 
-    //vec3 camPos(0.5f, -0.5f, 0.8f);
-	vec3 camPos(2.5f, -2.5f, 2.8f);
+//    vec3 camPos(0.5f, -0.5f, 0.8f);
+	//vec3 camPos(2.5f, -2.5f, 2.8f);
 
 //    vec3 camPos(0.0f, -1.5f, 0.8f);
 
@@ -98,7 +98,7 @@ void CameraControl::trackball(const mat4& model) {
 */
     /// Frontal view to observe water reflection.
 
-    //vec3 camPos(0.0f, -2.8f, 1.7f);
+    vec3 camPos(0.0f, -2.8f, 1.7f);
     vec3 camLookAt(0.0f, 0.0f, 0.0f);
     vec3 camUp(0.0f, 0.0f, 1.0f);
 
@@ -1556,15 +1556,15 @@ void CameraControl::handleCameraControls(int key, int action){
 			case 308: //6
 				bezier_4_points(0,0,0,0);
 				break;
-			case 294://ENTER => drop control point
-				if(_explorationMode == FLYING){
-					KeyENTER = true;
-				}
-				break;
+//			case 294://ENTER => drop control point
+//				if(_explorationMode == FLYING){
+//					KeyENTER = true;
+//				}
+//				break;
 			case 309://7
 				flagAnimatePictorialCamera=!flagAnimatePictorialCamera;
 				break;
-			case 315://+
+            case 294://+
 				Add_Bcurve();
 				break;
 			case 314://-

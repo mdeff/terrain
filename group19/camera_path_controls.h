@@ -12,7 +12,7 @@ public:
 
     /// Common methods of all RenderingContext.
     CameraPathControls(unsigned int width, unsigned int height);
-    void init(Vertices* vertices, unsigned int framebufferIDs[]);
+    void init(Vertices* vertices);
     void draw(const mat4& projection, const mat4& view, const vec3& lightPositionWorld, const int& selectedControlPoint, float deltaT) const;
 
 private:

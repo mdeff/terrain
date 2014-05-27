@@ -23,7 +23,7 @@ ParticlesControl::ParticlesControl(unsigned int nParticlesSide) :
 void ParticlesControl::init(Vertices* vertices, GLuint particlePosTexID[]) {
 
     /// Common initialization.
-    preinit(vertices, passthrough_vshader, particles_control_fshader, NULL, "vertexPosition2D", -1);
+    preinit(vertices, passthrough_vshader, particles_control_fshader, NULL, "vertexPosition2D");
 
     /// The Sampler uniforms always refer to texture indices 0 and 1.
     /// The binding to textures 0 and 1 are however flipped every frame.
@@ -41,6 +41,8 @@ void ParticlesControl::init(Vertices* vertices, GLuint particlePosTexID[]) {
     /// Filtering technique has to be set, even that texels are fetch
     /// individually by fetchTexel() which bypass any filtering.
     /// Attach the textures to the corresponding FBO color attachments.
+    glGenFramebuffers(1, &_framebufferID);
+    glBindFramebuffer(GL_FRAMEBUFFER, _framebufferID);
     for(int k=0; k<4; ++k) {
         glBindTexture(GL_TEXTURE_1D, _particleTexID[k]);
         glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB32F, _width, 0, GL_RGB, GL_FLOAT, 0);
@@ -97,12 +99,11 @@ void ParticlesControl::draw(float deltaT) const {
     /// Flip the position and velocity output buffers attachement bindings.
     const GLenum drawBuffers[][2] = {{GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT3},
                                      {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT2}};
+    glBindFramebuffer(GL_FRAMEBUFFER, _framebufferID);
     glDrawBuffers(2, drawBuffers[pingpong]);
 
-    /// Clear the FBO.
-    glClear(GL_COLOR_BUFFER_BIT);
-
     /// Render to FBO.
+    glClear(GL_COLOR_BUFFER_BIT);
     _vertices->draw();
 
 }

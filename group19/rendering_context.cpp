@@ -16,7 +16,7 @@ RenderingContext::RenderingContext(unsigned int width, unsigned int height) :
 }
 
 
-void RenderingContext::preinit(Vertices* vertices, const char* vshader, const char* fshader, const char* gshader, const char* vertexAttribName, GLint frameBufferID) {
+void RenderingContext::preinit(Vertices* vertices, const char* vshader, const char* fshader, const char* gshader, const char* vertexAttribName) {
 
     _vertices = vertices;
 
@@ -34,15 +34,6 @@ void RenderingContext::preinit(Vertices* vertices, const char* vshader, const ch
         GLuint vertexAttribID = glGetAttribLocation(_programID, vertexAttribName);
         _vertices->bind(vertexAttribID);
     }
-
-    /// Create a framebuffer (container for textures, and an optional depth buffer).
-    /// The created FBO (instead of the screen) will contain the rendering results.
-    if(frameBufferID < 0)
-        glGenFramebuffers(1, (GLuint*)&frameBufferID);
-    _frameBufferID = frameBufferID;
-
-    /// Set the context FBO as the rendering target.
-    glBindFramebuffer(GL_FRAMEBUFFER, _frameBufferID);
 
 }
 
@@ -64,20 +55,13 @@ void RenderingContext::predraw() const {
     /// to texture/window coordinates.
     glViewport(0, 0, _width, _height);
 
-    /// Set the context FBO as the rendering target.
-    glBindFramebuffer(GL_FRAMEBUFFER, _frameBufferID);
-
 }
 
 
-void RenderingContext::clean() {
+void RenderingContext::preclean() {
 
     /// Delete the shader programs.
     glDeleteProgram(_programID);
-
-    /// Do not delete the default (screen) framebuffer.
-    if(_frameBufferID != 0)
-        glDeleteFramebuffers(1, &_frameBufferID);
 
     /// Delete all the binded textures.
     // TODO: take care of shared textures.

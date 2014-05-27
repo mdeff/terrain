@@ -20,7 +20,7 @@ Shadowmap::Shadowmap(unsigned int width, unsigned int height) :
 GLuint Shadowmap::init(Vertices* vertices, GLuint heightMapTexID) {
 
     /// Common initialization.
-    preinit(vertices, shadowmap_vshader, shadowmap_fshader, NULL, "vertexPosition2DModel", -1);
+    preinit(vertices, shadowmap_vshader, shadowmap_fshader, NULL, "vertexPosition2DModel");
 
     /// Bind the heightmap to texture 0.
     set_texture(0, heightMapTexID, "heightMapTex", GL_TEXTURE_2D);
@@ -51,6 +51,8 @@ GLuint Shadowmap::init(Vertices* vertices, GLuint heightMapTexID) {
 
     /// Attach the created texture to the depth attachment point.
     /// Hardware will copy pixel depth to the texture.
+    glGenFramebuffers(1, &_framebufferID);
+    glBindFramebuffer(GL_FRAMEBUFFER, _framebufferID);
     glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, shadowMapTexID, 0);
 
     /// Disable reads and writes from / to the color buffer as there is none.
@@ -80,10 +82,9 @@ void Shadowmap::draw(const mat4& lightViewProjection) const {
     /// Update the content of the uniforms.
     glUniformMatrix4fv( _lightViewProjectionID, 1, GL_FALSE, lightViewProjection.data());
 
-    /// Clear the FBO.
-    glClear(GL_DEPTH_BUFFER_BIT);
-
     /// Render the terrain from light source point of view to FBO.
+    glBindFramebuffer(GL_FRAMEBUFFER, _framebufferID);
+    glClear(GL_DEPTH_BUFFER_BIT);
     _vertices->draw();
 
 }

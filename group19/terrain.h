@@ -11,8 +11,8 @@ class Terrain : public RenderingContext {
 public:
 
     /// Common methods of all RenderingContext.
-    Terrain(unsigned int windowWidth, unsigned int windowHeight);
-    unsigned int init(Vertices* vertices, unsigned int framebufferIDs[], unsigned int heightMapTexID, unsigned int shadowMapTexID, unsigned int& reflectionFramebufferID);
+    Terrain(unsigned int width, unsigned int height);
+    unsigned int init(Vertices* vertices, unsigned int heightMapTexID, unsigned int shadowMapTexID);
     void draw(const mat4& projection, const mat4& view,
               const mat4& lightViewProjection, const vec3& lightPositionWorld) const;
 

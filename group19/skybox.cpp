@@ -17,13 +17,10 @@ Skybox::Skybox(unsigned int width, unsigned int height) :
 }
 
 
-void Skybox::init(Vertices* vertices, GLuint framebufferIDs[], GLuint reflectionFramebufferID) {
+void Skybox::init(Vertices* vertices) {
 
     /// Common initialization.
-    preinit(vertices, skybox_vshader, skybox_fshader, NULL, "vertexPosition3DWorld", reflectionFramebufferID);
-
-    _framebufferIDs.push_back(framebufferIDs[0]);
-    _framebufferIDs.push_back(framebufferIDs[1]);
+    preinit(vertices, skybox_vshader, skybox_fshader, NULL, "vertexPosition3DWorld");
 
     /// Bind the Skybox cube map to texture 0.
     set_texture(0, -1, "skyboxTex", GL_TEXTURE_CUBE_MAP);
@@ -54,11 +51,12 @@ void Skybox::draw(const mat4& projection, const mat4& view) const {
 
     /// Render the terrain from camera point of view to the reflection FBO.
     glUniformMatrix4fv(_viewID, 1, GL_FALSE, viewFlip.data());
+    glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs["waterReflection"]);
     _vertices->draw();
 
     /// Render the skybox from camera point of view to default framebuffer.
-    glBindFramebuffer(GL_FRAMEBUFFER, _framebufferIDs[0]);
     glUniformMatrix4fv(_viewID, 1, GL_FALSE, view.data());
+    glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs["controllerView"]);
     _vertices->draw();
 
 }

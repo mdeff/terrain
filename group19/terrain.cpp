@@ -17,15 +17,11 @@ Terrain::Terrain(unsigned int windowWidth, unsigned int windowHeight) :
 }
 
 
-GLuint Terrain::init(Vertices* vertices, GLuint framebufferIDs[], GLuint heightMapTexID, GLuint shadowMapTexID, GLuint& reflectionFramebufferID) {
+GLuint Terrain::init(Vertices* vertices, GLuint heightMapTexID, GLuint shadowMapTexID) {
 
     /// Common initialization.
     /// Render to FBO by default.
-    preinit(vertices, terrain_vshader, terrain_fshader, NULL, "vertexPosition2DWorld", -1);
-
-    reflectionFramebufferID = _frameBufferID;
-    _framebufferIDs.push_back(framebufferIDs[0]);
-    _framebufferIDs.push_back(framebufferIDs[1]);
+    preinit(vertices, terrain_vshader, terrain_fshader, NULL, "vertexPosition2DWorld");
 
     /// Allow to manually set a clip distance in the vertex shader (used to cut
     /// under water level geometry when rendering to texture). This could have
@@ -96,6 +92,7 @@ GLuint Terrain::init(Vertices* vertices, GLuint framebufferIDs[], GLuint heightM
 
     /// Attach the created texture to the first color attachment point.
     /// The texture becomes the fragment shader first output buffer.
+    glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs["waterReflection"]);
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, flippedTerrainTexID, 0);
     GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0};
     glDrawBuffers(1, drawBuffers);
@@ -142,13 +139,14 @@ void Terrain::draw(const mat4& projection, const mat4& view,
     /// Render the terrain from camera point of view to the reflection FBO.
     glUniform1f(_clipID, 1.0);
     glUniformMatrix4fv(_viewID, 1, GL_FALSE, viewFlip.data());
+    glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs["waterReflection"]);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     _vertices->draw();
 
     /// Render the terrain from camera point of view to default framebuffer.
-    glBindFramebuffer(GL_FRAMEBUFFER, _framebufferIDs[0]);
     glUniform1f(_clipID, 0.0);
     glUniformMatrix4fv(_viewID, 1, GL_FALSE, view.data());
+    glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs["controllerView"]);
     _vertices->draw();
 
 }

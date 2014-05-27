@@ -18,12 +18,10 @@ CameraPathControls::CameraPathControls(unsigned int width, unsigned int height) 
 }
 
 
-void CameraPathControls::init(Vertices* vertices, GLuint framebufferIDs[]) {
+void CameraPathControls::init(Vertices* vertices) {
 
     /// Common initialization.
-    preinit(vertices, camera_path_controls_vshader, rendering_simple_fshader, camera_path_controls_gshader, "vertexPosition3DWorld", framebufferIDs[0]);
-
-    _framebufferIDs.push_back(framebufferIDs[0]);
+    preinit(vertices, camera_path_controls_vshader, rendering_simple_fshader, camera_path_controls_gshader, "vertexPosition3DWorld");
 
     /// Set uniform IDs.
     _projectionID = glGetUniformLocation(_programID, "projection");
@@ -63,7 +61,7 @@ void CameraPathControls::draw(const mat4& projection, const mat4& view,
     /// Otherwise already drawn pixels will be cleared.
 
     /// Render to default framebuffer.
-    glBindFramebuffer(GL_FRAMEBUFFER, _framebufferIDs[0]);
+    glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs["controllerView"]);
     _vertices->draw();
 
 }

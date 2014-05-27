@@ -12,13 +12,15 @@ public:
     Heightmap(unsigned int width, unsigned int height);
     unsigned int init(Vertices* vertices);
     void draw() const;
+    void clean();
 
     /// Generate a fake heightmap.
     unsigned int test() const;
 
 private:
 
-    /// Uniform IDs.
+    /// Framebuffer object.
+    unsigned int _framebufferID;
 
     /// Helper functions.
     unsigned int gen_permutation_table() const;
