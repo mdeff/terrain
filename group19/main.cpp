@@ -5,6 +5,7 @@
 
 #include "common.h"
 #include "rendering_simple.h"
+#include "screen_display.h"
 #include "heightmap.h"
 #include "shadowmap.h"
 #include "water.h"
@@ -39,6 +40,9 @@ const unsigned int textureHeight(1024);
 
 /// Number of particles on the side. That makes nParticlesSide^3 particles.
 const unsigned int nParticlesSide(20);
+
+/// This is the sole rendering context that renders directly to the screen.
+ScreenDisplay screenDisplay(windowWidth, windowHeight);
 
 /// Instanciate the rendering contexts that render to the screen.
 Skybox skybox(windowWidth, windowHeight);
@@ -210,6 +214,11 @@ void init() {
     GLuint renderedTexIDs[Nviews];
     gen_rendering_framebuffers(framebufferIDs, renderedTexIDs, Nviews);
 
+
+//    renderedTexIDs[0] = heightMapTexID;
+    screenDisplay.init(verticesQuad, renderedTexIDs);
+
+
     /// Initialize the rendering contexts.
     GLuint shadowMapTexID = shadowmap.init(verticesGrid, heightMapTexID);
     GLuint reflectionFramebufferID;
@@ -288,6 +297,10 @@ void display() {
     /// First control particle positions, then render them on screen.
     particlesControl.draw(deltaT);
     particlesRender.draw(cameraProjection, cameraView);
+
+
+    /// Finally, fill the real screen.
+//    screenDisplay.draw();
 
 }
 
