@@ -12,7 +12,7 @@ public:
 
     /// Common methods of all RenderingContext.
     ScreenDisplay(unsigned int width, unsigned int height);
-    void init(Vertices* vertices, unsigned int renderedTexIDs[]);
+    void init(Vertices* vertices, unsigned int framebufferIDs[]);
     void draw();
 
 private:
@@ -20,7 +20,7 @@ private:
     /// Uniform IDs.
 
     /// Texture IDs : current and last particle positions.
-    unsigned int _renderedTexIDs[2];
+//    unsigned int _renderedTexIDs[2];
 
 };
 

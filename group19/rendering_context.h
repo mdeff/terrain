@@ -2,6 +2,8 @@
 #ifndef __rendering_context_h__
 #define __rendering_context_h__
 
+#include <vector>
+
 /// Forward declarations (no header includes) (namespace pollution, build time).
 class Vertices;
 
@@ -30,6 +32,9 @@ protected:
 
     /// Pointer : vertices object can be shared between RenderingContext.
     Vertices* _vertices;
+
+    /// Rendering FBO IDs.
+    std::vector<unsigned int> _framebufferIDs;
 
     /// Common properties of all RenderingContext.
     unsigned int _frameBufferID;

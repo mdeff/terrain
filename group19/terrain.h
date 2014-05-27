@@ -11,8 +11,8 @@ class Terrain : public RenderingContext {
 public:
 
     /// Common methods of all RenderingContext.
-    Terrain(unsigned int windowWidth, unsigned int windowHeight, unsigned int textureWidth, unsigned int textureHeight);
-    unsigned int init(Vertices* vertices, unsigned int heightMapTexID, unsigned int shadowMapTexID, unsigned int& reflectionFramebufferID);
+    Terrain(unsigned int windowWidth, unsigned int windowHeight);
+    unsigned int init(Vertices* vertices, unsigned int framebufferIDs[], unsigned int heightMapTexID, unsigned int shadowMapTexID, unsigned int& reflectionFramebufferID);
     void draw(const mat4& projection, const mat4& view,
               const mat4& lightViewProjection, const vec3& lightPositionWorld) const;
 
@@ -24,11 +24,7 @@ private:
     unsigned int _lightViewProjectionID;
     unsigned int _lightPositionWorldID;
     unsigned int _clipID;
-	unsigned int _seedID;
-
-    /// Texture (second rendering target) size.
-    unsigned int _textureWidth;
-    unsigned int _textureHeight;
+    unsigned int _seedID;
 
 };
 

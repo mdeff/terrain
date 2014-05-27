@@ -17,10 +17,12 @@ RenderingSimple::RenderingSimple(unsigned int width, unsigned int height) :
 }
 
 
-void RenderingSimple::init(Vertices* vertices) {
+void RenderingSimple::init(Vertices* vertices, unsigned int framebufferIDs[]) {
 
     /// Common initialization.
     preinit(vertices, rendering_simple_vshader, rendering_simple_fshader, NULL, "vertexPosition3DModel", 0);
+
+    _framebufferIDs.push_back(framebufferIDs[0]);
 
     /// Set uniform IDs.
     _projectionID = glGetUniformLocation(_programID, "projection");
@@ -46,6 +48,7 @@ void RenderingSimple::draw(const mat4& projection, const mat4& view, const mat4&
     /// Otherwise already drawn pixels will be cleared.
 
     /// Render to default framebuffer.
+    glBindFramebuffer(GL_FRAMEBUFFER, _framebufferIDs[0]);
     _vertices->draw();
 
 }

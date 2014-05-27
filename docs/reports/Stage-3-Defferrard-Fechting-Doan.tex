@@ -189,6 +189,13 @@ From an implementation point of view, almost each object of the scene (skybox, t
 
 For performance reason, it is crucial to render the two points of view one after the other as shader program switch is expensive.
 
+        /// The linear filtering is only used for the small preview.
+        /// As it creates too much aliasing, the main image is direclty accessed
+        /// with texelFetch which does bypass the filtering.
+
+To produce hight quality rendering, the two views were rendered to multisampled textures (\texttt{GL\_TEXTURE\_2D\_MULTISAMPLE}), using four samples per pixel. Multisampling, also known as multisample antialiasing (MSAA), is one method for achieving full-screen antialiasing (FSAA). In order to improve performance, multi-sampling was disabled for the default framebuffer in the \texttt{glfwCreateWindow} helper function. It makes no sense to do the multi-sampling twice.
+
+Renderbuffer Objects are OpenGL Objects that contain images. They are created and used specifically with Framebuffer Objects. They are optimized for use as render targets, while Textures may not be, and are the logical choice when you do not need to sample (i.e. in a post-pass shader) from the produced image. If you need to resample (such as when reading depth back in a second shader pass), use Textures instead. Renderbuffer objects also natively accommodate Multisampling (MSAA).
 
 \section{Improvements on last stage}
 
@@ -318,7 +325,7 @@ The differences between a 32 bits depth buffer (fig.~\ref{shadowmap_32bits_PCFwi
 
 \subsection{Heightmap}
 
-The heightmap texture was configured with the default heuristic for out-of-range values. This default is to wrap around the texture (\texttt{GL\_REPEAT}) which creates artifacts at the borders of the terrain (fig.~\ref{heightmap_artifacts}). Clamping the texture coordinates (\texttt{GL\_CLAMP\_TO\_EDGE}) to the [0,1] range eliminates the artifacts (fig.~\ref{heightmap_ok}).
+The heightmap texture was configured with the default heuristic for out-of-range values. This default is to wrap around the texture (\texttt{GL\_REPEAT}) which creates artifacts at the borders of the terrain due to linear filtering which access neighboring pixels (fig.~\ref{heightmap_artifacts}). Clamping the texture coordinates (\texttt{GL\_CLAMP\_TO\_EDGE}) to the [0,1] range eliminates the artifacts (fig.~\ref{heightmap_ok}).
 
 \begin{figure}[ht]
 	\centering

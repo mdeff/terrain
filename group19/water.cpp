@@ -16,11 +16,14 @@ Water::Water(unsigned int width, unsigned int height) :
 }
 
 
-void Water::init(Vertices* vertices, GLuint flippedTerrainTexID) {
+void Water::init(Vertices* vertices, GLuint framebufferIDs[], GLuint flippedTerrainTexID) {
 
     /// Common initialization.
 //    RenderingContext::init(vertices, particles_control_vshader, water_fshader, NULL, "vertexPosition2DWorld", 0);
     preinit(vertices, water_vshader, water_fshader, NULL, "vertexPosition2DWorld", 0);
+
+    _framebufferIDs.push_back(framebufferIDs[0]);
+    _framebufferIDs.push_back(framebufferIDs[1]);
 
     //bind the reflection tex to texture 0
     set_texture(0, flippedTerrainTexID, "flippedTerrainTex", GL_TEXTURE_2D);
@@ -75,6 +78,7 @@ void Water::draw(const mat4& projection, const mat4& view,
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     /// Render the terrain from camera point of view to default framebuffer.
+    glBindFramebuffer(GL_FRAMEBUFFER, _framebufferIDs[0]);
     _vertices->draw();
 
     /// Disable blending : other primitives are opaque.
