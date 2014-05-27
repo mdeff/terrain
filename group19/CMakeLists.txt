@@ -5,6 +5,7 @@ add_executable(${DIR}
 
     vertices_grid.cpp vertices_skybox.cpp vertices_quad.cpp
     vertices_camera_path.cpp vertices_camera_pictorial.cpp
+    vertices_duck.cpp
 
     rendering_simple.cpp      rendering_simple_vshader.glsl      rendering_simple_fshader.glsl
     heightmap.cpp             heightmap_fshader.glsl
@@ -16,6 +17,7 @@ add_executable(${DIR}
     particles_control.cpp     particles_control_fshader.glsl
     particles_render.cpp      particles_render_vshader.glsl      particles_render_fshader.glsl
     screen_display.cpp        screen_display_fshader.glsl
+    duck.cpp		      duck_vshader.glsl			 duck_fshader.glsl
 )
 
 target_link_libraries(${DIR} ${COMMON_LIBS})
@@ -37,3 +39,5 @@ target_stringify_shader(${DIR} rendering_simple_fshader)
 target_stringify_shader(${DIR} camera_path_controls_vshader)
 target_stringify_shader(${DIR} camera_path_controls_gshader)
 target_stringify_shader(${DIR} screen_display_fshader)
+target_stringify_shader(${DIR} duck_vshader)
+target_stringify_shader(${DIR} duck_fshader)

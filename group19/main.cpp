@@ -21,7 +21,8 @@
 #include "vertices_skybox.h"
 #include "vertices_camera_path.h"
 #include "vertices_camera_pictorial.h"
-
+//#include "vertices_duck.h"
+//#include "duck.h"
 
 /// Number of different views.
 const unsigned int Nviews = 2;
@@ -51,6 +52,7 @@ RenderingSimple cameraPictorial(windowWidth, windowHeight);
 RenderingSimple cameraPath(windowWidth, windowHeight);
 CameraPathControls cameraPathControls(windowWidth, windowHeight);
 ParticlesRender particlesRender(windowWidth, windowHeight, nParticlesSide);
+//RenderedDuck duck(windowWidth, windowHeight);
 
 /// Instanciate the rendering contexts that render to FBO.
 Shadowmap shadowmap(textureWidth, textureHeight);
@@ -65,6 +67,7 @@ CameraControl cameraControl;
 Vertices* verticesQuad = new VerticesQuad();
 Vertices* verticesGrid = new VerticesGrid();
 Vertices* verticesSkybox = new VerticesSkybox();
+//Vertices* verticesDuck = new VerticesDuck();
 VerticesCameraPath* verticesCameraPath = new VerticesCameraPath();
 VerticesCameraPath* verticesCameraPathControls = new VerticesCameraPath();
 VerticesCameraPictorial* verticesCameraPictorial = new VerticesCameraPictorial();
@@ -196,20 +199,20 @@ void init() {
     verticesCameraPath->generate();
     verticesCameraPathControls->generate();
     verticesCameraPictorial->generate();
-
+	//verticesDuck->generate();
     /// Generate the heightmap texture.
     Heightmap heightmap(textureWidth, textureHeight);
     GLuint heightMapTexID = heightmap.init(verticesQuad);
 	heightmap.draw();
     heightmap.clean();
-//    verticesQuad->clean();
-//    delete verticesQuad;
+    verticesQuad->clean();
+    delete verticesQuad;
 
-    /// Two rendering framebuffers and two view matrices.
-    /// 1) Overall view for control purpose.
-    /// 2) Camera actual view.
-    /// No more direct drawing to the default framebuffer. All drawings go
-    /// to textures and Display arranges the textures on screen.
+     //Two rendering framebuffers and two view matrices.
+     //1) Overall view for control purpose.
+    // 2) Camera actual view.
+     //No more direct drawing to the default framebuffer. All drawings go
+    // to textures and Display arranges the textures on screen.
     GLuint framebufferIDs[Nviews];
     GLuint renderedTexIDs[Nviews];
     gen_rendering_framebuffers(framebufferIDs, renderedTexIDs, Nviews);
@@ -240,6 +243,8 @@ void init() {
     cameraPictorial.init(verticesCameraPictorial);
     cameraPath.init(verticesCameraPath);
     cameraPathControls.init(verticesCameraPathControls);
+
+	//duck.init(verticesDuck);
 
     /// Initialize the light position.
     keyboard_callback(50, GLFW_PRESS);
@@ -298,9 +303,9 @@ void display() {
     particlesControl.draw(deltaT);
     particlesRender.draw(cameraProjection, cameraView);
 
-
+	//duck.draw(cameraProjection, cameraView);
     /// Finally, fill the real screen.
-//    screenDisplay.draw();
+    screenDisplay.draw();
 
 }
 
