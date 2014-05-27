@@ -26,12 +26,15 @@ void CameraPathControlPoints::init(Vertices* vertices) {
     /// Set uniform IDs.
     _projectionID = glGetUniformLocation(_programID, "projection");
     _viewID = glGetUniformLocation(_programID, "view");
+    _lightPositionWorldID = glGetUniformLocation(_programID, "lightPositionWorld");
     _selectedControlPointID = glGetUniformLocation(_programID, "selectedControlPoint");
 
 }
 
 
-void CameraPathControlPoints::draw(const mat4& projection, const mat4& view, const int& selectedControlPoint) const {
+void CameraPathControlPoints::draw(const mat4& projection, const mat4& view,
+                                   const vec3& lightPositionWorld,
+                                   const int& selectedControlPoint) const {
 
     /// Common drawing.
     RenderingContext::draw();
@@ -39,6 +42,7 @@ void CameraPathControlPoints::draw(const mat4& projection, const mat4& view, con
     /// Update the content of the uniforms.
     glUniformMatrix4fv( _projectionID, 1, GL_FALSE, projection.data());
     glUniformMatrix4fv( _viewID, 1, GL_FALSE, view.data());
+    glUniform3fv(_lightPositionWorldID, 1, lightPositionWorld.data());
     glUniform1i( _selectedControlPointID, selectedControlPoint);
 
     /// Do not clear the default framebuffer (screen) : done by Terrain.

@@ -35,7 +35,7 @@ out vec3 vertexPosition3DWorld;
 out vec3 shadowCoord;
 
 // Light and view directions.
-out vec3 lightDir, viewDir;
+out vec3 lightDirWorld, viewDirCamera;
 
 
 void main() {
@@ -50,7 +50,7 @@ void main() {
 
     // View matrix transforms from world space to camera space.
     // Projection matrix transforms from camera space to clip space (homogeneous space).
-    vec4 vertexPositionCamera = view * vec4(vertexPosition3DWorld.xyz, 1.0);
+    vec4 vertexPositionCamera = view * vec4(vertexPosition3DWorld, 1.0);
     gl_Position = projection * vertexPositionCamera;
 
     // Transform vertex position from world space to light source clip space.
@@ -62,8 +62,8 @@ void main() {
     // Light and view directions : subtraction of 2 points gives vector.
     // Camera space --> camera position at origin --> subtraction by [0,0,0].
     // No need to normalize as interpolation will not preserve vector lengths.
-    lightDir = lightPositionWorld - vertexPosition3DWorld;
-    viewDir = vec3(vertexPositionCamera);
+    lightDirWorld = lightPositionWorld - vertexPosition3DWorld;
+    viewDirCamera = vec3(vertexPositionCamera);
 
     // Compute clip distance. Vertex is discarded if clip distance is negative.
     // Our clip plane is simply the water level, i.e. z = 0.
