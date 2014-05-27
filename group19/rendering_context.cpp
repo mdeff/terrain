@@ -35,11 +35,12 @@ void RenderingContext::preinit(Vertices* vertices, const char* vshader, const ch
         _vertices->bind(vertexAttribID1);
     }
 
-	 if(vertices != NULL && vertexAttribName2 != NULL) {
+
+
+	if(vertices != NULL && vertexAttribName2 != NULL) {
         GLuint vertexAttribID2 = glGetAttribLocation(_programID, vertexAttribName2);
         _vertices->bind(vertexAttribID2);
     }
-
 }
 
 

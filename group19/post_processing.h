@@ -15,6 +15,8 @@ public:
     void init(Vertices* vertices, unsigned int renderedTexIDs[]);
     void draw();
 
+    void handleKeyboard(int key, int action);
+
 private:
 
     /// Uniform IDs.

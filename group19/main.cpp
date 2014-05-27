@@ -26,6 +26,9 @@
 #include "vertices_duck.h"
 #include "duck.h"
 
+
+
+
 /// Number of parallel views.
 const GLuint Nviews = 2;
 
@@ -65,6 +68,7 @@ RenderedDuck duck(windowWidth, windowHeight);
 Shadowmap shadowmap(textureWidth, textureHeight);
 ParticlesControl particlesControl(nParticlesSide);
 
+RenderedDuck duck(windowWidth, windowHeight);
 Water water(windowWidth, windowHeight);
 
 /// Camera position controller.
@@ -75,6 +79,7 @@ Vertices* verticesQuad = new VerticesQuad();
 Vertices* verticesGrid = new VerticesGrid();
 Vertices* verticesSkybox = new VerticesSkybox();
 Vertices* verticesDuck = new VerticesDuck();
+
 VerticesCameraPath* verticesCameraPath = new VerticesCameraPath();
 VerticesCameraPath* verticesCameraPathControls = new VerticesCameraPath();
 VerticesCameraPictorial* verticesCameraPictorial = new VerticesCameraPictorial();
@@ -135,7 +140,9 @@ void GLFWCALL keyboard_callback(int key, int action) {
             lightViewProjection = lightProjection * lightView;
         }
     }
-    cameraControl.handleCameraControls(key, action);
+
+    cameraControl.handleKeyboard(key, action);
+    postProcessing.handleKeyboard(key, action);
 }
 
 
@@ -233,6 +240,7 @@ void init() {
     verticesQuad->generate();
     verticesGrid->generate();
     verticesSkybox->generate();
+	verticesDuck->generate();
     verticesCameraPath->generate();
     verticesCameraPathControls->generate();
     verticesCameraPictorial->generate();
@@ -267,6 +275,7 @@ void init() {
     terrain.init(verticesGrid, heightMapTexID, shadowMapTexID);
     skybox.init(verticesSkybox);
 
+	duck.init(verticesDuck);
     // Grid or quad : interpolation ?
     water.init(verticesGrid, renderedTexIDs);
 //    water.init(verticesQuad, flippedTerrainTexID);
@@ -332,8 +341,8 @@ void display() {
     cameraPath.draw(cameraProjection, views, mat4::Identity(), vec3(0,1,0));
     cameraPathControls.draw(cameraProjection, views, lightPositionWorld, selectedControlPoint, deltaT);
 
-	duck.draw(cameraProjection, views);
     water.draw(cameraProjection, views, lightViewProjection, lightPositionWorld);
+	duck.draw(cameraProjection, views, lightPositionWorld);
 
     /// Render the translucent primitives last. Otherwise opaque objects that
     /// may be visible behind get discarded by the depth test.

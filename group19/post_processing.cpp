@@ -22,13 +22,9 @@ void PostProcessing::init(Vertices* vertices, GLuint renderedTexIDs[]) {
     /// Common initialization.
     preinit(vertices, passthrough_vshader, post_processing_fshader, NULL, NULL);
 
-    /// Bind the control and camera views to textures 0 and 1.
-//    set_texture(0, renderedTexIDs[0], "controllerViewTex", GL_TEXTURE_2D);
-//    set_texture(1, renderedTexIDs[1], "cameraViewTex", GL_TEXTURE_2D);
-
+    /// Bind the controller and camera views to textures 0 and 1.
     set_texture(0, renderedTexIDs[0], "mainviewTex", GL_TEXTURE_2D_MULTISAMPLE);
     set_texture(1, renderedTexIDs[1], "previewTex", GL_TEXTURE_2D_MULTISAMPLE);
-
 
     /// Set uniform IDs.
 
@@ -67,5 +63,17 @@ void PostProcessing::draw() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebufferIDs["cameraViewReflected"]);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+}
+
+
+void PostProcessing::handleKeyboard(int key, int action) {
+
+    /// Flip the two views when SPACE is pressed.
+    if(key==32 && action==GLFW_PRESS) {
+        GLuint tmp = _textures[0].ID;
+        _textures[0].ID = _textures[1].ID;
+        _textures[1].ID = tmp;
+    }
 
 }
