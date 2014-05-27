@@ -2,7 +2,6 @@
 
 // Light properties.
 uniform vec3 Ia, Id, Is;
-uniform float seed;
 
 // Texture 0. Defined by glActiveTexture and passed by glUniform1i.
 uniform sampler2D heightMapTex;

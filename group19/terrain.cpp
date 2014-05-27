@@ -12,20 +12,16 @@
 #include "terrain_fshader.h"
 
 
-Terrain::Terrain(unsigned int windowWidth, unsigned int windowHeight, unsigned int textureWidth, unsigned int textureHeight) :
-    RenderingContext(windowWidth, windowHeight),
-    _textureWidth(textureWidth),
-    _textureHeight(textureHeight) {
+Terrain::Terrain(unsigned int windowWidth, unsigned int windowHeight) :
+    RenderingContext(windowWidth, windowHeight) {
 }
 
 
-GLuint Terrain::init(Vertices* vertices, GLuint heightMapTexID, GLuint shadowMapTexID, GLuint& reflectionFramebufferID) {
+GLuint Terrain::init(Vertices* vertices, GLuint heightMapTexID, GLuint shadowMapTexID) {
 
     /// Common initialization.
     /// Render to FBO by default.
-    preinit(vertices, terrain_vshader, terrain_fshader, NULL, "vertexPosition2DWorld", -1);
-
-    reflectionFramebufferID = _frameBufferID;
+    preinit(vertices, terrain_vshader, terrain_fshader, NULL, "vertexPosition2DWorld");
 
     /// Allow to manually set a clip distance in the vertex shader (used to cut
     /// under water level geometry when rendering to texture). This could have
@@ -76,7 +72,7 @@ GLuint Terrain::init(Vertices* vertices, GLuint heightMapTexID, GLuint shadowMap
 
     /// Empty image (no data), three color components, clamped [0,1] 32 bits float.
     /// Same size as the screen : no need to change the view port, same projection matrix.
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _width, _height, 0, GL_RGB, GL_FLOAT, 0);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _width, _height, 0, GL_RGB, GL_FLOAT, NULL);
 
     /// Clamp texture coordinates to the [0,1] range. It is wrapped by default
     /// (GL_REPEAT), which creates artifacts at the terrain borders.
@@ -96,6 +92,7 @@ GLuint Terrain::init(Vertices* vertices, GLuint heightMapTexID, GLuint shadowMap
 
     /// Attach the created texture to the first color attachment point.
     /// The texture becomes the fragment shader first output buffer.
+    glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs["waterReflection"]);
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, flippedTerrainTexID, 0);
     GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0};
     glDrawBuffers(1, drawBuffers);
@@ -119,7 +116,7 @@ GLuint Terrain::init(Vertices* vertices, GLuint heightMapTexID, GLuint shadowMap
 }
 
 
-void Terrain::draw(const mat4& projection, const mat4& view,
+void Terrain::draw(const mat4& projection, const mat4 views[],
                    const mat4& lightViewProjection, const vec3& lightPositionWorld) const {
 
     /// Common drawing. 
@@ -130,26 +127,25 @@ void Terrain::draw(const mat4& projection, const mat4& view,
     glUniformMatrix4fv(_lightViewProjectionID, 1, GL_FALSE, lightViewProjection.data());
     glUniform3fv(_lightPositionWorldID, 1, lightPositionWorld.data());
 
+    /// Render from camera point of view to 'normal' FBOs.
+    glUniform1f(_clipID, 0.0);
+    glUniformMatrix4fv(_viewID, 1, GL_FALSE, views[0].data());
+    glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs["controllerView"]);
+    _vertices->draw();
+    glUniformMatrix4fv(_viewID, 1, GL_FALSE, views[1].data());
+    glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs["cameraView"]);
+    _vertices->draw();
+
     /// Flip the terrain by multiplying the Z coordinate by -1 in world space.
     mat4 flip = mat4::Identity();
     flip(2,2) = -1.0f;
-    mat4 viewFlip = view * flip;
+    mat4 viewFlip = views[0] * flip;
 
-    /// Render the terrain from camera point of view to the reflection FBO.
+    /// Render from flipped camera point of view to 'reflection' FBOs.
     glUniform1f(_clipID, 1.0);
     glUniformMatrix4fv(_viewID, 1, GL_FALSE, viewFlip.data());
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs["waterReflection"]);
     _vertices->draw();
 
-	//base value for random seed
-	static float seed = 0;
-    glUniform1f(_seedID, int(seed++)%500);
-
-    /// Render the terrain from camera point of view to default framebuffer.
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glUniform1f(_clipID, 0.0);
-    glUniformMatrix4fv(_viewID, 1, GL_FALSE, view.data());
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    _vertices->draw();
 
 }

@@ -17,6 +17,9 @@ public:
 
 private:
 
+    /// Framebuffer object.
+    unsigned int _framebufferID;
+
     /// Uniform IDs.
     unsigned int _lightViewProjectionID;
 

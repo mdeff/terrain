@@ -2,23 +2,27 @@
 #ifndef __rendering_context_h__
 #define __rendering_context_h__
 
+#include <string>
+#include <map>
+
+/// OpenGL object references.
+extern std::map<std::string, unsigned int> framebufferIDs;
+extern std::map<std::string, unsigned int> textureIDs;
+extern std::map<std::string, unsigned int> viewIDs;
+
 /// Forward declarations (no header includes) (namespace pollution, build time).
 class Vertices;
 
 /// @brief OpenGL wrapper class template
 class RenderingContext {
 
-public:
-
-    /// Common methods of all RenderingContext.
-    void clean();
-
 protected:
 
     /// Common methods of all RenderingContext.
     RenderingContext(unsigned int width, unsigned int height);
-    void preinit(Vertices* vertices, const char* vshader, const char* fshader, const char* gshader, const char* vertexAttribName, int frameBufferID);
+    void preinit(Vertices* vertices, const char* vshader, const char* fshader, const char* gshader, const char* vertexAttribName);
     void predraw() const;
+    void preclean();
 
     /// Helper function.
     void set_texture(unsigned int textureIndex, int textureID, const char* uniformName, unsigned int target);
@@ -30,9 +34,6 @@ protected:
 
     /// Pointer : vertices object can be shared between RenderingContext.
     Vertices* _vertices;
-
-    /// Common properties of all RenderingContext.
-    unsigned int _frameBufferID;
 
 
 private:

@@ -17,10 +17,10 @@ Skybox::Skybox(unsigned int width, unsigned int height) :
 }
 
 
-void Skybox::init(Vertices* vertices, GLuint reflectionFramebufferID) {
+void Skybox::init(Vertices* vertices) {
 
     /// Common initialization.
-    preinit(vertices, skybox_vshader, skybox_fshader, NULL, "vertexPosition3DWorld", reflectionFramebufferID);
+    preinit(vertices, skybox_vshader, skybox_fshader, NULL, "vertexPosition3DWorld");
 
     /// Bind the Skybox cube map to texture 0.
     set_texture(0, -1, "skyboxTex", GL_TEXTURE_CUBE_MAP);
@@ -33,29 +33,30 @@ void Skybox::init(Vertices* vertices, GLuint reflectionFramebufferID) {
 }
 
 
-void Skybox::draw(const mat4& projection, const mat4& view) const {
+void Skybox::draw(const mat4& projection, const mat4 views[]) const {
 
     /// Common drawing.
     predraw();
 
     /// Update the content of the uniforms.
-    glUniformMatrix4fv( _projectionID, 1, GL_FALSE, projection.data());
+    glUniformMatrix4fv(_projectionID, 1, GL_FALSE, projection.data());
 
-    /// Do not clear the framebuffers : done by Terrain.
-    /// Otherwise already drawn pixels will be cleared.
+    /// Render from camera point of view to 'normal' FBOs.
+    glUniformMatrix4fv(_viewID, 1, GL_FALSE, views[0].data());
+    glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs["controllerView"]);
+    _vertices->draw();
+    glUniformMatrix4fv(_viewID, 1, GL_FALSE, views[1].data());
+    glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs["cameraView"]);
+    _vertices->draw();
 
     /// Flip the terrain by multiplying the Z coordinate by -1 in world space.
     mat4 flip = mat4::Identity();
     flip(2,2) = -1.0f;
-    mat4 viewFlip = view * flip;
+    mat4 viewFlip = views[0] * flip;
 
-    /// Render the terrain from camera point of view to the reflection FBO.
+    /// Render from flipped camera point of view to 'reflection' FBOs.
     glUniformMatrix4fv(_viewID, 1, GL_FALSE, viewFlip.data());
-    _vertices->draw();
-
-    /// Render the skybox from camera point of view to default framebuffer.
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glUniformMatrix4fv(_viewID, 1, GL_FALSE, view.data());
+    glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs["waterReflection"]);
     _vertices->draw();
 
 }

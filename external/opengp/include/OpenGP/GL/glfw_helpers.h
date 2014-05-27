@@ -36,7 +36,7 @@ int glfwCreateWindow(const char* title){
     glfwOpenWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     /// Hint for multisampling
-    glfwOpenWindowHint(GLFW_FSAA_SAMPLES, 4);
+//    glfwOpenWindowHint(GLFW_FSAA_SAMPLES, 4);
     
     /// Attempt to open the window: fails if required version unavailable
     /// @note Intel GPUs do not support OpenGL 3.0

@@ -51,6 +51,8 @@ void CameraControl::init(VerticesCameraPath* verticesCameraPath, VerticesCameraP
     _explorationMode = TRACKBALL;
     trackball(mat4::Identity());
 
+    update_camera_modelview(0.5f, -0.5f, 0.8f, 0.0f, 0.0f, 0.0f);
+
     /// HACK to show pictorial camera.
     /// Simple translation along z-axis for now.
     _cameraPictorialModel = mat4::Identity();
@@ -65,14 +67,14 @@ void CameraControl::trackball(const mat4& model) {
 
     /// This camera control applies only in TRACKBALL exploration mode.
     /// Other modes have their own camera control.
-    if(_explorationMode != TRACKBALL)
-        return;
+//    if(_explorationMode != TRACKBALL)
+//        return;
 
     /// View matrix (camera extrinsics) (position in world space).
 
     /// Camera is in the sky, looking down.
 
-    vec3 camPos(0.5f, -0.5f, 0.8f);
+//    vec3 camPos(0.5f, -0.5f, 0.8f);
 	//vec3 camPos(2.5f, -2.5f, 2.8f);
 
 //    vec3 camPos(0.0f, -1.5f, 0.8f);
@@ -98,7 +100,7 @@ void CameraControl::trackball(const mat4& model) {
 */
     /// Frontal view to observe water reflection.
 
-    //vec3 camPos(0.0f, -2.8f, 1.7f);
+    vec3 camPos(0.0f, -2.8f, 1.7f);
     vec3 camLookAt(0.0f, 0.0f, 0.0f);
     vec3 camUp(0.0f, 0.0f, 1.0f);
 
@@ -134,7 +136,7 @@ void CameraControl::trackball(const mat4& model) {
     mat4 view = Eigen::lookAt(camPos, camLookAt, camUp);
 
     /// Assemble the "Model View" matrix.
-    _cameraModelview = view * model;
+    _controllerModelview = view * model;
 
 }
 
@@ -375,10 +377,15 @@ void CameraControl::animatePictorialCamera(){
     float deltaT = float(currentTime - lastTime); //deltaT in sc 
 	if(deltaT>0.05){
 		lastTime = currentTime;
-			std::cout<<i<<std::endl;
+			//std::cout<<i<<std::endl;
 			_cameraPictorialModel(0,3) = _cameraPath[i*3+0];
 			_cameraPictorialModel(1,3) = _cameraPath[i*3+1];
 			_cameraPictorialModel(2,3) = _cameraPath[i*3+2];
+
+			//hide pictorial camera
+			//_cameraPictorialModel(0,3) =-10;
+			//_cameraPictorialModel(1,3) =-10;
+			//_cameraPictorialModel(2,3) =-10;
 			
 			float dirX= _cameraPath[(i+1)*3+0]-_cameraPath[i*3+0];
 			float dirY= _cameraPath[(i+1)*3+1]-_cameraPath[i*3+1];
@@ -635,7 +642,7 @@ void CameraControl::bezier_4_points(int PointToChange, float deltaX, float delta
     _cameraPathControls.push_back(b3Z);
 
 	/// Choose the resolution.
-    const unsigned int nPoints = 200;
+    const unsigned int nPoints = 500;
 
     /// To avoid vector resizing on every loop.
     _cameraPath.clear();
@@ -782,21 +789,23 @@ void CameraControl::N_MultipleBezier_controlled(int PointToChange, float deltaX,
 		_cameraPathControls.at(PointToChange*3+0) += deltaX;	//6					
         _cameraPathControls.at(PointToChange*3+1) += deltaY;	//7 						
         _cameraPathControls.at(PointToChange*3+2) += deltaZ;	//8							
-										
-		//refresh other control points to respect contstraint								
-		_cameraPathControls.at(PointToChange*3+0+6) = 2*_cameraPathControls.at(PointToChange*3+0+3) - _cameraPathControls.at(PointToChange*3+0);											
-		_cameraPathControls.at(PointToChange*3+1+6) = 2*_cameraPathControls.at(PointToChange*3+1+3) - _cameraPathControls.at(PointToChange*3+1);											
-		_cameraPathControls.at(PointToChange*3+2+6) = 2*_cameraPathControls.at(PointToChange*3+2+3) - _cameraPathControls.at(PointToChange*3+2);											
+		if(_cameraPathControls.size()>12){							
+			//refresh other control points to respect contstraint								
+			_cameraPathControls.at(PointToChange*3+0+6) = 2*_cameraPathControls.at(PointToChange*3+0+3) - _cameraPathControls.at(PointToChange*3+0);											
+			_cameraPathControls.at(PointToChange*3+1+6) = 2*_cameraPathControls.at(PointToChange*3+1+3) - _cameraPathControls.at(PointToChange*3+1);											
+			_cameraPathControls.at(PointToChange*3+2+6) = 2*_cameraPathControls.at(PointToChange*3+2+3) - _cameraPathControls.at(PointToChange*3+2);	
+		}
 	}																	
 	else if (PointToChange==3){											
 		_cameraPathControls.at(PointToChange*3+0) += deltaX;													
         _cameraPathControls.at(PointToChange*3+1) += deltaY;													
         _cameraPathControls.at(PointToChange*3+2) += deltaZ;													
-										
-		//refresh other control points to respect contstraint								
-		_cameraPathControls.at(PointToChange*3+0+3) = 2*_cameraPathControls.at(PointToChange*3+0+0) - _cameraPathControls.at(PointToChange*3+0-3);											
-		_cameraPathControls.at(PointToChange*3+1+3) = 2*_cameraPathControls.at(PointToChange*3+1+0) - _cameraPathControls.at(PointToChange*3+1-3);											
-		_cameraPathControls.at(PointToChange*3+2+3) = 2*_cameraPathControls.at(PointToChange*3+2+0) - _cameraPathControls.at(PointToChange*3+2-3);											
+		if(_cameraPathControls.size()>12){						
+			//refresh other control points to respect contstraint								
+			_cameraPathControls.at(PointToChange*3+0+3) = 2*_cameraPathControls.at(PointToChange*3+0+0) - _cameraPathControls.at(PointToChange*3+0-3);											
+			_cameraPathControls.at(PointToChange*3+1+3) = 2*_cameraPathControls.at(PointToChange*3+1+0) - _cameraPathControls.at(PointToChange*3+1-3);											
+			_cameraPathControls.at(PointToChange*3+2+3) = 2*_cameraPathControls.at(PointToChange*3+2+0) - _cameraPathControls.at(PointToChange*3+2-3);	
+		}
 	}																	
 	else if((PointToChange>1) & ((PointToChange-1)%3) ==0){
 		_cameraPathControls.at(PointToChange*3+0) += deltaX;													
@@ -886,6 +895,26 @@ void CameraControl::Add_Bcurve(){
 	N_MultipleBezier_controlled(0,0,0,0);
 	//_verticesCameraPathControls->copy(_cameraPathControls.data(), _cameraPathControls.size());
 }
+
+void CameraControl::Remove_Bcurve(){
+
+	//add control point 1 under constraint of the two previous ctrl point to keep continuity
+	_cameraPathControls.pop_back();
+	_cameraPathControls.pop_back();	
+	_cameraPathControls.pop_back();	
+
+	_cameraPathControls.pop_back();	
+	_cameraPathControls.pop_back();	
+	_cameraPathControls.pop_back();	
+	
+	_cameraPathControls.pop_back();	
+	_cameraPathControls.pop_back();	
+	_cameraPathControls.pop_back();		
+	
+	//display Bcurve
+	N_MultipleBezier_controlled(0,0,0,0);
+}
+
 
 void CameraControl::MultipleBezier_controlled(int PointToChange, float deltaX, float deltaY, float deltaZ) {
 
@@ -1403,7 +1432,7 @@ void CameraControl::fpsExploration(){
 	}
 }
 
-void CameraControl::updateCameraPosition(mat4& cameraModelview, mat4& cameraPictorialModel, int& selectedControlPoint) {
+void CameraControl::updateCameraPosition(mat4 views[], mat4& cameraPictorialModel, int& selectedControlPoint) {
 
     /// Modify camera position according to the exploration mode.
     switch(_explorationMode) {
@@ -1425,7 +1454,8 @@ void CameraControl::updateCameraPosition(mat4& cameraModelview, mat4& cameraPict
         animatePictorialCamera();
 
     /// Update the view transformation matrix.
-    cameraModelview = _cameraModelview;
+    views[0] = _controllerModelview;
+    views[1] = _cameraModelview;
 
     /// Update the camera pictorial model transformation matrix.
     cameraPictorialModel = _cameraPictorialModel;
@@ -1477,10 +1507,10 @@ void CameraControl::handleCameraControls(int key, int action){
         std::cout << "Exploration mode : PATH" << std::endl;
         _explorationMode = PATH;
 		break;
-    case 306: //4
-        std::cout << "Exploration mode : TRACKBALL" << std::endl;
-        _explorationMode = TRACKBALL;
-        trackball(mat4::Identity());
+//    case 306: //4
+//        std::cout << "Exploration mode : TRACKBALL" << std::endl;
+//        _explorationMode = TRACKBALL;
+//        trackball(mat4::Identity());
     }
 	if(action==1){
 		switch(key){
@@ -1496,6 +1526,7 @@ void CameraControl::handleCameraControls(int key, int action){
 				std::cout<<"Key K : position Y - 0.1"<<std::endl;
 				std::cout<<"Key O : position Z + 0.1"<<std::endl;
 				std::cout<<"Key L : position Z - 0.1"<<std::endl;
+				std::cout<<"Key + : add bezier curve"<<std::endl;
 
 				break;
 			case 85: //U=> X+
@@ -1526,18 +1557,27 @@ void CameraControl::handleCameraControls(int key, int action){
 				InitSubdivision();
 				break;
 			case 308: //6
-				MultipleBezier();
+				bezier_4_points(0,0,0,0);
 				break;
-			case 294://ENTER => drop control point
-				if(_explorationMode == FLYING){
-					KeyENTER = true;
-				}
-				break;
+//			case 294://ENTER => drop control point
+//				if(_explorationMode == FLYING){
+//					KeyENTER = true;
+//				}
+//				break;
 			case 309://7
 				flagAnimatePictorialCamera=!flagAnimatePictorialCamera;
 				break;
-			case 315://+
+            case 294://+
 				Add_Bcurve();
+				break;
+			case 314://-
+				if(_cameraPathControls.size()>12){
+					if(((_cameraPathControls.size()/3)-4)<_selectedControlPoint){
+						_selectedControlPoint=0;
+					}
+					Remove_Bcurve();
+
+				}
 				break;
 		}
 	}

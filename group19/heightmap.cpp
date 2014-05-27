@@ -21,7 +21,7 @@ Heightmap::Heightmap(unsigned int width, unsigned int height) :
 GLuint Heightmap::init(Vertices* vertices) {
 
     /// Common initialization.
-    preinit(vertices, passthrough_vshader, heightmap_fshader, NULL, "vertexPosition2D", -1);
+    preinit(vertices, passthrough_vshader, heightmap_fshader, NULL, "vertexPosition2D");
 
     /// Create and bind the permutation table to texture 0.
     GLuint permTableTexID = gen_permutation_table();
@@ -38,10 +38,11 @@ GLuint Heightmap::init(Vertices* vertices) {
     glBindTexture(GL_TEXTURE_2D, heightMapTexID);
 
     /// Empty image (no data), one color component, unclamped 32 bits float.
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, _width, _height, 0, GL_RED, GL_FLOAT, 0);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, _width, _height, 0, GL_RED, GL_FLOAT, NULL);
 
     /// Clamp texture coordinates to the [0,1] range. It is wrapped by default
-    /// (GL_REPEAT), which creates artifacts at the terrain borders.
+    /// (GL_REPEAT), which creates artifacts at the terrain borders due to
+    /// linear filtering which access neighboring pixels.
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
@@ -58,6 +59,8 @@ GLuint Heightmap::init(Vertices* vertices) {
 
     /// Attach the created texture to the first color attachment point.
     /// The texture becomes the fragment shader first output buffer.
+    glGenFramebuffers(1, &_framebufferID);
+    glBindFramebuffer(GL_FRAMEBUFFER, _framebufferID);
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, heightMapTexID, 0);
     GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0};
     glDrawBuffers(1, drawBuffers);
@@ -81,14 +84,12 @@ void Heightmap::draw() const {
 
     /// Update the content of the uniforms.
 
-    /// Clear the FBO.
-    glClear(GL_COLOR_BUFFER_BIT);
-
     /// Render the height map to FBO.
+    glBindFramebuffer(GL_FRAMEBUFFER, _framebufferID);
+    glClear(GL_COLOR_BUFFER_BIT);
     _vertices->draw();
 
 }
-
 
 
 GLuint Heightmap::test() const {
@@ -121,6 +122,12 @@ GLuint Heightmap::test() const {
     /// Return the height map texture ID.
     return heightMapTexID;
 
+}
+
+
+void Heightmap::clean() {
+    preclean();
+    glDeleteFramebuffers(1, &_framebufferID);
 }
 
 

@@ -21,7 +21,7 @@ ParticlesRender::ParticlesRender(unsigned int width, unsigned int height, unsign
 void ParticlesRender::init(GLuint particlePosTexID[]) {
 
     /// Common initialization.
-    preinit(NULL, particles_render_vshader, particles_render_fshader, NULL, NULL, 0);
+    preinit(NULL, particles_render_vshader, particles_render_fshader, NULL, NULL);
 
     /// Allow programmable point size for the vertex shader to size the sprite.
     glEnable(GL_PROGRAM_POINT_SIZE);
@@ -42,14 +42,13 @@ void ParticlesRender::init(GLuint particlePosTexID[]) {
 }
 
 
-void ParticlesRender::draw(const mat4& projection, const mat4& view) {
+void ParticlesRender::draw(const mat4& projection, const mat4 views[]) {
 
     /// Common drawing. 
     predraw();
 
     /// Update the content of the uniforms.
-    glUniformMatrix4fv( _viewID, 1, GL_FALSE, view.data());
-    glUniformMatrix4fv( _projectionID, 1, GL_FALSE, projection.data());
+    glUniformMatrix4fv(_projectionID, 1, GL_FALSE, projection.data());
 
     /// Flip the position texture binding : start with 1.
     static int pingpong = 0;
@@ -57,15 +56,17 @@ void ParticlesRender::draw(const mat4& projection, const mat4& view) {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_1D, _particlePosTexID[pingpong]);
 
-    /// Do not clear the default framebuffer (screen) : done by Terrain.
-    /// Otherwise already drawn pixels will be cleared.
-
     /// Blending for particle transparency.
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    /// Render the particles from camera point of view to default framebuffer.
+    /// Render from camera point of view to 'normal' FBOs.
     unsigned int nVertices = _nParticlesSide*_nParticlesSide*_nParticlesSide;
+    glUniformMatrix4fv(_viewID, 1, GL_FALSE, views[0].data());
+    glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs["controllerView"]);
+    glDrawArrays(GL_POINTS, 0, nVertices);
+    glUniformMatrix4fv(_viewID, 1, GL_FALSE, views[1].data());
+    glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs["cameraView"]);
     glDrawArrays(GL_POINTS, 0, nVertices);
 
     /// Disable blending : other primitives are opaque.

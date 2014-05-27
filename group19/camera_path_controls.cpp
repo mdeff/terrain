@@ -21,7 +21,7 @@ CameraPathControls::CameraPathControls(unsigned int width, unsigned int height) 
 void CameraPathControls::init(Vertices* vertices) {
 
     /// Common initialization.
-    preinit(vertices, camera_path_controls_vshader, rendering_simple_fshader, camera_path_controls_gshader, "vertexPosition3DWorld", 0);
+    preinit(vertices, camera_path_controls_vshader, rendering_simple_fshader, camera_path_controls_gshader, "vertexPosition3DWorld");
 
     /// Set uniform IDs.
     _projectionID = glGetUniformLocation(_programID, "projection");
@@ -33,7 +33,7 @@ void CameraPathControls::init(Vertices* vertices) {
 }
 
 
-void CameraPathControls::draw(const mat4& projection, const mat4& view,
+void CameraPathControls::draw(const mat4& projection, const mat4 views[],
                                    const vec3& lightPositionWorld,
                                    const int& selectedControlPoint,
                                    float deltaT) const {
@@ -52,15 +52,13 @@ void CameraPathControls::draw(const mat4& projection, const mat4& view,
 
     /// Update the content of the uniforms.
     glUniformMatrix4fv( _projectionID, 1, GL_FALSE, projection.data());
-    glUniformMatrix4fv( _viewID, 1, GL_FALSE, view.data());
+    glUniformMatrix4fv( _viewID, 1, GL_FALSE, views[0].data());
     glUniform3fv(_lightPositionWorldID, 1, lightPositionWorld.data());
     glUniform1i( _selectedControlPointID, selectedControlPoint);
     glUniformMatrix4fv(_rotationMatrixID, 1, GL_FALSE, rotationMatrix.data());
 
-    /// Do not clear the default framebuffer (screen) : done by Terrain.
-    /// Otherwise already drawn pixels will be cleared.
-
-    /// Render to default framebuffer.
+    /// Render from camera point of view to 'normal' FBOs.
+    glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs["controllerView"]);
     _vertices->draw();
 
 }

@@ -2,10 +2,12 @@
 
 #include <iostream>
 #include <sstream>
+#include <map>
+#include <string>
 
 #include "common.h"
 #include "rendering_simple.h"
-#include "screen_display.h"
+#include "post_processing.h"
 #include "heightmap.h"
 #include "shadowmap.h"
 #include "water.h"
@@ -24,8 +26,13 @@
 //#include "vertices_duck.h"
 //#include "duck.h"
 
-/// Number of different views.
-const unsigned int Nviews = 2;
+/// Number of parallel views.
+GLuint Nviews(2);
+
+/// OpenGL object references (global by definition, part of the OpenGL context).
+std::map<std::string, unsigned int> framebufferIDs;
+std::map<std::string, unsigned int> textureIDs;
+std::map<std::string, unsigned int> viewIDs;
 
 /// Screen (and rendering framebuffers) size.
 const unsigned int windowWidth(1024);
@@ -43,11 +50,11 @@ const unsigned int textureHeight(1024);
 const unsigned int nParticlesSide(20);
 
 /// This is the sole rendering context that renders directly to the screen.
-ScreenDisplay screenDisplay(windowWidth, windowHeight);
+PostProcessing postProcessing(windowWidth, windowHeight);
 
 /// Instanciate the rendering contexts that render to the screen.
 Skybox skybox(windowWidth, windowHeight);
-Terrain terrain(windowWidth, windowHeight, textureWidth, textureHeight);
+Terrain terrain(windowWidth, windowHeight);
 RenderingSimple cameraPictorial(windowWidth, windowHeight);
 RenderingSimple cameraPath(windowWidth, windowHeight);
 CameraPathControls cameraPathControls(windowWidth, windowHeight);
@@ -132,52 +139,67 @@ void GLFWCALL keyboard_callback(int key, int action) {
 }
 
 
-void gen_rendering_framebuffers(GLuint framebufferIDs[], GLuint renderedTexIDs[], unsigned int N) {
+void gen_rendering_framebuffers(GLuint framebufferIDs[], GLuint colorTexIDs[], unsigned int N) {
 
     /// Each FBO will have an attached texture for rendering and a renderbuffer
     /// depth buffer.
 
-    glGenFramebuffers(N, framebufferIDs);
-    glGenTextures(N, renderedTexIDs);
+    /// Number of samples for multi-sampling.
+    const unsigned int samples = 4;
+
+    /// Generate framebuffers and renderbuffers.
+    GLuint* colorBufIDs = new GLuint[N];
+    GLuint* depthBufIDs = new GLuint[N];
+    glGenRenderbuffers(N, colorBufIDs);
+    glGenTextures(N, colorTexIDs);
+    glGenRenderbuffers(N, depthBufIDs);
 
     for(int k=0; k<N; ++k) {
 
         glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs[k]);
-        glBindTexture(GL_TEXTURE_2D, renderedTexIDs[k]);
 
-        /// Empty image (no data), three color components, clamped [0,1] 32 bits float.
-        /// Same size as the screen : no need to change the view port, same projection matrix.
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, windowWidth, windowHeight, 0, GL_RGB, GL_FLOAT, 0);
+        /// Multi-sample color buffer.
+//        glBindRenderbuffer(GL_RENDERBUFFER, colorBufIDs[k]);
+//        glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER_EXT, samples, GL_RGBA8, windowWidth, windowHeight);
+//        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, colorBufIDs[k]);
+//        GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0};
+//        glDrawBuffers(1, drawBuffers);
 
-        /// Clamp texture coordinates to the [0,1] range. Wrapped (GL_REPEAT) by default.
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-        /// Simple linear filtering (need to be explicitly set).
-        /// May need a better filtering as this have an impact on the final result.
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-        /// Attach the output texture to the first color attachment point.
-        /// The texture becomes the fragment shader first output buffer.
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderedTexIDs[k], 0);
+        /// Multi-sample color texture (will be sampled by post-processing shader).
+        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, colorTexIDs[k]);
+        glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_RGBA8, windowWidth, windowHeight, GL_FALSE);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, colorTexIDs[k], 0);
         GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0};
         glDrawBuffers(1, drawBuffers);
 
-        /// Create and attach a depth buffer for the FBO.
-        GLuint depthRenderbufferID;
-        glGenRenderbuffers(1, &depthRenderbufferID);
-        glBindRenderbuffer(GL_RENDERBUFFER, depthRenderbufferID);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, windowWidth, windowHeight);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderbufferID);
+//        glBindTexture(GL_TEXTURE_2D, colorTexIDs[k]);
+//        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, windowWidth, windowHeight, 0, GL_RGBA, GL_FLOAT, NULL);
+//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorTexIDs[k], 0);
+//        GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0};
+//        glDrawBuffers(1, drawBuffers);
 
-        /// Check that our framebuffer object (FBO) is complete.
+        /// Multi-sample depth buffer (will never be sampled, more efficient).
+        glBindRenderbuffer(GL_RENDERBUFFER, depthBufIDs[k]);
+        glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_DEPTH_COMPONENT, windowWidth, windowHeight);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBufIDs[k]);
+
+        /// Create and attach a depth buffer for the FBO.
+//        glBindRenderbuffer(GL_RENDERBUFFER, depthBufIDs[k]);
+//        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, windowWidth, windowHeight);
+//        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBufIDs[k]);
+
+        /// Check that FBO is complete.
         if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
             std::cerr << "Rendering framebuffer " << k << " not complete." << std::endl;
             exit(EXIT_FAILURE);
         }
-
     }
+
+    /// Free heap memory.
+    delete[] colorBufIDs, depthBufIDs;
+
 }
 
 
@@ -205,6 +227,7 @@ void init() {
     GLuint heightMapTexID = heightmap.init(verticesQuad);
 	heightmap.draw();
     heightmap.clean();
+<<<<<<< HEAD
     verticesQuad->clean();
     delete verticesQuad;
 
@@ -214,19 +237,32 @@ void init() {
      //No more direct drawing to the default framebuffer. All drawings go
     // to textures and Display arranges the textures on screen.
     GLuint framebufferIDs[Nviews];
+=======
+//    verticesQuad->clean();
+//    delete verticesQuad;
+
+    /// Generate OpenGL global objects.
+    GLuint framebufferIDs_tmp[2*Nviews];
+    glGenFramebuffers(2*Nviews, framebufferIDs_tmp);
+    framebufferIDs["controllerView"]  = framebufferIDs_tmp[0];
+    framebufferIDs["cameraView"]      = framebufferIDs_tmp[1];
+    framebufferIDs["waterReflection"] = framebufferIDs_tmp[2];
+
+
+    /// Two rendering framebuffers and two view matrices.
+    /// 1) Overall view for control purpose.
+    /// 2) Camera actual view.
+    /// No more direct drawing to the default framebuffer. All drawings go
+    /// to textures and Display arranges the textures on screen.
+>>>>>>> 2d2db2ecf45fba0eeca7ab94b70a41b6279ab69a
     GLuint renderedTexIDs[Nviews];
-    gen_rendering_framebuffers(framebufferIDs, renderedTexIDs, Nviews);
-
-
-//    renderedTexIDs[0] = heightMapTexID;
-    screenDisplay.init(verticesQuad, renderedTexIDs);
-
+    gen_rendering_framebuffers(framebufferIDs_tmp, renderedTexIDs, Nviews);
+    postProcessing.init(verticesQuad, renderedTexIDs);
 
     /// Initialize the rendering contexts.
     GLuint shadowMapTexID = shadowmap.init(verticesGrid, heightMapTexID);
-    GLuint reflectionFramebufferID;
-    GLuint flippedTerrainTexID = terrain.init(verticesGrid, heightMapTexID, shadowMapTexID, reflectionFramebufferID);
-    skybox.init(verticesSkybox, reflectionFramebufferID);
+    GLuint flippedTerrainTexID = terrain.init(verticesGrid, heightMapTexID, shadowMapTexID);
+    skybox.init(verticesSkybox);
 
     // Grid or quad : interpolation ?
     water.init(verticesGrid, flippedTerrainTexID);
@@ -254,13 +290,13 @@ void init() {
 
 void display() {
 
-    /// Measure and print FPS (every second).
+    /// Measure and print FPS (every 10 seconds).
 	static double lastTime = glfwGetTime();
     static int nbFrames = 0;
     double currentTime = glfwGetTime();
     nbFrames++;
-    if(currentTime - lastTime >= 1.0) {
-        std::cout << nbFrames << " FPS" << std::endl;
+    if(currentTime - lastTime >= 10.0) {
+        std::cout << float(nbFrames)/10.0f << " FPS" << std::endl;
         nbFrames = 0;
         lastTime = currentTime;
     }
@@ -270,13 +306,11 @@ void display() {
     float deltaT = float(currentTime - lastFrameTime);
     lastFrameTime = currentTime;
 
-    mat4 views[Nviews];
-
     /// Control the camera position.
     /// Should come before rendering as it updates the view transformation matrix.
-    mat4 cameraView, cameraPictorialModel;
+    mat4 views[Nviews], cameraPictorialModel;
     int selectedControlPoint;
-    cameraControl.updateCameraPosition(cameraView, cameraPictorialModel, selectedControlPoint);
+    cameraControl.updateCameraPosition(views, cameraPictorialModel, selectedControlPoint);
 
     /// Generate the shadowmap.
     /// Should come before rendering as it updates the light transformation matrices.
@@ -287,29 +321,36 @@ void display() {
 
     /// Render opaque primitives on screen.
     /// These are also rendered in a texture for water reflection.
-    terrain.draw(cameraProjection, cameraView, lightViewProjection, lightPositionWorld);
-    skybox.draw(cameraProjection, cameraView);
+    terrain.draw(cameraProjection, views, lightViewProjection, lightPositionWorld);
+    skybox.draw(cameraProjection, views);
 
     /// Render opaque primitives on screen.
-    cameraPictorial.draw(cameraProjection, cameraView, cameraPictorialModel, vec3(1,1,0));
-    cameraPath.draw(cameraProjection, cameraView, mat4::Identity(), vec3(0,1,0));
-    cameraPathControls.draw(cameraProjection, cameraView, lightPositionWorld, selectedControlPoint, deltaT);
+    cameraPictorial.draw(cameraProjection, views, cameraPictorialModel, vec3(1,1,0));
+    cameraPath.draw(cameraProjection, views, mat4::Identity(), vec3(0,1,0));
+    cameraPathControls.draw(cameraProjection, views, lightPositionWorld, selectedControlPoint, deltaT);
 
-    water.draw(cameraProjection, cameraView, lightViewProjection, lightPositionWorld);
+    water.draw(cameraProjection, views, lightViewProjection, lightPositionWorld);
 
     /// Render the translucent primitives last. Otherwise opaque objects that
     /// may be visible behind get discarded by the depth test.
     /// First control particle positions, then render them on screen.
     particlesControl.draw(deltaT);
-    particlesRender.draw(cameraProjection, cameraView);
+    particlesRender.draw(cameraProjection, views);
 
+<<<<<<< HEAD
 	//duck.draw(cameraProjection, cameraView);
     /// Finally, fill the real screen.
     screenDisplay.draw();
+=======
+
+    /// Perform anti-aliasing, assemble the views and fill the real window.
+    postProcessing.draw();
+>>>>>>> 2d2db2ecf45fba0eeca7ab94b70a41b6279ab69a
 
 }
 
 
+/// Wrapper (do not accept class method type).
 void trackball(const mat4& model) {
     cameraControl.trackball(model);
 }
