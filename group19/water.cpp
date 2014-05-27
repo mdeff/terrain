@@ -19,11 +19,19 @@ Water::Water(unsigned int width, unsigned int height) :
 void Water::init(Vertices* vertices, GLuint renderedTexIDs[]) {
 
     /// Common initialization.
-//    RenderingContext::init(vertices, particles_control_vshader, water_fshader, NULL, "vertexPosition2DWorld", 0);
     preinit(vertices, water_vshader, water_fshader, NULL, "vertexPosition2DWorld");
 
+    /// Store the reflection texture IDs.
+    _reflectionTexID[0] = renderedTexIDs[2];
+    _reflectionTexID[1] = renderedTexIDs[3];
+
+    /// The Sampler uniform always refer to texture index 0.
+    /// The binding to texture 0 is however changed.
+    GLuint uniformID = glGetUniformLocation(_programID, "reflectionTex");
+    glUniform1i(uniformID, 0);
+
     //bind the reflection tex to texture 0
-    set_texture(0, renderedTexIDs[2], "flippedTerrainTex", GL_TEXTURE_2D);
+//    set_texture(0, renderedTexIDs[2], "flippedTerrainTex", GL_TEXTURE_2D);
 
 //    /* Load texture for water surface */
 //    set_texture(1, -1, "waterNormalMap", GL_TEXTURE_2D);
@@ -73,10 +81,14 @@ void Water::draw(const mat4& projection, const mat4 views[],
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+    glActiveTexture(GL_TEXTURE0);
+
     /// Render from camera point of view to 'normal' FBOs.
+    glBindTexture(GL_TEXTURE_2D, _reflectionTexID[0]);
     glUniformMatrix4fv(_viewID, 1, GL_FALSE, views[0].data());
     glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs["controllerView"]);
     _vertices->draw();
+    glBindTexture(GL_TEXTURE_2D, _reflectionTexID[1]);
     glUniformMatrix4fv(_viewID, 1, GL_FALSE, views[1].data());
     glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs["cameraView"]);
     _vertices->draw();

@@ -1464,7 +1464,7 @@ void CameraControl::updateCameraPosition(mat4 views[], mat4& cameraPictorialMode
 
 }
 
-void CameraControl::handleCameraControls(int key, int action){
+void CameraControl::handleKeyboard(int key, int action){
 	//std::cout<<key<<"  "<<action<<std::endl;
 	
 	switch(key){

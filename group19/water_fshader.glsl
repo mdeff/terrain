@@ -11,7 +11,7 @@ uniform vec3 Ia, Id, Is;
 uniform float time;
 
 // Textures.
-uniform sampler2D flippedTerrainTex;
+uniform sampler2D reflectionTex;
 uniform sampler2D waterNormalMap;
 uniform sampler2D riverSurfaceMap;
 
@@ -100,7 +100,7 @@ void main() {
 
 
 //    vec2 flippedCameraCoord = vertexPositionFlippedCamera.xy / vertexPositionFlippedCamera.w * 0.5 + 0.5;
-    color = vec4(texture(flippedTerrainTex, flippedCameraCoord).rgb, alpha);
+    color = vec4(texture(reflectionTex, flippedCameraCoord).rgb, alpha);
 
 
 
@@ -108,7 +108,7 @@ void main() {
 //    vec3 viewDirr = normalize(vec3(view * vec4(vertexPosition3DWorld,1.0)));
 //    color = vec4(-viewDirr, 1.0); // * vec4(vertexPosition3DWorld, 1.0);
 //    color = vec4(-V.y,-V.y,-V.y, 1.0);
-//    color = vec4(texture(flippedTerrainTex, vertexPosition3DWorld.xy*0.5+0.5).rgb, 1.0);
+//    color = vec4(texture(reflectionTex, vertexPosition3DWorld.xy*0.5+0.5).rgb, 1.0);
 
 //    color = vec4(0,0,0, 1.0);
 //    color = vec4(vec3(alpha), 1.0);
@@ -126,6 +126,6 @@ void main() {
 
 //    color = vec4(vec3(dot(vec3(0,0,1),L)), 1.0);
     // Texture test (need to pass a fullscreen quad to be called on every pixel).
-//    color = vec4(texelFetch(flippedTerrainTex, ivec2(gl_FragCoord.xy), 0).rgb, 1.0);
+//    color = vec4(texelFetch(reflectionTex, ivec2(gl_FragCoord.xy), 0).rgb, 1.0);
 
 }

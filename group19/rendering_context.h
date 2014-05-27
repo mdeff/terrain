@@ -35,10 +35,6 @@ protected:
     /// Pointer : vertices object can be shared between RenderingContext.
     Vertices* _vertices;
 
-
-private:
-
-
     /// Textures.
     struct texture {
         int ID;
