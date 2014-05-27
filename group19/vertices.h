@@ -26,6 +26,7 @@ protected:
     unsigned int _vertexBufferID;
     unsigned int _elementBufferID;
     unsigned int _vertexArrayID;
+	unsigned int _normal_mvID;
 
 };
 

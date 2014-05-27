@@ -12,6 +12,7 @@
 #include "shadowmap.h"
 #include "water.h"
 #include "skybox.h"
+#include "duck.h"
 #include "particles_control.h"
 #include "particles_render.h"
 #include "terrain.h"
@@ -23,6 +24,7 @@
 #include "vertices_skybox.h"
 #include "vertices_camera_path.h"
 #include "vertices_camera_pictorial.h"
+#include "vertices_duck.h"
 
 
 /// OpenGL object references (global by definition, part of the OpenGL context).
@@ -60,6 +62,7 @@ ParticlesRender particlesRender(windowWidth, windowHeight, nParticlesSide);
 Shadowmap shadowmap(textureWidth, textureHeight);
 ParticlesControl particlesControl(nParticlesSide);
 
+RenderedDuck duck(windowWidth, windowHeight);
 Water water(windowWidth, windowHeight);
 
 /// Camera position controller.
@@ -69,6 +72,7 @@ CameraControl cameraControl;
 Vertices* verticesQuad = new VerticesQuad();
 Vertices* verticesGrid = new VerticesGrid();
 Vertices* verticesSkybox = new VerticesSkybox();
+Vertices* verticesDuck = new VerticesDuck();
 VerticesCameraPath* verticesCameraPath = new VerticesCameraPath();
 VerticesCameraPath* verticesCameraPathControls = new VerticesCameraPath();
 VerticesCameraPictorial* verticesCameraPictorial = new VerticesCameraPictorial();
@@ -212,6 +216,7 @@ void init() {
     verticesQuad->generate();
     verticesGrid->generate();
     verticesSkybox->generate();
+	verticesDuck->generate();
     verticesCameraPath->generate();
     verticesCameraPathControls->generate();
     verticesCameraPictorial->generate();
@@ -246,6 +251,7 @@ void init() {
     GLuint flippedTerrainTexID = terrain.init(verticesGrid, heightMapTexID, shadowMapTexID);
     skybox.init(verticesSkybox);
 
+	duck.init(verticesDuck);
     // Grid or quad : interpolation ?
     water.init(verticesGrid, flippedTerrainTexID);
 //    water.init(verticesQuad, flippedTerrainTexID);
@@ -312,7 +318,7 @@ void display() {
     cameraPathControls.draw(cameraProjection, cameraView, lightPositionWorld, selectedControlPoint, deltaT);
 
     water.draw(cameraProjection, cameraView, lightViewProjection, lightPositionWorld);
-
+	duck.draw(cameraProjection, cameraView, lightPositionWorld);
     /// Render the translucent primitives last. Otherwise opaque objects that
     /// may be visible behind get discarded by the depth test.
     /// First control particle positions, then render them on screen.

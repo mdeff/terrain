@@ -6,7 +6,7 @@
 #include <GL/glfw.h>
 #include "opengp.h"
 
-#include "particles_control_vshader.h"
+//#include "particles_control_vshader.h"
 #include "water_vshader.h"
 #include "water_fshader.h"
 

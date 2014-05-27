@@ -16,7 +16,7 @@ RenderingContext::RenderingContext(unsigned int width, unsigned int height) :
 }
 
 
-void RenderingContext::preinit(Vertices* vertices, const char* vshader, const char* fshader, const char* gshader, const char* vertexAttribName) {
+void RenderingContext::preinit(Vertices* vertices, const char* vshader, const char* fshader, const char* gshader, const char* vertexAttribName1, const char* vertexAttribName2) {
 
     _vertices = vertices;
 
@@ -30,11 +30,15 @@ void RenderingContext::preinit(Vertices* vertices, const char* vshader, const ch
     glUseProgram(_programID);
 
     /// Bind the vertex attribute ID to vertex data, if they exist.
-    if(vertices != NULL && vertexAttribName != NULL) {
-        GLuint vertexAttribID = glGetAttribLocation(_programID, vertexAttribName);
-        _vertices->bind(vertexAttribID);
+    if(vertices != NULL && vertexAttribName1 != NULL) {
+        GLuint vertexAttribID1 = glGetAttribLocation(_programID, vertexAttribName1);
+        _vertices->bind(vertexAttribID1);
     }
 
+	if(vertices != NULL && vertexAttribName2 != NULL) {
+        GLuint vertexAttribID2 = glGetAttribLocation(_programID, vertexAttribName2);
+        _vertices->bind(vertexAttribID2);
+    }
 }
 
 
