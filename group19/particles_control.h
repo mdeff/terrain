@@ -11,7 +11,7 @@ public:
     /// Common methods of all RenderingContext.
     ParticlesControl(unsigned int nParticlesSide);
     void init(Vertices* vertices, unsigned int particlePosTexID[]);
-    void draw() const;
+    void draw(float deltaT) const;
 
 private:
 

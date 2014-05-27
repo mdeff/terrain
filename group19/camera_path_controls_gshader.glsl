@@ -10,6 +10,9 @@ uniform mat4 view;
 // Light source position in world space.
 uniform vec3 lightPositionWorld;
 
+// Cubes rotation matrix.
+uniform mat4 rotationMatrix;
+
 // Vertex position.
 in gl_PerVertex {
     vec4 gl_Position;
@@ -25,7 +28,7 @@ in vec3 color_g[];
 out vec3 color_f;
 
 
-const float s = 0.02;
+const float s = 0.015;
 const vec4 cubeVertices[8] = vec4[] (
     vec4(-s,-s,-s,0.0),
     vec4(-s, s,-s,0.0),
@@ -69,6 +72,7 @@ void main() {
 
     // Light and view directions : subtraction of 2 points gives vector.
     // Camera space --> camera position at origin --> subtraction by [0,0,0].
+    // Per vertex approximation as the cubes are small.
     vec4 vertexPosition3DWorld = gl_in[0].gl_Position;
     vec3 lightDirWorld = normalize(lightPositionWorld - vec3(vertexPosition3DWorld));
     vec3 viewDirCamera = normalize(vec3(view * vertexPosition3DWorld));
@@ -76,17 +80,17 @@ void main() {
     // Compute the 8 cube corner coordinates.
     vec4 vertexPositionClip[8];
     for(int k=0; k<8; ++k) {
-        vertexPositionClip[k] = projection * view * (gl_in[0].gl_Position + cubeVertices[k]);
+        vertexPositionClip[k] = projection * view * (gl_in[0].gl_Position + rotationMatrix * cubeVertices[k]);
     }
 
     // Each cube face needs 4 corners --> 24 vertices.
     for(int iFace=0; iFace<6; ++iFace) {
 
-        // Cube face normal.
-        vec3 normalWorld = cubeNormals[iFace];
+        // Rotating cube face normal.
+        vec3 normalWorld = inverse(transpose(mat3(rotationMatrix))) * cubeNormals[iFace];
 
         // Lightning components : cube faces have uniform color.
-        // They are too small for specular lightning to make sense in fragment shader.
+        // Cubes are too small for specular lightning to make sense in fragment shader.
         vec3 ambient = light * 0.4f * color_g[0];
         vec3 diffuse = light * 0.3f * color_g[0] * max(dot(normalWorld,lightDirWorld),0.0);
         vec3 specular = light * 0.3f * color_g[0] * pow(max(dot(viewDirCamera,reflect(lightDirWorld,normalWorld)),0.0),power);
@@ -100,7 +104,7 @@ void main() {
             EmitVertex();
         }
 
-        // End the triangle strip : cube faces are independant --> for shading.
+        // Terminate the triangle strip : cube faces are independant, for shading.
         EndPrimitive();
 
     }

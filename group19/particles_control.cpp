@@ -76,16 +76,12 @@ void ParticlesControl::init(Vertices* vertices, GLuint particlePosTexID[]) {
 }
 
 
-void ParticlesControl::draw() const {
+void ParticlesControl::draw(float deltaT) const {
 
     /// Common drawing.
     RenderingContext::draw();
 
     /// Update the content of the uniforms.
-    static double lastTime = glfwGetTime();
-    double currentTime = glfwGetTime();
-    float deltaT = float(currentTime - lastTime);
-    lastTime = currentTime;
     glUniform1f(_deltaTID, deltaT);
 
     /// Binary [0,1] variable to switch between input / output textures : start with 0.

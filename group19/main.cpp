@@ -13,7 +13,7 @@
 #include "particles_render.h"
 #include "terrain.h"
 #include "camera_control.h"
-#include "camera_path_control_points.h"
+#include "camera_path_controls.h"
 #include "vertices.h"
 #include "vertices_quad.h"
 #include "vertices_grid.h"
@@ -38,7 +38,7 @@ Skybox skybox(windowWidth, windowHeight);
 Terrain terrain(windowWidth, windowHeight, textureWidth, textureHeight);
 RenderingSimple cameraPictorial(windowWidth, windowHeight);
 RenderingSimple cameraPath(windowWidth, windowHeight);
-CameraPathControlPoints cameraPathControlPoints(windowWidth, windowHeight);
+CameraPathControls cameraPathControls(windowWidth, windowHeight);
 ParticlesRender particlesRender(windowWidth, windowHeight, nParticlesSide);
 
 /// Instanciate the rendering contexts that render to FBO.
@@ -166,7 +166,7 @@ void init() {
     cameraControl.init(verticesCameraPath, verticesCameraPathControls, heightMapTexID);
     cameraPictorial.init(verticesCameraPictorial);
     cameraPath.init(verticesCameraPath);
-    cameraPathControlPoints.init(verticesCameraPathControls);
+    cameraPathControls.init(verticesCameraPathControls);
 
     /// Initialize the light position.
     keyboard_callback(50, GLFW_PRESS);
@@ -186,6 +186,12 @@ void display() {
         nbFrames = 0;
         lastTime = currentTime;
     }
+
+    /// Time elapsed between two frames (for constant movement speed).
+    static double lastFrameTime = glfwGetTime();
+    float deltaT = float(currentTime - lastFrameTime);
+    lastFrameTime = currentTime;
+    std::cout << "deltaT : " << deltaT << std::endl;
 
     /// Control the camera position.
     /// Should come before rendering as it updates the view transformation matrix.
@@ -208,7 +214,7 @@ void display() {
     /// Render opaque primitives on screen.
     cameraPictorial.draw(cameraProjection, cameraView, cameraPictorialModel, vec3(1,1,0));
     cameraPath.draw(cameraProjection, cameraView, mat4::Identity(), vec3(0,1,0));
-    cameraPathControlPoints.draw(cameraProjection, cameraView, lightPositionWorld, selectedControlPoint);
+    cameraPathControls.draw(cameraProjection, cameraView, lightPositionWorld, selectedControlPoint, deltaT);
 
     water.draw(cameraProjection, cameraView, lightViewProjection, lightPositionWorld);
 
@@ -216,7 +222,7 @@ void display() {
     /// Render the translucent primitives last. Otherwise opaque objects that
     /// may be visible behind get discarded by the depth test.
     /// First control particle positions, then render them on screen.
-    particlesControl.draw();
+    particlesControl.draw(deltaT);
     particlesRender.draw(cameraProjection, cameraView);
 
 }
