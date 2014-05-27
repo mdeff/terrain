@@ -68,7 +68,7 @@ RenderedDuck duck(windowWidth, windowHeight);
 Shadowmap shadowmap(textureWidth, textureHeight);
 ParticlesControl particlesControl(nParticlesSide);
 
-RenderedDuck duck(windowWidth, windowHeight);
+//RenderedDuck duck(windowWidth, windowHeight);
 Water water(windowWidth, windowHeight);
 
 /// Camera position controller.
@@ -342,7 +342,7 @@ void display() {
     cameraPathControls.draw(cameraProjection, views, lightPositionWorld, selectedControlPoint, deltaT);
 
     water.draw(cameraProjection, views, lightViewProjection, lightPositionWorld);
-	duck.draw(cameraProjection, views, lightPositionWorld);
+	duck.draw(cameraProjection, views);
 
     /// Render the translucent primitives last. Otherwise opaque objects that
     /// may be visible behind get discarded by the depth test.

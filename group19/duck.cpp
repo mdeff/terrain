@@ -49,7 +49,7 @@ void RenderedDuck::init(Vertices* vertices)
 
 
 
-void RenderedDuck::draw(const mat4& projection, const mat4 views[], const mat4& lightPositionWorld)
+void RenderedDuck::draw(const mat4& projection, const mat4 views[])
 
 {	
 	glEnable(GL_BLEND);
@@ -61,7 +61,7 @@ void RenderedDuck::draw(const mat4& projection, const mat4 views[], const mat4& 
     /// Update the content of the uniforms.
     glUniformMatrix4fv( _projectionID, 1, GL_FALSE, projection.data());
 
-	glUniform3fv(_lightPositionWorldID, 1, lightPositionWorld.data());
+	//glUniformMatrix4fv(_lightPositionWorldID, 1,  lightPositionWorld.data());
 
 
     /// Do not clear the framebuffers : done by Terrain.
@@ -84,23 +84,7 @@ void RenderedDuck::draw(const mat4& projection, const mat4 views[], const mat4& 
 				 0,0,1, 0,
 				 0,0,0,1;
 	glUniformMatrix4fv(_transID, 1, GL_FALSE, trans_mat.data());
-	
-
-
-
-  
-
-	/* Translation matrix */
-	mat4 trans_mat;
-	trans_mat << 1,0,0, -0.55,
-				 0,1,0, 0.15,
-				 0,0,1, 0,
-				 0,0,0,1;
-	glUniformMatrix4fv(_transID, 1, GL_FALSE, trans_mat.data());
-
-	
-
-	
+		
 
 
     /// Render from camera point of view to 'normal' FBOs.
@@ -109,9 +93,6 @@ void RenderedDuck::draw(const mat4& projection, const mat4 views[], const mat4& 
     _vertices->draw();
 
 	glDisable(GL_BLEND);
-<<<<<<< HEAD
 
-=======
->>>>>>> f83c80faa933a2c887aa32a4506eb3850b36a510
 }
 

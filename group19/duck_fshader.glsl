@@ -19,7 +19,8 @@ void main() {
     ka = 0.9f;
     kd = 0.9f;
 
-	vec3 N= normalize(lightDirWorld);
+	vec3 N= normalize(normal_mv);
+	vec3 L =  normalize(lightDirWorld);
 	vec3 V = normalize(viewDirCamera);
 
 	vec3 yellow_color = vec3(1.0f, 1.0f, 0.0f);
