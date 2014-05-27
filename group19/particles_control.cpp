@@ -102,7 +102,7 @@ void ParticlesControl::draw(float deltaT) const {
     /// Clear the FBO.
     glClear(GL_COLOR_BUFFER_BIT);
 
-    /// Render the height map to FBO.
+    /// Render to FBO.
     _vertices->draw();
 
 }

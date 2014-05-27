@@ -15,6 +15,7 @@ add_executable(${DIR}
     camera_path_controls.cpp  camera_path_controls_vshader.glsl  camera_path_controls_gshader.glsl
     particles_control.cpp     particles_control_fshader.glsl
     particles_render.cpp      particles_render_vshader.glsl      particles_render_fshader.glsl
+    screen_display.cpp        screen_display_fshader.glsl
 )
 
 target_link_libraries(${DIR} ${COMMON_LIBS})
@@ -35,3 +36,4 @@ target_stringify_shader(${DIR} rendering_simple_vshader)
 target_stringify_shader(${DIR} rendering_simple_fshader)
 target_stringify_shader(${DIR} camera_path_controls_vshader)
 target_stringify_shader(${DIR} camera_path_controls_gshader)
+target_stringify_shader(${DIR} screen_display_fshader)

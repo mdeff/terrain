@@ -83,7 +83,7 @@ GLuint Terrain::init(Vertices* vertices, GLuint heightMapTexID, GLuint shadowMap
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    /// Simple filtering (needed).
+    /// Simple linear filtering (needed).
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     // Filtering
@@ -100,7 +100,7 @@ GLuint Terrain::init(Vertices* vertices, GLuint heightMapTexID, GLuint shadowMap
     GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0};
     glDrawBuffers(1, drawBuffers);
 
-    /// Create a depth buffer for the FBO.
+    /// Create and attach a depth buffer for the FBO.
     GLuint depthRenderbufferID;
     glGenRenderbuffers(1, &depthRenderbufferID);
     glBindRenderbuffer(GL_RENDERBUFFER, depthRenderbufferID);
