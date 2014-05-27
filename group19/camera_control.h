@@ -69,6 +69,8 @@ private:
 	void MultipleBezier();
 	void createBCurve();
 	void MultipleBezier_controlled(int PointToChange, float deltaX, float deltaY, float deltaZ); 
+	void N_MultipleBezier_controlled(int PointToChange, float deltaX, float deltaY, float deltaZ); 
+	void Add_Bcurve();
 };
 
 #endif /* __camera_control_h__ */

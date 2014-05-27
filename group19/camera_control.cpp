@@ -42,8 +42,8 @@ void CameraControl::init(VerticesCameraPath* verticesCameraPath, VerticesCameraP
 
     /// Generate the camera path.
     //bezier_4_points(0, 0, 0, 0);
-	//MultipleBezier();
-	MultipleBezier_controlled(0,0, 0, 0);
+	MultipleBezier();
+	//MultipleBezier_controlled(0,0, 0, 0);
    // InitdeCasteljauSubdivision();
     //InitSubdivision();
 
@@ -407,7 +407,7 @@ void CameraControl::animatePictorialCamera(){
 }
 
 void CameraControl::InitdeCasteljauSubdivision(){
-
+	//here we use subdivision to create more control point in order to generate bezier curve
 	//control points
 	double b0X = -0.51f, b0Y =  1.09f, b0Z = 0.40f;
 	double b1X =  0.57f, b1Y =  1.26f, b1Z = 0.40f;
@@ -680,7 +680,7 @@ void CameraControl::createBCurve(){
 
 }
 
-void CameraControl::MultipleBezier() {
+void CameraControl::MultipleBezier() {//init
 	
 	//// setting first bezier curve
 	const float bA0X = -1.00f,bA0Y =  0.00f,bA0Z =  0.40f;
@@ -695,6 +695,35 @@ void CameraControl::MultipleBezier() {
 	const float bB1Z = 2*bB0Z - bA2Z;
     const float bB2X =  0.50f,bB2Y =  1.00f,bB2Z =  0.40f;
     const float bB3X =  1.00f,bB3Y =  0.00f,bB3Z =  0.40f;
+
+	    /// Fill the control points vector.
+    _cameraPathControls.clear();
+    _cameraPathControls.reserve(21);
+    _cameraPathControls.push_back(bA0X);
+	_cameraPathControls.push_back(bA0Y);
+    _cameraPathControls.push_back(bA0Z);
+    _cameraPathControls.push_back(bA1X);
+    _cameraPathControls.push_back(bA1Y);
+    _cameraPathControls.push_back(bA1Z);
+    _cameraPathControls.push_back(bA2X);
+    _cameraPathControls.push_back(bA2Y);
+    _cameraPathControls.push_back(bA2Z);
+    _cameraPathControls.push_back(bA3X);
+    _cameraPathControls.push_back(bA3Y);
+    _cameraPathControls.push_back(bA3Z);
+
+	_cameraPathControls.push_back(bB1X);
+    _cameraPathControls.push_back(bB1Y);
+    _cameraPathControls.push_back(bB1Z);
+    _cameraPathControls.push_back(bB2X);
+    _cameraPathControls.push_back(bB2Y);
+    _cameraPathControls.push_back(bB2Z);
+    _cameraPathControls.push_back(bB3X);
+    _cameraPathControls.push_back(bB3Y);
+    _cameraPathControls.push_back(bB3Z);
+	
+	 /// Copy the vertices to GPU.
+    _verticesCameraPathControls->copy(_cameraPathControls.data(), _cameraPathControls.size());
 
     /// Choose the resolution.
     const unsigned int nPoints = 200;
@@ -722,6 +751,128 @@ void CameraControl::MultipleBezier() {
 
 }
 
+void CameraControl::N_MultipleBezier_controlled(int PointToChange, float deltaX, float deltaY, float deltaZ) {
+
+	if(PointToChange==0){
+		_cameraPathControls.at(PointToChange+0)+= deltaX;
+		_cameraPathControls.at(PointToChange+1)+= deltaY;
+		_cameraPathControls.at(PointToChange+2)+= deltaZ;
+
+	}
+	else if (PointToChange==1){
+		_cameraPathControls.at(PointToChange*3+0) += deltaX;
+        _cameraPathControls.at(PointToChange*3+1) += deltaY;
+        _cameraPathControls.at(PointToChange*3+2) += deltaZ;
+	}
+	else if (PointToChange==2){
+		_cameraPathControls.at(PointToChange*3+0) += deltaX;	//6					
+        _cameraPathControls.at(PointToChange*3+1) += deltaY;	//7 						
+        _cameraPathControls.at(PointToChange*3+2) += deltaZ;	//8							
+										
+		//refresh other control points to respect contstraint								
+		_cameraPathControls.at(PointToChange*3+0+6) = 2*_cameraPathControls.at(PointToChange*3+0+3) - _cameraPathControls.at(PointToChange*3+0);											
+		_cameraPathControls.at(PointToChange*3+1+6) = 2*_cameraPathControls.at(PointToChange*3+1+3) - _cameraPathControls.at(PointToChange*3+1);											
+		_cameraPathControls.at(PointToChange*3+2+6) = 2*_cameraPathControls.at(PointToChange*3+2+3) - _cameraPathControls.at(PointToChange*3+2);											
+	}																	
+	else if (PointToChange==3){											
+		_cameraPathControls.at(PointToChange*3+0) += deltaX;													
+        _cameraPathControls.at(PointToChange*3+1) += deltaY;													
+        _cameraPathControls.at(PointToChange*3+2) += deltaZ;													
+										
+		//refresh other control points to respect contstraint								
+		_cameraPathControls.at(PointToChange*3+0+3) = 2*_cameraPathControls.at(PointToChange*3+0+0) - _cameraPathControls.at(PointToChange*3+0-3);											
+		_cameraPathControls.at(PointToChange*3+1+3) = 2*_cameraPathControls.at(PointToChange*3+1+0) - _cameraPathControls.at(PointToChange*3+1-3);											
+		_cameraPathControls.at(PointToChange*3+2+3) = 2*_cameraPathControls.at(PointToChange*3+2+0) - _cameraPathControls.at(PointToChange*3+2-3);											
+	}																	
+	else if((PointToChange>1) & ((PointToChange-1)%3) ==0){
+		_cameraPathControls.at(PointToChange*3+0) += deltaX;													
+        _cameraPathControls.at(PointToChange*3+1) += deltaY;													
+        _cameraPathControls.at(PointToChange*3+2) += deltaZ;
+
+		//refresh other control points to respect contstraint
+		_cameraPathControls.at(PointToChange*3+0-6) = 2*_cameraPathControls.at(PointToChange*3+0-3) - _cameraPathControls.at(PointToChange*3+0);											
+		_cameraPathControls.at(PointToChange*3+1-6) = 2*_cameraPathControls.at(PointToChange*3+1-3) - _cameraPathControls.at(PointToChange*3+1);											
+		_cameraPathControls.at(PointToChange*3+2-6) = 2*_cameraPathControls.at(PointToChange*3+2-3) - _cameraPathControls.at(PointToChange*3+2);											
+
+		//_cameraPathControls.at(6) = - _cameraPathControls.at(12) + 2*_cameraPathControls.at(9) ;
+		//_cameraPathControls.at(7) = - _cameraPathControls.at(13) + 2*_cameraPathControls.at(10);
+		//_cameraPathControls.at(8) = - _cameraPathControls.at(14) + 2*_cameraPathControls.at(11);
+	}
+	else if((PointToChange>1) & ((PointToChange-1)%3) ==1){
+		_cameraPathControls.at(PointToChange*3+0) += deltaX;													
+        _cameraPathControls.at(PointToChange*3+1) += deltaY;													
+        _cameraPathControls.at(PointToChange*3+2) += deltaZ;
+		if((_cameraPathControls.size()/3)>PointToChange+3){//only if necessary
+			//refresh other control points to respect contstraint		
+			_cameraPathControls.at(PointToChange*3+0+6) = 2*_cameraPathControls.at(PointToChange*3+0+3) - _cameraPathControls.at(PointToChange*3+0);											
+			_cameraPathControls.at(PointToChange*3+1+6) = 2*_cameraPathControls.at(PointToChange*3+1+3) - _cameraPathControls.at(PointToChange*3+1);											
+			_cameraPathControls.at(PointToChange*3+2+6) = 2*_cameraPathControls.at(PointToChange*3+2+3) - _cameraPathControls.at(PointToChange*3+2);											
+		}
+	}
+	else if((PointToChange>1) & ((PointToChange-1)%3) ==2){
+		_cameraPathControls.at(PointToChange*3+0) += deltaX;													
+        _cameraPathControls.at(PointToChange*3+1) += deltaY;													
+        _cameraPathControls.at(PointToChange*3+2) += deltaZ;
+		if((_cameraPathControls.size()/3)>PointToChange+2){//only if necessary
+			//refresh other control points to respect contstraint								
+			_cameraPathControls.at(PointToChange*3+0+3) = 2*_cameraPathControls.at(PointToChange*3+0+0) - _cameraPathControls.at(PointToChange*3+0-3);											
+			_cameraPathControls.at(PointToChange*3+1+3) = 2*_cameraPathControls.at(PointToChange*3+1+0) - _cameraPathControls.at(PointToChange*3+1-3);											
+			_cameraPathControls.at(PointToChange*3+2+3) = 2*_cameraPathControls.at(PointToChange*3+2+0) - _cameraPathControls.at(PointToChange*3+2-3);											
+		}
+	}
+
+    /// Choose the resolution.
+    const unsigned int nPoints = 200;
+
+    _cameraPath.clear();
+    /// To avoid vector resizing on every loop.
+    _cameraPath.reserve(2*3*nPoints);
+
+    /// Generate coordinates of first bezier curve.
+    for(int k=0; k<nPoints; ++k) {
+        float t = float(k) / float(nPoints);
+		for(int l=0;l<3;l++){
+			_cameraPath.push_back(std::pow((1-t),3)*_cameraPathControls.at(0+l) + 3*t*std::pow((1-t),2)*_cameraPathControls.at(3+l) + 3*std::pow(t,2)*(1-t)*_cameraPathControls.at(6+l) + std::pow(t,3)*_cameraPathControls.at(9+l));
+		}
+	}
+	/// Generate coordinates of nexts bezier curve.
+	for(int m=1;m<=int((_cameraPathControls.size()-3)/9)-1;m++){
+		for(int k=1; k<nPoints; ++k) {
+			float t = float(k) / float(nPoints);
+			for(int l=0;l<3;l++){
+			_cameraPath.push_back(std::pow((1-t),3)*_cameraPathControls.at(9+l+(m-1)*9) + 3*t*std::pow((1-t),2)*_cameraPathControls.at(12+l+(m-1)*9) + 3*std::pow(t,2)*(1-t)*_cameraPathControls.at(15+l+(m-1)*9) + std::pow(t,3)*_cameraPathControls.at(18+l+(m-1)*9));
+			}
+			//_cameraPath.push_back(std::pow((1-t),3)*bB0Y + 3*t*std::pow((1-t),2)*bB1Y + 3*std::pow(t,2)*(1-t)*bB2Y + std::pow(t,3)*bB3Y);
+			//_cameraPath.push_back(std::pow((1-t),3)*bB0Z + 3*t*std::pow((1-t),2)*bB1Z + 3*std::pow(t,2)*(1-t)*bB2Z + std::pow(t,3)*bB3Z);
+		}
+	}
+	/// Copy the vertices to GPU.
+    _verticesCameraPath->copy(_cameraPath.data(), _cameraPath.size());
+    _verticesCameraPathControls->copy(_cameraPathControls.data(), _cameraPathControls.size());
+}
+
+void CameraControl::Add_Bcurve(){
+
+	//add control point 1 under constraint of the two previous ctrl point to keep continuity
+	_cameraPathControls.push_back( 2*_cameraPathControls.at(_cameraPathControls.size()-3) - _cameraPathControls.at(_cameraPathControls.size()-6));											
+	_cameraPathControls.push_back( 2*_cameraPathControls.at(_cameraPathControls.size()-3) - _cameraPathControls.at(_cameraPathControls.size()-6));											
+	_cameraPathControls.push_back( 2*_cameraPathControls.at(_cameraPathControls.size()-3) - _cameraPathControls.at(_cameraPathControls.size()-6));											
+	
+	//add control point 2 near control point 1
+	_cameraPathControls.push_back(_cameraPathControls.at(_cameraPathControls.size()-3)+0.1);											
+	_cameraPathControls.push_back(_cameraPathControls.at(_cameraPathControls.size()-3));											
+	_cameraPathControls.push_back(_cameraPathControls.at(_cameraPathControls.size()-3));											
+	
+	//add control point 3 near control point 2
+	_cameraPathControls.push_back(_cameraPathControls.at(_cameraPathControls.size()-9)+0.4);											
+	_cameraPathControls.push_back(_cameraPathControls.at(_cameraPathControls.size()-9));											
+	_cameraPathControls.push_back(_cameraPathControls.at(_cameraPathControls.size()-9));	
+
+	//display new ctrl point and Bcurve
+	N_MultipleBezier_controlled(0,0,0,0);
+	//_verticesCameraPathControls->copy(_cameraPathControls.data(), _cameraPathControls.size());
+}
+
 void CameraControl::MultipleBezier_controlled(int PointToChange, float deltaX, float deltaY, float deltaZ) {
 
 	//// setting first bezier curve
@@ -737,6 +888,7 @@ void CameraControl::MultipleBezier_controlled(int PointToChange, float deltaX, f
 	static float bB1Z = 2*bB0Z - bA2Z;
     static float bB2X =  0.50f,bB2Y =  1.00f,bB2Z =  0.40f;
     static float bB3X =  1.00f,bB3Y =  0.00f,bB3Z =  0.40f;
+
 
 
 	switch(PointToChange){
@@ -798,7 +950,7 @@ void CameraControl::MultipleBezier_controlled(int PointToChange, float deltaX, f
     _cameraPathControls.clear();
     _cameraPathControls.reserve(21);
     _cameraPathControls.push_back(bA0X);
-    _cameraPathControls.push_back(bA0Y);
+	_cameraPathControls.push_back(bA0Y);
     _cameraPathControls.push_back(bA0Z);
     _cameraPathControls.push_back(bA1X);
     _cameraPathControls.push_back(bA1Y);
@@ -819,7 +971,12 @@ void CameraControl::MultipleBezier_controlled(int PointToChange, float deltaX, f
     _cameraPathControls.push_back(bB3X);
     _cameraPathControls.push_back(bB3Y);
     _cameraPathControls.push_back(bB3Z);
+
 	
+	std::cout<<_cameraPathControls.size()<<" "<<int((_cameraPathControls.size()-3)/9)<<std::endl;
+
+ 
+
     /// Choose the resolution.
     const unsigned int nPoints = 200;
 
@@ -1315,7 +1472,7 @@ void CameraControl::handleCameraControls(int key, int action){
 		switch(key){
 			case 90: //Z=> change control point under modification
                 _selectedControlPoint++;
-                if(_selectedControlPoint>6)
+                if(_selectedControlPoint> 3*int((_cameraPathControls.size()-3)/9))
                     _selectedControlPoint=0;
                 std::cout<<"Changing control point nB"<<_selectedControlPoint<<std::endl;
 				std::cout<<"Control list :"<<std::endl<<"Key Z : change point to set"<<std::endl;
@@ -1329,27 +1486,27 @@ void CameraControl::handleCameraControls(int key, int action){
 				break;
 			case 85: //U=> X+
                 //bezier_4_points(_selectedControlPoint,0.1f,0.0f,0.0f);
-				MultipleBezier_controlled(_selectedControlPoint,0.1f,0.0f,0.0f);
+				N_MultipleBezier_controlled(_selectedControlPoint,0.1f,0.0f,0.0f);
 				break;
 			case 74: //J=> X-
                 //bezier_4_points(_selectedControlPoint,-0.1f,0.0f,0.0f);
-				MultipleBezier_controlled(_selectedControlPoint,-0.1f,0.0f,0.0f);
+				N_MultipleBezier_controlled(_selectedControlPoint,-0.1f,0.0f,0.0f);
 				break;
 			case 73: //I=> Y+
                 //bezier_4_points(_selectedControlPoint,0.0f,0.1f,0.0f);
-				MultipleBezier_controlled(_selectedControlPoint,0.0f,0.1f,0.0f);
+				N_MultipleBezier_controlled(_selectedControlPoint,0.0f,0.1f,0.0f);
 				break;
 			case 75: //K=> Y-
                 //bezier_4_points(_selectedControlPoint,0.0f,-0.1f,0.0f);
-				MultipleBezier_controlled(_selectedControlPoint,0.0f,-0.1f,0.0f);
+				N_MultipleBezier_controlled(_selectedControlPoint,0.0f,-0.1f,0.0f);
 				break;
 			case 79: //O=> Z+
                 //bezier_4_points(_selectedControlPoint,0.0f,0.0f,0.1f);
-				MultipleBezier_controlled(_selectedControlPoint,0.0f,0.0f,0.1f);
+				N_MultipleBezier_controlled(_selectedControlPoint,0.0f,0.0f,0.1f);
 				break;
 			case 76: //L=> Z-
                 //bezier_4_points(_selectedControlPoint,0.0f,0.0f,-0.1f);
-				MultipleBezier_controlled(_selectedControlPoint,0.0f,0.0f,-0.1f);
+				N_MultipleBezier_controlled(_selectedControlPoint,0.0f,0.0f,-0.1f);
 				break;
 			case 307: //5
 				InitSubdivision();
@@ -1364,6 +1521,10 @@ void CameraControl::handleCameraControls(int key, int action){
 				break;
 			case 309://7
 				flagAnimatePictorialCamera=!flagAnimatePictorialCamera;
+				break;
+			case 315://+
+				Add_Bcurve();
+				break;
 		}
 	}
 }
