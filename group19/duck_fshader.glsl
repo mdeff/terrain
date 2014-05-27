@@ -4,31 +4,35 @@ uniform vec3 Ia, Id, Is;
 uniform vec3 ka, kd, ks;
 uniform float p;
 
+uniform vec3 normal_mv;
 
-// TODO: These variables need to be used to compute the phong shading.
-in vec3 normal_mv;
-in vec3 light_dir, view_dir;
+// Light and view directions.
+in vec3 lightDirWorld, viewDirCamera;
 
-out vec3 color;
+out vec4 color;
 
 void main() {
-    color = vec3(0.0,0.0,0.0);
 
-	//Since length is not preserved, we need to
-	//re-normalize the input vectors first
+
+    // Specular lightning only relevant for water surfaces.
+    float ka, kd;
+    ka = 0.9f;
+    kd = 0.9f;
+
 	vec3 N = normalize(normal_mv);
-	vec3 L = normalize(light_dir);
-	vec3 V = normalize(view_dir);
+	vec3 L= normalize(lightDirWorld);
+	vec3 V = normalize(viewDirCamera);
 
-    ///>>>>>>>>>> TODO >>>>>>>>>>>
+	vec3 yellow_color = vec3(1.0f, 1.0f, 0.0f);
+
     /// TODO: Phong shading.
     /// 1) compute ambient term.
-	vec3 ambient_color = Ia * ka;
+	vec3 ambient_color = Ia * ka * yellow_color;
     /// 2) compute diffuse term.
-	vec3 diffuse_color = Id * kd * max(dot(N,L),0.0);
+	vec3 diffuse_color = Id * kd * yellow_color * max(dot(N,L),0.0);
     /// 3) compute specular term.
-	vec3 specular_color = Is * ks * pow(max(dot(V,reflect(L,N)),0.0),p);
+	//vec3 specular_color = Is * ks * yellow_color * pow(max(dot(V,reflect(L,N)),0.0),p);
     ///<<<<<<<<<< TODO <<<<<<<<<<<
-	color = ambient_color + diffuse_color + specular_color;
-	color = vec3(1.0f,1.0f,0.0f);
+	color = vec4(ambient_color + diffuse_color , 0.8f);
+	
 }

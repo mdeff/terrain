@@ -27,13 +27,12 @@ void VerticesDuck::generate(){
     glBindBuffer(GL_ARRAY_BUFFER, _vertexBufferID);
     glBufferData(GL_ARRAY_BUFFER, n_vertices() * sizeof(vec3), vpoints.data(), GL_STATIC_DRAW);
 
-    ///// Normal Buffer
-    //Surface_mesh::Vertex_property<Normal> vnormals = get_vertex_property<Normal>("v:normal");
-    //GLuint normalbuffer;
-    //glGenBuffers(1, &normalbuffer);
-    //glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
-    //glBufferData(GL_ARRAY_BUFFER, n_vertices() * sizeof(vec3), vnormals.data(), GL_STATIC_DRAW);
-
+   
+	 ///// Normal Buffer
+    Surface_mesh::Vertex_property<Normal> vnormals = get_vertex_property<Normal>("v:normal");
+    glGenBuffers(1, &_normal_mvID);
+    glBindBuffer(GL_ARRAY_BUFFER, _normal_mvID);
+    glBufferData(GL_ARRAY_BUFFER, n_vertices() * sizeof(vec3), vnormals.data(), GL_STATIC_DRAW);
 
     /// Looping around the mesh to index the vertices
 	//std::vector<unsigned int> buf;
@@ -57,7 +56,7 @@ void VerticesDuck::generate(){
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, nIndices * sizeof(unsigned int), indices, GL_STATIC_DRAW); 
    
 	
-
+	
     // /// Vertex Attribute ID for Normals
     //GLuint normal = glGetAttribLocation(_programID, "normal");
     //glEnableVertexAttribArray(normal);

@@ -1,27 +1,38 @@
 #version 330 core
 
+// Transformation matrices from model space to camera clip space.
+uniform mat4 view;
 uniform mat4 projection;
-uniform mat4 model_view;
-uniform vec3 light_pos;
+uniform mat4 translation;
 
-in vec3 position;
-in vec3 normal;
+// Light source position in world space.
+uniform vec3 lightPositionWorld;
 
-// TODO: These variables need to be set approriatly.
-out vec3 normal_mv;
-out vec3 light_dir, view_dir;
+// Vertices 3D position in world space.
+layout(location = 0) in vec3 vertexPosition3DWorld;
 
+// Vertex position (mandatory output).
+out gl_PerVertex {
+    vec4 gl_Position;
+};
 
+// 3D texture coordinates.
+// for now. Dont want to use pass through shader
+out vec3 vertexPosition3DWorld_tmp;
+
+// Light and view directions.
+out vec3 lightDirWorld, viewDirCamera;
 void main() {
-	vec3 tmp_position = position/10.0;
-    vec4 position_mv = model_view * vec4(tmp_position, 1.0);
-    gl_Position = vec4(tmp_position,1.0f); //projection * position_mv;
-    
-    /// TODO: Phong shading.
-    /// 1) compute normal_mv using the model_view matrix.
-	normal_mv = vec3(inverse(transpose(model_view))*vec4(normal,1.0));
-    /// 2) compute the light direction light_dir
-	light_dir = light_pos - vec3(position_mv);
-    /// 3) compute the view direction view_dir.    
-	view_dir = vec3(position_mv);
+	
+	float scale = 30.0f;
+	//hack: no need to rotate the duck. Just swap the element's position
+	vertexPosition3DWorld_tmp = vertexPosition3DWorld.xzy;
+    // View matrix transforms from world space to camera space.
+    // Projection matrix transforms from camera space to clip space (homogeneous space).
+	
+	vec4 vertexPositionCamera = view * vec4(vertexPosition3DWorld_tmp, 1.0);
+    gl_Position = projection * view * translation *  vec4(vertexPosition3DWorld_tmp/scale, 1.0);	
+
+	lightDirWorld = lightPositionWorld - vertexPosition3DWorld_tmp;
+    viewDirCamera = vec3(vertexPositionCamera);
 }

@@ -23,11 +23,11 @@
 #include "vertices_skybox.h"
 #include "vertices_camera_path.h"
 #include "vertices_camera_pictorial.h"
-//#include "vertices_duck.h"
-//#include "duck.h"
+#include "vertices_duck.h"
+#include "duck.h"
 
 /// Number of parallel views.
-GLuint Nviews(2);
+const GLuint Nviews = 2;
 
 /// OpenGL object references (global by definition, part of the OpenGL context).
 std::map<std::string, unsigned int> framebufferIDs;
@@ -59,7 +59,7 @@ RenderingSimple cameraPictorial(windowWidth, windowHeight);
 RenderingSimple cameraPath(windowWidth, windowHeight);
 CameraPathControls cameraPathControls(windowWidth, windowHeight);
 ParticlesRender particlesRender(windowWidth, windowHeight, nParticlesSide);
-//RenderedDuck duck(windowWidth, windowHeight);
+RenderedDuck duck(windowWidth, windowHeight);
 
 /// Instanciate the rendering contexts that render to FBO.
 Shadowmap shadowmap(textureWidth, textureHeight);
@@ -74,7 +74,7 @@ CameraControl cameraControl;
 Vertices* verticesQuad = new VerticesQuad();
 Vertices* verticesGrid = new VerticesGrid();
 Vertices* verticesSkybox = new VerticesSkybox();
-//Vertices* verticesDuck = new VerticesDuck();
+Vertices* verticesDuck = new VerticesDuck();
 VerticesCameraPath* verticesCameraPath = new VerticesCameraPath();
 VerticesCameraPath* verticesCameraPathControls = new VerticesCameraPath();
 VerticesCameraPictorial* verticesCameraPictorial = new VerticesCameraPictorial();
@@ -236,7 +236,7 @@ void init() {
     verticesCameraPath->generate();
     verticesCameraPathControls->generate();
     verticesCameraPictorial->generate();
-	//verticesDuck->generate();
+	verticesDuck->generate();
     /// Generate the heightmap texture.
     Heightmap heightmap(textureWidth, textureHeight);
     GLuint heightMapTexID = heightmap.init(verticesQuad);
@@ -283,7 +283,7 @@ void init() {
     cameraPath.init(verticesCameraPath);
     cameraPathControls.init(verticesCameraPathControls);
 
-	//duck.init(verticesDuck);
+	duck.init(verticesDuck);
 
     /// Initialize the light position.
     keyboard_callback(50, GLFW_PRESS);
@@ -332,6 +332,7 @@ void display() {
     cameraPath.draw(cameraProjection, views, mat4::Identity(), vec3(0,1,0));
     cameraPathControls.draw(cameraProjection, views, lightPositionWorld, selectedControlPoint, deltaT);
 
+	duck.draw(cameraProjection, views);
     water.draw(cameraProjection, views, lightViewProjection, lightPositionWorld);
 
     /// Render the translucent primitives last. Otherwise opaque objects that

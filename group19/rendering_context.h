@@ -20,7 +20,7 @@ protected:
 
     /// Common methods of all RenderingContext.
     RenderingContext(unsigned int width, unsigned int height);
-    void preinit(Vertices* vertices, const char* vshader, const char* fshader, const char* gshader, const char* vertexAttribName);
+    void preinit(Vertices* vertices, const char* vshader, const char* fshader, const char* gshader, const char* vertexAttribName1, const char* vertexAttribName = NULL);
     void predraw() const;
     void preclean();
 

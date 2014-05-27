@@ -21,7 +21,8 @@ private:
     /// Uniform IDs.
     unsigned int _viewID;
     unsigned int _projectionID;
-
+	unsigned int _transID;
+	unsigned int _lightPositionWorldID;
 };
 
 #endif

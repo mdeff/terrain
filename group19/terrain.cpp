@@ -64,6 +64,7 @@ GLuint Terrain::init(Vertices* vertices, GLuint heightMapTexID, GLuint shadowMap
     _lightPositionWorldID = glGetUniformLocation(_programID, "lightPositionWorld");
     _clipID = glGetUniformLocation(_programID, "clip");
 
+	return 1;
 }
 
 
