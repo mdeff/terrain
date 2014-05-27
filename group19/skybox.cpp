@@ -20,7 +20,7 @@ Skybox::Skybox(unsigned int width, unsigned int height) :
 void Skybox::init(Vertices* vertices, GLuint reflectionFramebufferID) {
 
     /// Common initialization.
-    RenderingContext::init(vertices, skybox_vshader, skybox_fshader, NULL, "vertexPosition3DWorld", reflectionFramebufferID);
+    preinit(vertices, skybox_vshader, skybox_fshader, NULL, "vertexPosition3DWorld", reflectionFramebufferID);
 
     /// Bind the Skybox cube map to texture 0.
     set_texture(0, -1, "skyboxTex", GL_TEXTURE_CUBE_MAP);
@@ -36,7 +36,7 @@ void Skybox::init(Vertices* vertices, GLuint reflectionFramebufferID) {
 void Skybox::draw(const mat4& projection, const mat4& view) const {
 
     /// Common drawing.
-    RenderingContext::draw();
+    predraw();
 
     /// Update the content of the uniforms.
     glUniformMatrix4fv( _projectionID, 1, GL_FALSE, projection.data());

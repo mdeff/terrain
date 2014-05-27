@@ -21,7 +21,7 @@ CameraPathControls::CameraPathControls(unsigned int width, unsigned int height) 
 void CameraPathControls::init(Vertices* vertices) {
 
     /// Common initialization.
-    RenderingContext::init(vertices, camera_path_controls_vshader, rendering_simple_fshader, camera_path_controls_gshader, "vertexPosition3DWorld", 0);
+    preinit(vertices, camera_path_controls_vshader, rendering_simple_fshader, camera_path_controls_gshader, "vertexPosition3DWorld", 0);
 
     /// Set uniform IDs.
     _projectionID = glGetUniformLocation(_programID, "projection");
@@ -39,7 +39,7 @@ void CameraPathControls::draw(const mat4& projection, const mat4& view,
                                    float deltaT) const {
 
     /// Common drawing.
-    RenderingContext::draw();
+    predraw();
 	
     /// Update the model matrix.
     static float angle = 1.0f;

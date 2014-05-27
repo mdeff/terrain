@@ -23,7 +23,7 @@ ParticlesControl::ParticlesControl(unsigned int nParticlesSide) :
 void ParticlesControl::init(Vertices* vertices, GLuint particlePosTexID[]) {
 
     /// Common initialization.
-    RenderingContext::init(vertices, particles_control_vshader, particles_control_fshader, NULL, "vertexPosition2D", -1);
+    preinit(vertices, particles_control_vshader, particles_control_fshader, NULL, "vertexPosition2D", -1);
 
     /// The Sampler uniforms always refer to texture indices 0 and 1.
     /// The binding to textures 0 and 1 are however flipped every frame.
@@ -79,7 +79,7 @@ void ParticlesControl::init(Vertices* vertices, GLuint particlePosTexID[]) {
 void ParticlesControl::draw(float deltaT) const {
 
     /// Common drawing.
-    RenderingContext::draw();
+    predraw();
 
     /// Update the content of the uniforms.
     glUniform1f(_deltaTID, deltaT);

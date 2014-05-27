@@ -12,7 +12,7 @@ RenderingContext::RenderingContext(unsigned int width, unsigned int height) :
 }
 
 
-void RenderingContext::init(Vertices* vertices, const char* vshader, const char* fshader, const char* gshader, const char* vertexAttribName, GLint frameBufferID) {
+void RenderingContext::preinit(Vertices* vertices, const char* vshader, const char* fshader, const char* gshader, const char* vertexAttribName, GLint frameBufferID) {
 
     _vertices = vertices;
 
@@ -43,7 +43,7 @@ void RenderingContext::init(Vertices* vertices, const char* vshader, const char*
 }
 
 
-void RenderingContext::draw() const {
+void RenderingContext::predraw() const {
 
     /// Select the shader program.
     glUseProgram(_programID);

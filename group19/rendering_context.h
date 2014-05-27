@@ -17,8 +17,8 @@ protected:
 
     /// Common methods of all RenderingContext.
     RenderingContext(unsigned int width, unsigned int height);
-    void init(Vertices* vertices, const char* vshader, const char* fshader, const char* gshader, const char* vertexAttribName, int frameBufferID);
-    void draw() const;
+    void preinit(Vertices* vertices, const char* vshader, const char* fshader, const char* gshader, const char* vertexAttribName, int frameBufferID);
+    void predraw() const;
 
     /// Helper function.
     void set_texture(unsigned int textureIndex, int textureID, const char* uniformName, unsigned int target);

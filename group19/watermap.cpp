@@ -22,7 +22,7 @@ void Watermap::init(Vertices* vertices , GLuint flippedTerrainTexID) {
 
     /// Common initialization.
 //    RenderingContext::init(vertices, particles_control_vshader, watermap_fshader, NULL, "vertexPosition2DWorld", 0);
-    RenderingContext::init(vertices, watermap_vshader, watermap_fshader, NULL, "vertexPosition2DWorld", 0);
+    preinit(vertices, watermap_vshader, watermap_fshader, NULL, "vertexPosition2DWorld", 0);
 
     //bind the reflection tex to texture 0
     set_texture(0, flippedTerrainTexID, "flippedTerrainTex", GL_TEXTURE_2D);
@@ -60,7 +60,7 @@ void Watermap::draw(const mat4& projection, const mat4& view,
                    const mat4& lightViewProjection, const vec3& lightPositionWorld) const {
 
     /// Common drawing.
-    RenderingContext::draw();
+    predraw();
 
     /// Update the content of the uniforms.
     glUniformMatrix4fv(_viewID, 1, GL_FALSE, view.data());

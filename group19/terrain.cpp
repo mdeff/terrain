@@ -23,7 +23,7 @@ GLuint Terrain::init(Vertices* vertices, GLuint heightMapTexID, GLuint shadowMap
 
     /// Common initialization.
     /// Render to FBO by default.
-    RenderingContext::init(vertices, terrain_vshader, terrain_fshader, NULL, "vertexPosition2DWorld", -1);
+    preinit(vertices, terrain_vshader, terrain_fshader, NULL, "vertexPosition2DWorld", -1);
 
     reflectionFramebufferID = _frameBufferID;
 
@@ -123,7 +123,7 @@ void Terrain::draw(const mat4& projection, const mat4& view,
                    const mat4& lightViewProjection, const vec3& lightPositionWorld) const {
 
     /// Common drawing. 
-    RenderingContext::draw();
+    predraw();
 
     /// Update the content of the uniforms.
     glUniformMatrix4fv(_projectionID, 1, GL_FALSE, projection.data());
