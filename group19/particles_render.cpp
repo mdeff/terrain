@@ -18,10 +18,13 @@ ParticlesRender::ParticlesRender(unsigned int width, unsigned int height, unsign
 }
 
 
-void ParticlesRender::init(GLuint particlePosTexID[]) {
+void ParticlesRender::init(GLuint framebufferIDs[], GLuint particlePosTexID[]) {
 
     /// Common initialization.
     preinit(NULL, particles_render_vshader, particles_render_fshader, NULL, NULL, 0);
+
+    _framebufferIDs.push_back(framebufferIDs[0]);
+    _framebufferIDs.push_back(framebufferIDs[1]);
 
     /// Allow programmable point size for the vertex shader to size the sprite.
     glEnable(GL_PROGRAM_POINT_SIZE);
@@ -65,6 +68,7 @@ void ParticlesRender::draw(const mat4& projection, const mat4& view) {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     /// Render the particles from camera point of view to default framebuffer.
+    glBindFramebuffer(GL_FRAMEBUFFER, _framebufferIDs[0]);
     unsigned int nVertices = _nParticlesSide*_nParticlesSide*_nParticlesSide;
     glDrawArrays(GL_POINTS, 0, nVertices);
 

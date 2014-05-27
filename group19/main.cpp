@@ -46,7 +46,7 @@ ScreenDisplay screenDisplay(windowWidth, windowHeight);
 
 /// Instanciate the rendering contexts that render to the screen.
 Skybox skybox(windowWidth, windowHeight);
-Terrain terrain(windowWidth, windowHeight, textureWidth, textureHeight);
+Terrain terrain(windowWidth, windowHeight);
 RenderingSimple cameraPictorial(windowWidth, windowHeight);
 RenderingSimple cameraPath(windowWidth, windowHeight);
 CameraPathControls cameraPathControls(windowWidth, windowHeight);
@@ -129,51 +129,39 @@ void GLFWCALL keyboard_callback(int key, int action) {
 }
 
 
-void gen_rendering_framebuffers(GLuint framebufferIDs[], GLuint renderedTexIDs[], unsigned int N) {
+void gen_rendering_framebuffers(GLuint framebufferIDs[], unsigned int N) {
 
     /// Each FBO will have an attached texture for rendering and a renderbuffer
     /// depth buffer.
 
+    /// Number of samples for multi-sampling.
+    const unsigned int samples = 4;
+
+    /// Generate framebuffers and renderbuffers.
+    GLuint colorBufIDs[N], depthBufIDs[N];
     glGenFramebuffers(N, framebufferIDs);
-    glGenTextures(N, renderedTexIDs);
+    glGenRenderbuffers(N, colorBufIDs);
+    glGenRenderbuffers(N, depthBufIDs);
 
     for(int k=0; k<N; ++k) {
 
         glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs[k]);
-        glBindTexture(GL_TEXTURE_2D, renderedTexIDs[k]);
 
-        /// Empty image (no data), three color components, clamped [0,1] 32 bits float.
-        /// Same size as the screen : no need to change the view port, same projection matrix.
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, windowWidth, windowHeight, 0, GL_RGB, GL_FLOAT, 0);
+        /// Multi-sample color buffer.
+        glBindRenderbuffer(GL_RENDERBUFFER, colorBufIDs[k]);
+        glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER_EXT, samples, GL_RGBA8, windowWidth, windowHeight);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, colorBufIDs[k]);
 
-        /// Clamp texture coordinates to the [0,1] range. Wrapped (GL_REPEAT) by default.
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        /// Multi-sample depth buffer.
+        glBindRenderbuffer(GL_RENDERBUFFER, depthBufIDs[k]);
+        glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER_EXT, samples, GL_DEPTH_COMPONENT, windowWidth, windowHeight);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBufIDs[k]);
 
-        /// Simple linear filtering (need to be explicitly set).
-        /// May need a better filtering as this have an impact on the final result.
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-        /// Attach the output texture to the first color attachment point.
-        /// The texture becomes the fragment shader first output buffer.
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderedTexIDs[k], 0);
-        GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0};
-        glDrawBuffers(1, drawBuffers);
-
-        /// Create and attach a depth buffer for the FBO.
-        GLuint depthRenderbufferID;
-        glGenRenderbuffers(1, &depthRenderbufferID);
-        glBindRenderbuffer(GL_RENDERBUFFER, depthRenderbufferID);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, windowWidth, windowHeight);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderbufferID);
-
-        /// Check that our framebuffer object (FBO) is complete.
+        /// Check that FBO is complete.
         if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
             std::cerr << "Rendering framebuffer " << k << " not complete." << std::endl;
             exit(EXIT_FAILURE);
         }
-
     }
 }
 
@@ -211,35 +199,34 @@ void init() {
     /// No more direct drawing to the default framebuffer. All drawings go
     /// to textures and Display arranges the textures on screen.
     GLuint framebufferIDs[Nviews];
-    GLuint renderedTexIDs[Nviews];
-    gen_rendering_framebuffers(framebufferIDs, renderedTexIDs, Nviews);
+    gen_rendering_framebuffers(framebufferIDs, Nviews);
 
 
 //    renderedTexIDs[0] = heightMapTexID;
-    screenDisplay.init(verticesQuad, renderedTexIDs);
+    screenDisplay.init(verticesQuad, framebufferIDs);
 
 
     /// Initialize the rendering contexts.
     GLuint shadowMapTexID = shadowmap.init(verticesGrid, heightMapTexID);
     GLuint reflectionFramebufferID;
-    GLuint flippedTerrainTexID = terrain.init(verticesGrid, heightMapTexID, shadowMapTexID, reflectionFramebufferID);
-    skybox.init(verticesSkybox, reflectionFramebufferID);
+    GLuint flippedTerrainTexID = terrain.init(verticesGrid, framebufferIDs, heightMapTexID, shadowMapTexID, reflectionFramebufferID);
+    skybox.init(verticesSkybox, framebufferIDs, reflectionFramebufferID);
 
     // Grid or quad : interpolation ?
-    water.init(verticesGrid, flippedTerrainTexID);
-//    water.init(verticesQuad, flippedTerrainTexID);
+    water.init(verticesGrid, framebufferIDs, flippedTerrainTexID);
+//    water.init(verticesQuad, framebufferIDs, flippedTerrainTexID);
 
     /// Pass the particles position textures from control to render.
     GLuint particlePosTexID[2];
     particlesControl.init(verticesQuad, particlePosTexID);
-    particlesRender.init(particlePosTexID);
+    particlesRender.init(framebufferIDs, particlePosTexID);
 
     /// CameraPath is a rendering object.
     /// Camera is able to change the rendered vertices.
     cameraControl.init(verticesCameraPath, verticesCameraPathControls, heightMapTexID);
-    cameraPictorial.init(verticesCameraPictorial);
-    cameraPath.init(verticesCameraPath);
-    cameraPathControls.init(verticesCameraPathControls);
+    cameraPictorial.init(verticesCameraPictorial, framebufferIDs);
+    cameraPath.init(verticesCameraPath, framebufferIDs);
+    cameraPathControls.init(verticesCameraPathControls, framebufferIDs);
 
     /// Initialize the light position.
     keyboard_callback(50, GLFW_PRESS);
@@ -249,13 +236,13 @@ void init() {
 
 void display() {
 
-    /// Measure and print FPS (every second).
+    /// Measure and print FPS (every 10 seconds).
 	static double lastTime = glfwGetTime();
     static int nbFrames = 0;
     double currentTime = glfwGetTime();
     nbFrames++;
-    if(currentTime - lastTime >= 1.0) {
-        std::cout << nbFrames << " FPS" << std::endl;
+    if(currentTime - lastTime >= 10.0) {
+        std::cout << float(nbFrames)/10.0f << " FPS" << std::endl;
         nbFrames = 0;
         lastTime = currentTime;
     }
@@ -300,7 +287,7 @@ void display() {
 
 
     /// Finally, fill the real screen.
-//    screenDisplay.draw();
+    screenDisplay.draw();
 
 }
 
