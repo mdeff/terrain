@@ -151,34 +151,6 @@ void CameraControl::rotate2D(double pos1, double pos2, double& look1, double& lo
 	look2=tmp2;
 }
 
-void CameraControl::rotate3D(double& posX, double& posY, double& posZ, double& lookX, double& lookY, double& lookZ,double& recordRotY,double& recordRotZ){
-	double tmpLookX = lookX ; 
-	double tmpLookY = lookY ; 
-	double tmpLookZ = lookZ ; 
-	//go back to origine
-	tmpLookX -=posX;
-	tmpLookY -=posY;
-	tmpLookZ -=posZ;
-	
-	//compute angle to return
-	double returnRecordedRotY = fmod((6.2831-recordRotY),6.2831);
-	double returnRecordedRotZ = fmod((6.2831-recordRotZ),6.2831);
-
-	double newLookX = tmpLookX*cos(returnRecordedRotY)+tmpLookY*sin(returnRecordedRotZ)*sin(returnRecordedRotY)+tmpLookZ*sin(returnRecordedRotY)*cos(returnRecordedRotZ);
-	double newLookY = tmpLookY*cos(returnRecordedRotZ)-tmpLookZ*sin(returnRecordedRotZ);
-	double newLookZ = -tmpLookX*sin(returnRecordedRotY)+tmpLookY*cos(returnRecordedRotY)*sin(returnRecordedRotZ)+tmpLookZ*cos(returnRecordedRotY)*cos(returnRecordedRotZ);
-	
-	double newLookX2 = newLookX*cos(recordRotY)+newLookY*sin(recordRotZ)*sin(recordRotY)+newLookZ*sin(recordRotY)*cos(recordRotZ);
-	double newLookY2 = newLookY*cos(recordRotZ)-newLookZ*sin(recordRotZ);
-	double newLookZ2 = -newLookX*sin(recordRotY)+newLookY*cos(recordRotY)*sin(recordRotZ)+newLookZ*cos(recordRotY)*cos(recordRotZ);
-	
-
-	lookX = newLookX2 + posX;
-	lookY = newLookY2 + posY;
-	lookZ = newLookZ2 + posZ;
-
-}
-
 void CameraControl::fpsRotateLeftRight(double& posX, double& posY, double& posZ, double& lookX, double& lookY, double& lookZ,double velocity){
 
 		double tmpX = lookX-posX;
@@ -436,8 +408,6 @@ void CameraControl::animatePictorialCamera(){
 
 void CameraControl::InitdeCasteljauSubdivision(){
 
-
-	
 	//control points
 	double b0X = -0.51f, b0Y =  1.09f, b0Z = 0.40f;
 	double b1X =  0.57f, b1Y =  1.26f, b1Z = 0.40f;
@@ -876,7 +846,6 @@ void CameraControl::MultipleBezier_controlled(int PointToChange, float deltaX, f
     _verticesCameraPathControls->copy(_cameraPathControls.data(), _cameraPathControls.size());
 }
 
-
 void CameraControl::flyingExploration(){
 	static double straightMaxSpeed = 0.5f; 	
 	static double rotationMaxSpeed = 20.0f; 
@@ -1168,14 +1137,14 @@ void CameraControl::fpsExploration(){
 	}
 	if ((KeyW==true) | (velocityForward > 0.0f)){//W pressed => go forward 
 		if((KeyW==1) & (velocityForward<straightMaxSpeed*deltaT)){
-				velocityForward = velocityForward + straightAcceleration*deltaT;
+				velocityForward += straightAcceleration*deltaT;
 		}
-		else{
-			velocityForward = velocityForward - straightAcceleration*deltaT;
+		else if (jumping ==false){
+			velocityForward -= straightAcceleration*deltaT;
 		}
 
-		if((KeySHIFT==true) & (KeyW==true) & (velocityForward<0.03f)){ // press shift => running
-			velocityForward +=straightMaxSpeed*deltaT;
+		if((KeySHIFT==true) & (KeyW==true) & (velocityForward<2*straightMaxSpeed*deltaT)){ // press shift => running
+			velocityForward +=3*straightAcceleration*deltaT;
 		}
 	
 		//FPS exploration
@@ -1203,7 +1172,7 @@ void CameraControl::fpsExploration(){
 		if((KeyS==true) & (velocityBackward<straightMaxSpeed*deltaT)){
 				velocityBackward = velocityBackward + straightAcceleration*deltaT;
 		}
-		else{
+		else if (jumping ==false){
 			velocityBackward = velocityBackward - straightAcceleration*deltaT;
 		}
 	
@@ -1218,7 +1187,7 @@ void CameraControl::fpsExploration(){
 		if((KeyA==true) & (velocityLeft<rotationMaxSpeed*deltaT)){
 				velocityLeft = velocityLeft + rotationAcceleration*deltaT;
 		}
-		else{
+		else if (jumping ==false){
 			velocityLeft = velocityLeft - rotationAcceleration*deltaT;
 		}
 		fpsRotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,velocityLeft);
@@ -1230,7 +1199,7 @@ void CameraControl::fpsExploration(){
 		if((KeyD==true) & (velocityRight<rotationMaxSpeed*deltaT)){
 				velocityRight = velocityRight + rotationAcceleration*deltaT;
 		}
-		else{
+		else if (jumping ==false){
 			velocityRight = velocityRight - rotationAcceleration*deltaT;
 		}
 		fpsRotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,-velocityRight);
@@ -1242,7 +1211,7 @@ void CameraControl::fpsExploration(){
 		if((KeyQ==true) & (velocityUp<rotationMaxSpeed*deltaT)){
 				velocityUp = velocityUp + rotationAcceleration*deltaT;
 		}
-		else{
+		else if (jumping ==false){
 			velocityUp = velocityUp - rotationAcceleration*deltaT;
 		}
 		//rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotZ,velocityUp);
@@ -1252,7 +1221,7 @@ void CameraControl::fpsExploration(){
 		if((KeyE==true) & (velocityDown<rotationMaxSpeed*deltaT)){
 				velocityDown = velocityDown + rotationAcceleration*deltaT;
 		}
-		else{
+		else if (jumping ==false){
 			velocityDown = velocityDown - rotationAcceleration*deltaT;
 		}
 		//rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotZ,-velocityDown);
