@@ -19,10 +19,7 @@ void main() {
     ka = 0.9f;
     kd = 0.9f;
 
-	//Since length is not preserved, we need to
-	//re-normalize the input vectors first
-	vec3 N = normalize(normal_mv);
-	vec3 L = normalize(lightDirWorld);
+	vec3 N= normalize(lightDirWorld);
 	vec3 V = normalize(viewDirCamera);
 
 	vec3 yellow_color = vec3(1.0f, 1.0f, 0.0f);
@@ -36,5 +33,5 @@ void main() {
 	//vec3 specular_color = Is * ks * yellow_color * pow(max(dot(V,reflect(L,N)),0.0),p);
     ///<<<<<<<<<< TODO <<<<<<<<<<<
 	color = vec4(diffuse_color , 0.8f);
-	//color = vec4(1.0f,1.0f,0.0f, 0.8f);
+	
 }

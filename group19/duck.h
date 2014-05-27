@@ -11,13 +11,19 @@
 
 
 
+
+
 class RenderedDuck : public RenderingContext{
 
 public:
     /// Common methods of all RenderingContext.
 	RenderedDuck(unsigned int width, unsigned int height);
     void init(Vertices* vertices);
+
     void draw(const mat4& projection, const mat4& view, const vec3& lightPositionWorld);
+
+    void draw(const mat4& projection, const mat4 views[]);
+
 
 private:
 

@@ -13,7 +13,7 @@ public:
     /// Common methods of all RenderingContext.
     ParticlesRender(unsigned int width, unsigned int height, unsigned int nParticlesSide);
     void init(unsigned int particlePosTexID[]);
-    void draw(const mat4& projection, const mat4& view);
+    void draw(const mat4& projection, const mat4 views[]);
 
 private:
 

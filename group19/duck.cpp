@@ -7,6 +7,8 @@
 #include "opengp.h"
 
 #include <Eigen/Geometry>
+
+
 #include "duck_vshader.h"
 #include "duck_fshader.h"
 
@@ -18,6 +20,7 @@ RenderedDuck::RenderedDuck(unsigned int width, unsigned int height):
 void RenderedDuck::init(Vertices* vertices)
 {
 	/// Common initialization.
+
     preinit(vertices, duck_vshader, duck_fshader, NULL, "vertexPosition3DWorld", "normal_mv");
 
 	/* Light properties */
@@ -32,6 +35,9 @@ void RenderedDuck::init(Vertices* vertices)
     glUniform3fv( _IdID, 1, Id.data());
     glUniform3fv( _IsID, 1, Is.data());
 
+    preinit(vertices, duck_vshader, duck_fshader, NULL, "vertexPosition3DWorld");
+
+
     /// Set uniform IDs.
     _viewID = glGetUniformLocation(_programID, "view");
     _projectionID = glGetUniformLocation(_programID, "projection");
@@ -40,16 +46,19 @@ void RenderedDuck::init(Vertices* vertices)
 }
 
 
-void RenderedDuck::draw(const mat4& projection, const mat4& view, const vec3& lightPositionWorld)
+
+void RenderedDuck::draw(const mat4& projection, const mat4 views[], const mat4& lightPositionWorld)
 {	
 	glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	 /// Common drawing.
     predraw();
 
     /// Update the content of the uniforms.
     glUniformMatrix4fv( _projectionID, 1, GL_FALSE, projection.data());
 	glUniform3fv(_lightPositionWorldID, 1, lightPositionWorld.data());
+
 
     /// Do not clear the framebuffers : done by Terrain.
     /// Otherwise already drawn pixels will be cleared.
@@ -63,8 +72,8 @@ void RenderedDuck::draw(const mat4& projection, const mat4& view, const vec3& li
  /*   glUniformMatrix4fv(_viewID, 1, GL_FALSE, viewFlip.data());
     _vertices->draw();*/
 
-    /// Render the skybox from camera point of view to default framebuffer.   
-    glUniformMatrix4fv(_viewID, 1, GL_FALSE, view.data());
+
+  
 
 	/* Translation matrix */
 	mat4 trans_mat;
@@ -74,10 +83,16 @@ void RenderedDuck::draw(const mat4& projection, const mat4& view, const vec3& li
 				 0,0,0,1;
 	glUniformMatrix4fv(_transID, 1, GL_FALSE, trans_mat.data());
 
-	/* Draw to framebuffer */
-	 glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs["controllerView"]);
+	
+
+	
+
+
+    /// Render from camera point of view to 'normal' FBOs.
+    glUniformMatrix4fv(_viewID, 1, GL_FALSE, views[0].data());
+    glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs["controllerView"]);
     _vertices->draw();
 
 	glDisable(GL_BLEND);
-
 }
+

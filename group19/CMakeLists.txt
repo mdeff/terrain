@@ -18,6 +18,7 @@ add_executable(${DIR}
     particles_render.cpp      particles_render_vshader.glsl      particles_render_fshader.glsl
     duck.cpp		      duck_vshader.glsl		         duck_fshader.glsl
     post_processing.cpp       post_processing_fshader.glsl
+    duck.cpp		      duck_vshader.glsl			 duck_fshader.glsl
 )
 
 target_link_libraries(${DIR} ${COMMON_LIBS})
@@ -41,3 +42,5 @@ target_stringify_shader(${DIR} camera_path_controls_gshader)
 target_stringify_shader(${DIR} duck_vshader)
 target_stringify_shader(${DIR} duck_fshader)
 target_stringify_shader(${DIR} post_processing_fshader)
+target_stringify_shader(${DIR} duck_vshader)
+target_stringify_shader(${DIR} duck_fshader)

@@ -82,7 +82,7 @@ void Shadowmap::draw(const mat4& lightViewProjection) const {
     /// Update the content of the uniforms.
     glUniformMatrix4fv( _lightViewProjectionID, 1, GL_FALSE, lightViewProjection.data());
 
-    /// Render the terrain from light source point of view to FBO.
+    /// Render from light source point of view to FBO.
     glBindFramebuffer(GL_FRAMEBUFFER, _framebufferID);
     glClear(GL_DEPTH_BUFFER_BIT);
     _vertices->draw();

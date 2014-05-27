@@ -27,7 +27,7 @@ void VerticesDuck::generate(){
     glBindBuffer(GL_ARRAY_BUFFER, _vertexBufferID);
     glBufferData(GL_ARRAY_BUFFER, n_vertices() * sizeof(vec3), vpoints.data(), GL_STATIC_DRAW);
 
-    
+
 
     /// Looping around the mesh to index the vertices
 	//std::vector<unsigned int> buf;
@@ -56,8 +56,7 @@ void VerticesDuck::generate(){
     glBindBuffer(GL_ARRAY_BUFFER, _normal_mvID);
     glBufferData(GL_ARRAY_BUFFER, n_vertices() * sizeof(vec3), vnormals.data(), GL_STATIC_DRAW);
 	
-	
-     
+
 }
 
 
