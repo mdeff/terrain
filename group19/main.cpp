@@ -191,7 +191,6 @@ void display() {
     static double lastFrameTime = glfwGetTime();
     float deltaT = float(currentTime - lastFrameTime);
     lastFrameTime = currentTime;
-    std::cout << "deltaT : " << deltaT << std::endl;
 
     /// Control the camera position.
     /// Should come before rendering as it updates the view transformation matrix.

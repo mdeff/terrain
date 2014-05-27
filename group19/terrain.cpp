@@ -153,21 +153,3 @@ void Terrain::draw(const mat4& projection, const mat4& view,
     _vertices->draw();
 
 }
-
-
-GLuint Terrain::load_texture(const char * imagepath) const {
-
-    // Read the file, call glTexImage2D with the right parameters
-    if (glfwLoadTexture2D(imagepath, 0)) {
-        // Nice trilinear filtering.
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    } else {
-        std::cout << "Cannot load texture file : " << imagepath << std::endl;
-        exit(EXIT_FAILURE);
-    }
-
-}

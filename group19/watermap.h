@@ -27,9 +27,6 @@ private:
     unsigned int _lightPositionWorldID;
     unsigned int _timeID;
 
-    /// Helper function.
-    unsigned int load_texture(const char * imagepath) const;
-
 };
 
 #endif /* __terrain_h__ */

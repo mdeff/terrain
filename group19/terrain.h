@@ -30,9 +30,6 @@ private:
     unsigned int _textureWidth;
     unsigned int _textureHeight;
 
-    /// Helper function.
-    unsigned int load_texture(const char * imagepath) const;
-
 };
 
 #endif /* __terrain_h__ */

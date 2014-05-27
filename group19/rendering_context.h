@@ -22,6 +22,7 @@ protected:
 
     /// Helper function.
     void set_texture(unsigned int textureIndex, int textureID, const char* uniformName, unsigned int target);
+    void load_texture(const char * imagepath) const;
 
     /// Common properties of all RenderingContext.
     const unsigned int _width, _height;
@@ -29,8 +30,6 @@ protected:
 
     /// Pointer : vertices object can be shared between RenderingContext.
     Vertices* _vertices;
-
-protected:
 
     /// Common properties of all RenderingContext.
     unsigned int _frameBufferID;
