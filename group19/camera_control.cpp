@@ -621,7 +621,7 @@ void CameraControl::bezier_4_points(int PointToChange, float deltaX, float delta
     _cameraPathControls.push_back(b3Z);
 
 	/// Choose the resolution.
-    const unsigned int nPoints = 200;
+    const unsigned int nPoints = 500;
 
     /// To avoid vector resizing on every loop.
     _cameraPath.clear();
@@ -1482,6 +1482,7 @@ void CameraControl::handleCameraControls(int key, int action){
 				std::cout<<"Key K : position Y - 0.1"<<std::endl;
 				std::cout<<"Key O : position Z + 0.1"<<std::endl;
 				std::cout<<"Key L : position Z - 0.1"<<std::endl;
+				std::cout<<"Key + : add bezier curve"<<std::endl;
 
 				break;
 			case 85: //U=> X+
@@ -1512,7 +1513,7 @@ void CameraControl::handleCameraControls(int key, int action){
 				InitSubdivision();
 				break;
 			case 308: //6
-				MultipleBezier();
+				bezier_4_points(0,0,0,0);
 				break;
 			case 294://ENTER => drop control point
 				if(_explorationMode == FLYING){
