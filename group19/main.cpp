@@ -7,7 +7,7 @@
 #include "rendering_simple.h"
 #include "heightmap.h"
 #include "shadowmap.h"
-#include "watermap.h"
+#include "water.h"
 #include "skybox.h"
 #include "particles_control.h"
 #include "particles_render.h"
@@ -45,7 +45,7 @@ ParticlesRender particlesRender(windowWidth, windowHeight, nParticlesSide);
 Shadowmap shadowmap(textureWidth, textureHeight);
 ParticlesControl particlesControl(nParticlesSide);
 
-Watermap water(windowWidth, windowHeight);
+Water water(windowWidth, windowHeight);
 
 /// Camera position controller.
 CameraControl cameraControl;

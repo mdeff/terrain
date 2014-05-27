@@ -1,4 +1,5 @@
-#include "watermap.h"
+
+#include "water.h"
 #include "vertices.h"
 
 #include <GL/glew.h>
@@ -6,20 +7,20 @@
 #include "opengp.h"
 
 #include "particles_control_vshader.h"
-#include "watermap_vshader.h"
-#include "watermap_fshader.h"
+#include "water_vshader.h"
+#include "water_fshader.h"
 
 
-Watermap::Watermap(unsigned int width, unsigned int height) :
+Water::Water(unsigned int width, unsigned int height) :
     RenderingContext(width, height) {
 }
 
 
-void Watermap::init(Vertices* vertices , GLuint flippedTerrainTexID) {
+void Water::init(Vertices* vertices, GLuint flippedTerrainTexID) {
 
     /// Common initialization.
-//    RenderingContext::init(vertices, particles_control_vshader, watermap_fshader, NULL, "vertexPosition2DWorld", 0);
-    preinit(vertices, watermap_vshader, watermap_fshader, NULL, "vertexPosition2DWorld", 0);
+//    RenderingContext::init(vertices, particles_control_vshader, water_fshader, NULL, "vertexPosition2DWorld", 0);
+    preinit(vertices, water_vshader, water_fshader, NULL, "vertexPosition2DWorld", 0);
 
     //bind the reflection tex to texture 0
     set_texture(0, flippedTerrainTexID, "flippedTerrainTex", GL_TEXTURE_2D);
@@ -53,8 +54,8 @@ void Watermap::init(Vertices* vertices , GLuint flippedTerrainTexID) {
 }
 
 
-void Watermap::draw(const mat4& projection, const mat4& view,
-                   const mat4& lightViewProjection, const vec3& lightPositionWorld) const {
+void Water::draw(const mat4& projection, const mat4& view,
+                 const mat4& lightViewProjection, const vec3& lightPositionWorld) const {
 
     /// Common drawing.
     predraw();
