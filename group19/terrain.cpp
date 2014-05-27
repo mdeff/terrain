@@ -62,8 +62,8 @@ GLuint Terrain::init(Vertices* vertices, GLuint heightMapTexID, GLuint shadowMap
     glUniform3fv( _IsID, 1, Is.data());
 
     /// Set uniform IDs.
-    _viewID = glGetUniformLocation(_programID, "view");
     _projectionID = glGetUniformLocation(_programID, "projection");
+    _viewID = glGetUniformLocation(_programID, "view");
     _lightViewProjectionID = glGetUniformLocation(_programID, "lightViewProjection");
     _lightPositionWorldID = glGetUniformLocation(_programID, "lightPositionWorld");
     _clipID = glGetUniformLocation(_programID, "clip");

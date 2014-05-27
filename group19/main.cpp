@@ -208,7 +208,7 @@ void display() {
     /// Render opaque primitives on screen.
     cameraPictorial.draw(cameraProjection, cameraView, cameraPictorialModel, vec3(1,1,0));
     cameraPath.draw(cameraProjection, cameraView, mat4::Identity(), vec3(0,1,0));
-    cameraPathControlPoints.draw(cameraProjection, cameraView, selectedControlPoint);
+    cameraPathControlPoints.draw(cameraProjection, cameraView, lightPositionWorld, selectedControlPoint);
 
     water.draw(cameraProjection, cameraView, lightViewProjection, lightPositionWorld);
 

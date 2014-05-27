@@ -13,13 +13,14 @@ public:
     /// Common methods of all RenderingContext.
     CameraPathControlPoints(unsigned int width, unsigned int height);
     void init(Vertices* vertices);
-    void draw(const mat4& projection, const mat4& view, const int& selectedControlPoint) const;
+    void draw(const mat4& projection, const mat4& view, const vec3& lightPositionWorld, const int& selectedControlPoint) const;
 
 private:
 
     /// Uniform IDs.
     unsigned int _projectionID;
     unsigned int _viewID;
+    unsigned int _lightPositionWorldID;
     unsigned int _selectedControlPointID;
 
 };
