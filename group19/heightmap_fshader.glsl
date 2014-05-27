@@ -6,7 +6,10 @@ uniform sampler1D permTableTex;
 uniform sampler1D gradVectTex;
 
 // Vertices 2D position. Use gl_FragCoord ?
-in vec2 position2D;
+//in vec2 position2D;
+
+// Pixel window-relative coordinates. (0.5,0.5) is lower-left corner.
+in vec4 gl_FragCoord;
 
 // First output buffer.
 // Which is DrawBuffers[0] = GL_COLOR_ATTACHMENT0
@@ -277,6 +280,8 @@ float hybridMultifractal(vec2 position, float H, float lacunarity, float octaves
 }
 
 void main() {
+
+    vec2 position2D = vec2(gl_FragCoord) / 1024.0 * 2 - 1;
 
     // Perlin noise.
     //height = 0.5f * perlin_noise(6.5f * position2D);

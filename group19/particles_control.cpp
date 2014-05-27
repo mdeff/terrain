@@ -9,7 +9,7 @@
 #include <GL/glfw.h>
 #include "opengp.h"
 
-#include "particles_control_vshader.h"
+#include "passthrough_vshader.h"
 #include "particles_control_fshader.h"
 
 
@@ -23,7 +23,7 @@ ParticlesControl::ParticlesControl(unsigned int nParticlesSide) :
 void ParticlesControl::init(Vertices* vertices, GLuint particlePosTexID[]) {
 
     /// Common initialization.
-    preinit(vertices, particles_control_vshader, particles_control_fshader, NULL, "vertexPosition2D", -1);
+    preinit(vertices, passthrough_vshader, particles_control_fshader, NULL, "vertexPosition2D", -1);
 
     /// The Sampler uniforms always refer to texture indices 0 and 1.
     /// The binding to textures 0 and 1 are however flipped every frame.
