@@ -22,13 +22,20 @@
 #include "vertices_camera_pictorial.h"
 
 
-/// Screen size.
+/// Number of different views.
+const unsigned int Nviews = 2;
+
+/// Screen (and rendering framebuffers) size.
 const unsigned int windowWidth(1024);
 const unsigned int windowHeight(768);
 
 /// Textures (heightmap and shadowmap) sizes.
 const unsigned int textureWidth(1024);
 const unsigned int textureHeight(1024);
+
+/// Unified width and height ?
+//const unsigned int width(1024);
+//const unsigned int height(1024);
 
 /// Number of particles on the side. That makes nParticlesSide^3 particles.
 const unsigned int nParticlesSide(20);
@@ -118,11 +125,59 @@ void GLFWCALL keyboard_callback(int key, int action) {
 }
 
 
+void gen_rendering_framebuffers(GLuint framebufferIDs[], GLuint renderedTexIDs[], unsigned int N) {
+
+    /// Each FBO will have an attached texture for rendering and a renderbuffer
+    /// depth buffer.
+
+    glGenFramebuffers(N, framebufferIDs);
+    glGenTextures(N, renderedTexIDs);
+
+    for(int k=0; k<N; ++k) {
+
+        glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs[k]);
+        glBindTexture(GL_TEXTURE_2D, renderedTexIDs[k]);
+
+        /// Empty image (no data), three color components, clamped [0,1] 32 bits float.
+        /// Same size as the screen : no need to change the view port, same projection matrix.
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, windowWidth, windowHeight, 0, GL_RGB, GL_FLOAT, 0);
+
+        /// Clamp texture coordinates to the [0,1] range. Wrapped (GL_REPEAT) by default.
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+        /// Simple linear filtering (need to be explicitly set).
+        /// May need a better filtering as this have an impact on the final result.
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+        /// Attach the output texture to the first color attachment point.
+        /// The texture becomes the fragment shader first output buffer.
+        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderedTexIDs[k], 0);
+        GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0};
+        glDrawBuffers(1, drawBuffers);
+
+        /// Create and attach a depth buffer for the FBO.
+        GLuint depthRenderbufferID;
+        glGenRenderbuffers(1, &depthRenderbufferID);
+        glBindRenderbuffer(GL_RENDERBUFFER, depthRenderbufferID);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, windowWidth, windowHeight);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderbufferID);
+
+        /// Check that our framebuffer object (FBO) is complete.
+        if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            std::cerr << "Rendering framebuffer " << k << " not complete." << std::endl;
+            exit(EXIT_FAILURE);
+        }
+
+    }
+}
+
+
 void init() {
 	
     /// OpenGL parameters.
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-//    glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_MULTISAMPLE);
     glEnable(GL_TEXTURE_2D);
@@ -145,6 +200,15 @@ void init() {
     heightmap.clean();
 //    verticesQuad->clean();
 //    delete verticesQuad;
+
+    /// Two rendering framebuffers and two view matrices.
+    /// 1) Overall view for control purpose.
+    /// 2) Camera actual view.
+    /// No more direct drawing to the default framebuffer. All drawings go
+    /// to textures and Display arranges the textures on screen.
+    GLuint framebufferIDs[Nviews];
+    GLuint renderedTexIDs[Nviews];
+    gen_rendering_framebuffers(framebufferIDs, renderedTexIDs, Nviews);
 
     /// Initialize the rendering contexts.
     GLuint shadowMapTexID = shadowmap.init(verticesGrid, heightMapTexID);
@@ -192,6 +256,8 @@ void display() {
     float deltaT = float(currentTime - lastFrameTime);
     lastFrameTime = currentTime;
 
+    mat4 views[Nviews];
+
     /// Control the camera position.
     /// Should come before rendering as it updates the view transformation matrix.
     mat4 cameraView, cameraPictorialModel;
@@ -216,7 +282,6 @@ void display() {
     cameraPathControls.draw(cameraProjection, cameraView, lightPositionWorld, selectedControlPoint, deltaT);
 
     water.draw(cameraProjection, cameraView, lightViewProjection, lightPositionWorld);
-
 
     /// Render the translucent primitives last. Otherwise opaque objects that
     /// may be visible behind get discarded by the depth test.
