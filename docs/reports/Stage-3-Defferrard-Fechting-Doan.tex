@@ -192,10 +192,10 @@ By two simultaneous views, we mean the rendering of the seen from two points of 
 From an implementation point of view, almost each object of the scene (skybox, terrain, water, shadowmap, skybox, particles) should be drawn from two different points of view. They are thus rendered to two FBOs (with attached output texture and depth buffer) instead of the default framebuffer (the screen). The \texttt{Display} class eventually uses the texture to assemble the final screen view.
 
 For performance reason, it is crucial to render the two points of view one after the other as shader program switch is expensive.
-
-        /// The linear filtering is only used for the small preview.
-        /// As it creates too much aliasing, the main image is direclty accessed
-        /// with texelFetch which does bypass the filtering.
+\begin{itemize}
+\item{The linear filtering is only used for the small preview.}
+\item{ As it creates too much aliasing, the main image is direclty accessed with texelFetch which does bypass the filtering.}
+\end{itemize}
 
 To produce hight quality rendering, the two views were rendered to multisampled textures (\texttt{GL\_TEXTURE\_2D\_MULTISAMPLE}), using four samples per pixel. Multisampling, also known as multisample antialiasing (MSAA), is one method for achieving full-screen antialiasing (FSAA). This technique was introduced by \texttt{ARB\_texture\_multisample} In order to improve performance, multi-sampling was disabled for the default framebuffer in the \texttt{glfwCreateWindow} helper function. It makes no sense to do the multi-sampling twice.
 
