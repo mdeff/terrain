@@ -177,13 +177,17 @@ Window and textures are of size \texttt{nParticles} times 1 pixels.
 
 In our implementation, particles that fall below the water level are reseted to the top and will fall down again, indefinitely. In order to keep the aggregate compact and so as it does not spread out in the space, particles that go too far in x or y direction get moved to the oder side.
 
-discard is used
 
 \subsection{Advanced - Two simultaneous views}
 
-By two simultaneous views, we mean the rendering of the seen from two points of views. In our case, a control view and a camera view (fig.). The control view is used to set the camera path Bézier curve control points and have a global view with an animated pictorial camera. The camera view actually shows what the camera sees.
+By two simultaneous views, we mean the rendering of the seen from two points of views. In our case, a control view and a camera view (fig~\ref{two_views}). The control view is used to set the camera path Bézier curve control points and have a global view with an animated pictorial camera. The camera view actually shows what the camera sees. The keyboad ENTER key can be used to exchange the two views
 
-The keyboad ENTER key can be used to exchange the two views (fig.).
+\begin{figure}
+\centering
+\includegraphics[height=4cm]{img_stage3/two_views}
+\caption{Illustration of our two-view system.}
+\label{two_views}
+\end{figure}
 
 From an implementation point of view, almost each object of the scene (skybox, terrain, water, shadowmap, skybox, particles) should be drawn from two different points of view. They are thus rendered to two FBOs (with attached output texture and depth buffer) instead of the default framebuffer (the screen). The \texttt{Display} class eventually uses the texture to assemble the final screen view.
 
