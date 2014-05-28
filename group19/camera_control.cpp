@@ -820,19 +820,33 @@ void CameraControl::createBCurve(){
 
 void CameraControl::MultipleBezier() {//init
 	
-	//// setting first bezier curve
-	const float bA0X = -1.00f,bA0Y =  0.00f,bA0Z =  0.40f;
-    const float bA1X = -0.50f,bA1Y = -1.00f,bA1Z =  0.40f;
-    const float bA2X = -0.50f,bA2Y =  1.00f,bA2Z =  0.40f;
-    const float bA3X =  0.00f,bA3Y =  0.00f,bA3Z =  0.40f;
+//    //// setting first bezier curve
+//    const float bA0X = -1.00f,bA0Y =  0.00f,bA0Z =  0.40f;
+//    const float bA1X = -0.50f,bA1Y = -1.00f,bA1Z =  0.40f;
+//    const float bA2X = -0.50f,bA2Y =  1.00f,bA2Z =  0.40f;
+//    const float bA3X =  0.00f,bA3Y =  0.00f,bA3Z =  0.40f;
 
-	//// setting second bezier curve
-	const float bB0X =  bA3X ,bB0Y =  bA3Y ,bB0Z =  bA3Z ; // PB0 = PA3
+//    //// setting second bezier curve
+//    const float bB0X =  bA3X ,bB0Y =  bA3Y ,bB0Z =  bA3Z ; // PB0 = PA3
+//    const float bB1X = 2*bB0X - bA2X;//PB1 = 2PB0 - PA2
+//    const float bB1Y = 2*bB0Y - bA2Y;//PB1 is the PA2 mirrored on PB0
+//    const float bB1Z = 2*bB0Z - bA2Z;
+//    const float bB2X =  0.50f,bB2Y =  1.00f,bB2Z =  0.40f;
+//    const float bB3X =  1.00f,bB3Y =  0.00f,bB3Z =  0.40f;
+
+    //// setting first bezier curve
+    const float bA0X = -0.50f,bA0Y = -1.00f,bA0Z =  0.20f;
+    const float bA1X = -0.80f,bA1Y = -0.80f,bA1Z =  0.40f;
+    const float bA2X = -0.30f,bA2Y =  0.20f,bA2Z =  0.00f;
+    const float bA3X =  0.00f,bA3Y =  0.00f,bA3Z =  0.20f;
+
+    //// setting second bezier curve
+    const float bB0X =  bA3X ,bB0Y =  bA3Y ,bB0Z =  bA3Z ; // PB0 = PA3
     const float bB1X = 2*bB0X - bA2X;//PB1 = 2PB0 - PA2
-	const float bB1Y = 2*bB0Y - bA2Y;//PB1 is the PA2 mirrored on PB0
-	const float bB1Z = 2*bB0Z - bA2Z;
-    const float bB2X =  0.50f,bB2Y =  1.00f,bB2Z =  0.40f;
-    const float bB3X =  1.00f,bB3Y =  0.00f,bB3Z =  0.40f;
+    const float bB1Y = 2*bB0Y - bA2Y;//PB1 is the PA2 mirrored on PB0
+    const float bB1Z = 2*bB0Z - bA2Z;
+    const float bB2X =  0.30f,bB2Y =  1.00f,bB2Z =  0.20f;
+    const float bB3X =  0.60f,bB3Y =  0.80f,bB3Z =  0.20f;
 
 	    /// Fill the control points vector.
     _cameraPathControls.clear();

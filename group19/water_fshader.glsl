@@ -39,28 +39,28 @@ void main() {
     vec3 L = normalize(lightDir);
     vec3 V = normalize(viewDir);
 
-    // Normal vector.
-    vec3 N = vec3(0.0, 0.0, 1.0);
+    // Normal vector in world and camera spaces.
+    vec3 normalWorld = vec3(0.0, 0.0, 1.0);
+//    vec3 normalCamera = normalize(vec3(transpose(inverse(view)) * vec4(normalWorld,1)));
 
-    //current UV coordinate
-//    vec2 UV = vec2((vertexPosition3DWorld.xy +1.0)/2.0);
-
-    //reflection UV
-//    vec2 ref_UV = reflectionCoord.xy; //gl_FragCoord.xy * 0.5 + 0.5;
-
-    //Get the normal vector from normal map
-//    vec3 normal = normalize(texture(waterNormalMap,ref_UV).rgb);
+    // Normal vector from normal map.
+    vec2 UV = vertexPosition3DWorld.xy * 0.5 + 0.5;
+    float freq = 0.5;
+    vec3 normalMapWorld1 = texture(waterNormalMap, freq*UV).rgb;
+    //    vec3 normalMapWorld2 = normalize(vec3(normalMapWorld1.xy, 10.0*normalMapWorld1.z));
+    vec3 normalMapWorld2 = normalize(normalMapWorld1.xyz);
+    vec3 normalMapWorld = normalMapWorld2;
 
     //Define other properties of light for water surface
-    float power = 60.0f;
-//    float ka, kd, ks;
-//    ka = 0.6f;
-//    kd = 0.4f;
-//    ks = 0.6f;
+    float power = 200.0f;
+    float ka, kd, ks;
+//    ka = 1.0f;
+    kd = 0.3f;
+    ks = 0.7f;
 
     //Get the texture value from texture map
-//    float time_tmp = time * 0.0002;
-//    vec3 material = texture2D(riverSurfaceMap,vec2(cos(UV.x + time_tmp), sin(UV.y-time_tmp))).rgb;
+    float time_tmp = deltaT * 0.0002;
+//    vec3 river = texture2D(riverSurfaceMap,vec2(cos(UV.x + time_tmp), sin(UV.y-time_tmp))).rgb;
 //    vec3 material = texture2D(reflectionTex, ref_UV).rgb;
      // Compute the ambient color component based on texture mapping.
 //    vec3 ambient = Ia * ka * material;
