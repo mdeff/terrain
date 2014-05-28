@@ -372,23 +372,30 @@ void CameraControl::animatePictorialCamera(){
 
     if(i<(_cameraPath.size()/3)-1){
 
-	double currentTime = glfwGetTime();
-    float deltaT = float(currentTime - lastTime); //deltaT in sc 
-	if(deltaT>0.05){
-		lastTime = currentTime;
-			//std::cout<<i<<std::endl;
-			_cameraPictorialModel(0,3) = _cameraPath[i*3+0];
-			_cameraPictorialModel(1,3) = _cameraPath[i*3+1];
-			_cameraPictorialModel(2,3) = _cameraPath[i*3+2];
+		double currentTime = glfwGetTime();
+		float deltaT = float(currentTime - lastTime); //deltaT in sc 
+		if(deltaT>0.02){
+			lastTime = currentTime;
 
-			//hide pictorial camera
-			//_cameraPictorialModel(0,3) =-10;
-			//_cameraPictorialModel(1,3) =-10;
-			//_cameraPictorialModel(2,3) =-10;
+			float posX	= _cameraPath[i*3+0];
+            float posY	= _cameraPath[i*3+1];
+            float posZ	= _cameraPath[i*3+2];
 			
-			float dirX= _cameraPath[(i+1)*3+0]-_cameraPath[i*3+0];
-			float dirY= _cameraPath[(i+1)*3+1]-_cameraPath[i*3+1];
-			float dirZ= _cameraPath[(i+1)*3+2]-_cameraPath[i*3+2];
+            float lookX = _cameraPath[(i+1)*3+0];
+            float lookY = _cameraPath[(i+1)*3+1];
+            float lookZ = _cameraPath[(i+1)*3+2];
+
+			//update camera position and look at
+			update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
+
+			//update pictorial camera poisition and look at
+			_cameraPictorialModel(0,3) = posX;
+			_cameraPictorialModel(1,3) = posY;
+			_cameraPictorialModel(2,3) = posZ;
+			
+			float dirX= lookX-posX;
+			float dirY= lookY-posY;
+			float dirZ= lookZ-posZ;
 
 			float length = sqrt(dirX*dirX+dirY*dirY+dirZ*dirZ);
 			
@@ -398,13 +405,6 @@ void CameraControl::animatePictorialCamera(){
 
 			float angleZ = atan2(dirYnorm,dirXnorm);
 			float angleY = atan2(sqrt(dirYnorm*dirYnorm+dirXnorm*dirXnorm),dirZnorm);
-
-			//vec3 vecDir = vec3(dirXnorm,dirYnorm,dirZnorm);
-			//vec3 camDir = vec3(0,0,1);
-			// 
-			//vec3 crossT =(vecDir).cross((camDir));
-				
-			//float camera_angle = 0.1f*i;
 			
 			mat3 rot = Eigen::AngleAxisf(angleZ, Eigen::Vector3f::UnitZ()).toRotationMatrix() 
 				* Eigen::AngleAxisf(angleY, Eigen::Vector3f::UnitY()).toRotationMatrix();
@@ -414,16 +414,12 @@ void CameraControl::animatePictorialCamera(){
 					_cameraPictorialModel(k,j)=rot(k,j);
 				}
 			}
-
-
-		i++;
+			i++;
 		}
-		
-    }
+	}
 	else{
 		i=0;
 	}
-
 }
 
 void CameraControl::InitdeCasteljauSubdivision(){
@@ -913,7 +909,6 @@ void CameraControl::Remove_Bcurve(){
 	//display Bcurve
 	N_MultipleBezier_controlled(0,0,0,0);
 }
-
 
 void CameraControl::MultipleBezier_controlled(int PointToChange, float deltaX, float deltaY, float deltaZ) {
 
@@ -1441,9 +1436,9 @@ void CameraControl::updateCameraPosition(mat4 views[], mat4& cameraPictorialMode
     case FPS:
         fpsExploration();
         break;
-    case PATH:
-        deCasteljauTest4Points();
-        break;
+    //case PATH:
+    //    deCasteljauTest4Points();
+    //    break;
     default:
         /// Nothing to do : trackball() will update the transformation matrix.
         break;
@@ -1504,11 +1499,6 @@ void CameraControl::handleKeyboard(int key, int action){
         flagAnimatePictorialCamera = false;
 		Key2 =!Key2;
 		break;
-    case 305: //3
-        std::cout << "Exploration mode : PATH" << std::endl;
-        _explorationMode = PATH;
-        flagAnimatePictorialCamera = true;
-		break;
     case 306: //4
         std::cout << "Exploration mode : FIX" << std::endl;
         _explorationMode = FIX;
@@ -1516,6 +1506,11 @@ void CameraControl::handleKeyboard(int key, int action){
     }
 	if(action==1){
 		switch(key){
+			 case 305: //3
+				std::cout << "Exploration mode : PATH" << std::endl;
+				_explorationMode = PATH;
+				flagAnimatePictorialCamera = !flagAnimatePictorialCamera;
+				break;
 			case 90: //Z=> change control point under modification
                 _selectedControlPoint++;
                 if(_selectedControlPoint> 3*int((_cameraPathControls.size()-3)/9))
