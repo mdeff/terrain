@@ -17,6 +17,7 @@ static bool KeyS = false;
 static bool KeyD = false;
 static bool KeyE = false;
 static bool KeyQ = false;
+static bool KeyX = false;
 static bool KeySHIFT = false;
 static bool KeySPACE = false;
 static bool Key1 = false;
@@ -1044,7 +1045,7 @@ void CameraControl::MultipleBezier_controlled(unsigned int PointToChange, float 
 
 void CameraControl::flyingExploration(){
 	static float straightMaxSpeed = 0.5f; 	
-	static float rotationMaxSpeed = 20.0f; 
+	static float rotationMaxSpeed = 40.0f; 
 	static float straightAcceleration = 0.05f; 	
 	static float rotationAcceleration = 4.0f; 
 
@@ -1285,21 +1286,21 @@ void CameraControl::fpsExploration(){
     float deltaT = float(currentTime - lastTime); //deltaT in sc 
     lastTime = currentTime;
 
-    if((KeySPACE) & (jumping==false)){//space => jump
+    if((KeyX) & (jumping==false)){//x => jump
 			jumping = true;
 			initJumpPosZ = posZ;
 			initJumpLookZ = lookZ;
 	}
-    if (jumping  ){
+    if (jumping){
 
 		if((jumpLevel>80) & (jumpLevel<100)){
-			jumpLevel +=1;
+			jumpLevel +=80*deltaT;
 		}
 		else if (((jumpLevel>60) & (jumpLevel<=80))|((jumpLevel>=100) & (jumpLevel<120))){
-			jumpLevel +=1.5;
+			jumpLevel +=130*deltaT;
 		}
 		else{
-			jumpLevel +=2.5;
+			jumpLevel +=230*deltaT;
 		}
 	
 		//estimate floor level 8only if mooving while jumping
@@ -1325,11 +1326,12 @@ void CameraControl::fpsExploration(){
 
 		if ((jumpLevel >= 90) & (posZ<=floorLevel)){ //reach floor =>jump finished
 			jumping = false;
+			
 			jumpLevel = 0;
 			posZ = floorLevel;// 0.06 person height
 		}
 		else if(jumpLevel > 180 ){// falling ! 
-			posZ -= 0.005f; 
+			posZ -= 0.3f*deltaT; 
 		}
 		else{
 			posZ = initJumpPosZ + float(0.1) * sin(OneRad*jumpLevel);
@@ -1339,14 +1341,14 @@ void CameraControl::fpsExploration(){
 		update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
 	}
     if ((KeyW) | (velocityForward > 0.0f)){//W pressed => go forward
-		if((KeyW==1) & (velocityForward<straightMaxSpeed*deltaT)){
+		if(((KeyW==1) & (velocityForward<straightMaxSpeed*deltaT)) & (jumping ==false)){
 				velocityForward += straightAcceleration*deltaT;
 		}
 		else if (jumping ==false){
 			velocityForward -= straightAcceleration*deltaT;
 		}
 
-        if((KeySHIFT) & (KeyW) & (velocityForward<2*straightMaxSpeed*deltaT)){ // press shift => running
+        if(((KeySHIFT) & (KeyW) & (velocityForward<2*straightMaxSpeed*deltaT)) & (jumping ==false)){ // press shift => running
 			velocityForward +=3*straightAcceleration*deltaT;
 		}
 	
@@ -1372,7 +1374,7 @@ void CameraControl::fpsExploration(){
 	
 	}
     if  ((KeyS)| (velocityBackward > 0.0f)){//S pressed => go backward
-        if((KeyS) & (velocityBackward<straightMaxSpeed*deltaT)){
+        if((KeyS) & (velocityBackward<straightMaxSpeed*deltaT) & (jumping ==false)){
 				velocityBackward = velocityBackward + straightAcceleration*deltaT;
 		}
 		else if (jumping ==false){
@@ -1380,14 +1382,28 @@ void CameraControl::fpsExploration(){
 		}
 	
 		//fps exploration
-		if((posX<=1) & (posX>=-1) & (posY<=1) & (posY>=-1)){//stay on the map
+		if((posX<=1) & (posX>=-1) & (posY<=1) & (posY>=-1) & (jumping == false)){//stay on the map
 			float dispX = 0.2f*velocityBackward*powf(posX-lookX,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posX-lookX)/abs(posX-lookX);
 			float dispY = 0.2f*velocityBackward*powf(posY-lookY,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posY-lookY)/abs(posY-lookY);
 			fpsExplorationForwardBackward(posX,posY,posZ,lookX,lookY,lookZ,-dispX,-dispY);
 		}
+		else if((posX<=1) & (posX>=-1) & (posY<=1) & (posY>=-1) & (jumping == true)){//stay on the map jumping forward
+			float dispX = 0.2f*velocityBackward*powf(posX-lookX,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posX-lookX)/abs(posX-lookX);
+			float dispY = 0.2f*velocityBackward*powf(posY-lookY,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posY-lookY)/abs(posY-lookY);
+			posX = posX - dispX; 
+			posY = posY - dispY; 
+			lookX = lookX - dispX; 
+			lookY = lookY - dispY; 
+			if(posX>1){posX=1;}
+			else if(posX<-1){posX=-1;}
+			if(posY>1){posY=1;}
+			else if(posY<-1){posY=-1;}
+			update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
+		}
+
 	}
     if ((KeyA) | (velocityLeft > 0.0f)){//A pressed => turn left
-        if((KeyA) & (velocityLeft<rotationMaxSpeed*deltaT)){
+        if((KeyA) & (velocityLeft<rotationMaxSpeed*deltaT)  & (jumping ==false)){
 				velocityLeft = velocityLeft + rotationAcceleration*deltaT;
 		}
 		else if (jumping ==false){
@@ -1399,7 +1415,7 @@ void CameraControl::fpsExploration(){
 		//rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,velocityLeft);
 	}
     if ((KeyD) | (velocityRight > 0.0f)){//D pressed =turn right
-        if((KeyD) & (velocityRight<rotationMaxSpeed*deltaT)){
+        if((KeyD) & (velocityRight<rotationMaxSpeed*deltaT) & (jumping ==false)){
 				velocityRight = velocityRight + rotationAcceleration*deltaT;
 		}
 		else if (jumping ==false){
@@ -1411,7 +1427,7 @@ void CameraControl::fpsExploration(){
 		//rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,-velocityRight);
 	}
     if  ((KeyQ)  | (velocityUp > 0.0f)){//Q pressed turn up
-        if((KeyQ) & (velocityUp<rotationMaxSpeed*deltaT)){
+        if((KeyQ) & (velocityUp<rotationMaxSpeed*deltaT) & (jumping ==false)){
 				velocityUp = velocityUp + rotationAcceleration*deltaT;
 		}
 		else if (jumping ==false){
@@ -1421,7 +1437,7 @@ void CameraControl::fpsExploration(){
 		fpsRotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotZ,velocityUp);
 	}
     if  ( (KeyE) | (velocityDown > 0.0f)){//E pressed => down
-        if((KeyE) & (velocityDown<rotationMaxSpeed*deltaT)){
+        if((KeyE) & (velocityDown<rotationMaxSpeed*deltaT) & (jumping ==false)){
 				velocityDown = velocityDown + rotationAcceleration*deltaT;
 		}
 		else if (jumping ==false){
@@ -1489,6 +1505,9 @@ void CameraControl::handleKeyboard(int key, int action){
 		break;
 	case 81 :
 		KeyQ = !KeyQ; 
+		break;
+	case 88 :
+		KeyX = !KeyX; 
 		break;
 	case 287 :
 		KeySHIFT = !KeySHIFT; 
