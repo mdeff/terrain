@@ -70,7 +70,7 @@ void ParticlesControl::init(Vertices* vertices, GLuint particlePosTexID[]) {
     glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB32F, _width, 0, GL_RGB, GL_FLOAT, particlesPos);
     glBindTexture(GL_TEXTURE_1D, _particleTexID[2]);
     glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB32F, _width, 0, GL_RGB, GL_FLOAT, particlesVel);
-    delete particlesPos, particlesVel;
+    delete[] particlesPos, particlesVel;
 
     /// Set uniform IDs.
     _deltaTID = glGetUniformLocation(_programID, "deltaT");

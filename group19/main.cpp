@@ -142,7 +142,8 @@ void gen_rendering_framebuffers(GLuint framebufferIDs[], GLuint colorTexIDs[], u
     const unsigned int samples = 4;
 
     /// Generate framebuffers and renderbuffers.
-    GLuint colorBufIDs[N], depthBufIDs[N];
+    GLuint* colorBufIDs = new GLuint[N];
+    GLuint* depthBufIDs = new GLuint[N];
     glGenRenderbuffers(N, colorBufIDs);
     glGenTextures(N, colorTexIDs);
     glGenRenderbuffers(N, depthBufIDs);
@@ -189,6 +190,10 @@ void gen_rendering_framebuffers(GLuint framebufferIDs[], GLuint colorTexIDs[], u
             exit(EXIT_FAILURE);
         }
     }
+
+    /// Free heap memory.
+    delete[] colorBufIDs, depthBufIDs;
+
 }
 
 
