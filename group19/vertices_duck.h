@@ -4,12 +4,13 @@
 #include "vertices.h"
 #include <GL/glew.h>
 #include "opengp.h"
-/// For mesh I/O we use OpenGP
+
+/// For mesh I/O we use OpenGP which requires a definition of fread().
+#include <cstdio>
 #include <OpenGP/Surface_mesh.h>
 
 using namespace opengp;
 using namespace std;
-
 
 class VerticesDuck : public Vertices, public Surface_mesh {
 

@@ -17,7 +17,7 @@ RenderedDuck::RenderedDuck(unsigned int width, unsigned int height):
 void RenderedDuck::init(Vertices* vertices)
 {
 	/// Common initialization.
-    preinit(vertices, duck_vshader, duck_fshader, NULL, "vertexPosition3DWorld", 0);
+    preinit(vertices, duck_vshader, duck_fshader, NULL, "vertexPosition3DWorld");
 
     /// Set uniform IDs.
     _viewID = glGetUniformLocation(_programID, "view");
@@ -25,7 +25,7 @@ void RenderedDuck::init(Vertices* vertices)
 }
 
 
-void RenderedDuck::draw(const mat4& projection, const mat4& view)
+void RenderedDuck::draw(const mat4& projection, const mat4 views[])
 {	
 	 /// Common drawing.
     predraw();
@@ -45,9 +45,9 @@ void RenderedDuck::draw(const mat4& projection, const mat4& view)
  /*   glUniformMatrix4fv(_viewID, 1, GL_FALSE, viewFlip.data());
     _vertices->draw();*/
 
-    /// Render the skybox from camera point of view to default framebuffer.
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glUniformMatrix4fv(_viewID, 1, GL_FALSE, view.data());
+    /// Render from camera point of view to 'normal' FBOs.
+    glUniformMatrix4fv(_viewID, 1, GL_FALSE, views[0].data());
+    glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs["controllerView"]);
     _vertices->draw();
 
 }
