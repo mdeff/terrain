@@ -48,7 +48,7 @@ void CameraControl::init(VerticesCameraPath* verticesCameraPath, VerticesCameraP
     //InitSubdivision();
 
     /// Initialize the camera position.
-    _explorationMode = TRACKBALL;
+    _explorationMode = FIX;
     trackball(mat4::Identity());
 
     update_camera_modelview(0.5f, -0.5f, 0.8f, 0.0f, 0.0f, 0.0f);
@@ -63,12 +63,9 @@ void CameraControl::init(VerticesCameraPath* verticesCameraPath, VerticesCameraP
 
 }
 
-void CameraControl::trackball(const mat4& model) {
 
-    /// This camera control applies only in TRACKBALL exploration mode.
-    /// Other modes have their own camera control.
-//    if(_explorationMode != TRACKBALL)
-//        return;
+/// This controls the controller view camera.
+void CameraControl::trackball(const mat4& model) {
 
     /// View matrix (camera extrinsics) (position in world space).
 
@@ -140,6 +137,8 @@ void CameraControl::trackball(const mat4& model) {
 
 }
 
+
+/// This controls the camera view camera.
 void CameraControl::update_camera_modelview(double posX,double posY,double posZ,double lookX,double lookY,double lookZ){
 	vec3 camPos(posX,posY,posZ);
 	vec3 camLookAt(lookX, lookY, lookZ);
@@ -1087,7 +1086,7 @@ void CameraControl::flyingExploration(){
     float deltaT = float(currentTime - lastTime); //deltaT in sc 
     lastTime = currentTime;
 
-	if ((KeyW==true) | (velocityForward > 0.0f)){//W pressed => go forward 
+    if ((KeyW) | (velocityForward > 0.0f)){//W pressed => go forward
 		if((KeyW==1) & (velocityForward<straightMaxSpeed*deltaT)){
 				velocityForward = velocityForward + straightAcceleration * deltaT ;
 		}
@@ -1099,8 +1098,8 @@ void CameraControl::flyingExploration(){
 		moveAlongAxis(posX,posY,posZ,lookX,lookY,lookZ,velocityForward);
 
 	}
-	if  ((KeyS==true)| (velocityBackward > 0.0f)){//S pressed => go backward 
-		if((KeyS==true) & (velocityBackward<straightMaxSpeed*deltaT)){
+    if  ((KeyS)| (velocityBackward > 0.0f)){//S pressed => go backward
+        if((KeyS) & (velocityBackward<straightMaxSpeed*deltaT)){
 				velocityBackward = velocityBackward + straightAcceleration*deltaT;
 		}
 		else{
@@ -1110,8 +1109,8 @@ void CameraControl::flyingExploration(){
 		moveAlongAxis(posX,posY,posZ,lookX,lookY,lookZ,-velocityBackward);
 		
 	}
-	if ((KeyA==true) | (velocityLeft > 0.0f)){//A pressed => turn left
-		if((KeyA==true) & (velocityLeft<rotationMaxSpeed*deltaT)){
+    if ((KeyA) | (velocityLeft > 0.0f)){//A pressed => turn left
+        if((KeyA) & (velocityLeft<rotationMaxSpeed*deltaT)){
 				velocityLeft = velocityLeft + rotationAcceleration*deltaT;
 		}
 		else{
@@ -1123,8 +1122,8 @@ void CameraControl::flyingExploration(){
 		//rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,velocityLeft);
 		recordRotZ = fmod((recordRotZ+0.0174f*velocityLeft),6.2831); //save rotation done
 	}
-	if ((KeyD==true) | (velocityRight > 0.0f)){//D pressed =turn right
-		if((KeyD==true) & (velocityRight<rotationMaxSpeed*deltaT)){
+    if ((KeyD) | (velocityRight > 0.0f)){//D pressed =turn right
+        if((KeyD) & (velocityRight<rotationMaxSpeed*deltaT)){
 				velocityRight = velocityRight + rotationAcceleration*deltaT;
 		}
 		else{
@@ -1135,8 +1134,8 @@ void CameraControl::flyingExploration(){
 		//rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,-velocityRight);
 		recordRotZ = fmod((recordRotZ-0.0174f*velocityRight),6.2831); //save rotation done
 	}
-	if  ((KeyQ==true)  | (velocityUp > 0.0f)){//Q pressed turn up
-		if((KeyQ==true) & (velocityUp<rotationMaxSpeed*deltaT)){
+    if  ((KeyQ)  | (velocityUp > 0.0f)){//Q pressed turn up
+        if((KeyQ) & (velocityUp<rotationMaxSpeed*deltaT)){
 				velocityUp = velocityUp + rotationAcceleration*deltaT;
 		}
 		else{
@@ -1148,8 +1147,8 @@ void CameraControl::flyingExploration(){
 
 		recordRotY = fmod((recordRotY+0.0174f*velocityUp),6.2831); //save rotation done	
 	}
-	if  ( (KeyE==true) | (velocityDown > 0.0f)){//E pressed => down
-		if((KeyE==true) & (velocityDown<rotationMaxSpeed*deltaT)){
+    if  ( (KeyE) | (velocityDown > 0.0f)){//E pressed => down
+        if((KeyE) & (velocityDown<rotationMaxSpeed*deltaT)){
 				velocityDown = velocityDown + rotationAcceleration*deltaT;
 		}
 		else{
@@ -1160,10 +1159,10 @@ void CameraControl::flyingExploration(){
 		rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotZ,-velocityDown);
 		recordRotY = fmod((recordRotY-0.0174f*velocityDown),6.2831); //save rotation done
 	}
-	if(Key1==true){
+    if(Key1){
 		update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
 	}
-	if(KeyENTER==true & ModeSettingControlPoint==false){
+    if(KeyENTER & ModeSettingControlPoint==false){
 		KeyENTER=false;
 		ModeSettingControlPoint=true;
 		/*if(controlPointsCount<=4){//restart creating path
@@ -1189,7 +1188,7 @@ void CameraControl::flyingExploration(){
 			}
 		}
 	}	
-	if (ModeSettingControlPoint==true){ // set a control point if necessary
+    if (ModeSettingControlPoint){ // set a control point if necessary
 		//use look at to define the 2nd control point (P1) only for first Bcurve
         if (controlPointsCount%4==1 & _cameraPathControls.size()%12==3 & controlPointsCount<3 ){
             _cameraPathControls.push_back(lookX);
@@ -1229,7 +1228,7 @@ void CameraControl::flyingExploration(){
         if(_cameraPathControls.size()>6){//compute and render bezier
 			createBCurve();
 		}
-		if(KeyENTER==true){//finish setting ctrl points
+        if(KeyENTER){//finish setting ctrl points
 			if(controlPointsCount%4==1){
 				controlPointsCount++;
 			}
@@ -1282,12 +1281,12 @@ void CameraControl::fpsExploration(){
     float deltaT = float(currentTime - lastTime); //deltaT in sc 
     lastTime = currentTime;
 
-	if((KeySPACE==true) & (jumping==false)){//space => jump
+    if((KeySPACE) & (jumping==false)){//space => jump
 			jumping = true;
 			initJumpPosZ = posZ;
 			initJumpLookZ = lookZ;
 	}
-	if (jumping ==true ){
+    if (jumping  ){
 
 		if((jumpLevel>80) & (jumpLevel<100)){
 			jumpLevel +=1;
@@ -1335,7 +1334,7 @@ void CameraControl::fpsExploration(){
 
 		update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
 	}
-	if ((KeyW==true) | (velocityForward > 0.0f)){//W pressed => go forward 
+    if ((KeyW) | (velocityForward > 0.0f)){//W pressed => go forward
 		if((KeyW==1) & (velocityForward<straightMaxSpeed*deltaT)){
 				velocityForward += straightAcceleration*deltaT;
 		}
@@ -1343,7 +1342,7 @@ void CameraControl::fpsExploration(){
 			velocityForward -= straightAcceleration*deltaT;
 		}
 
-		if((KeySHIFT==true) & (KeyW==true) & (velocityForward<2*straightMaxSpeed*deltaT)){ // press shift => running
+        if((KeySHIFT) & (KeyW) & (velocityForward<2*straightMaxSpeed*deltaT)){ // press shift => running
 			velocityForward +=3*straightAcceleration*deltaT;
 		}
 	
@@ -1368,8 +1367,8 @@ void CameraControl::fpsExploration(){
 		}
 	
 	}
-	if  ((KeyS==true)| (velocityBackward > 0.0f)){//S pressed => go backward 
-		if((KeyS==true) & (velocityBackward<straightMaxSpeed*deltaT)){
+    if  ((KeyS)| (velocityBackward > 0.0f)){//S pressed => go backward
+        if((KeyS) & (velocityBackward<straightMaxSpeed*deltaT)){
 				velocityBackward = velocityBackward + straightAcceleration*deltaT;
 		}
 		else if (jumping ==false){
@@ -1383,8 +1382,8 @@ void CameraControl::fpsExploration(){
 			fpsExplorationForwardBackward(posX,posY,posZ,lookX,lookY,lookZ,-dispX,-dispY);
 		}
 	}
-	if ((KeyA==true) | (velocityLeft > 0.0f)){//A pressed => turn left
-		if((KeyA==true) & (velocityLeft<rotationMaxSpeed*deltaT)){
+    if ((KeyA) | (velocityLeft > 0.0f)){//A pressed => turn left
+        if((KeyA) & (velocityLeft<rotationMaxSpeed*deltaT)){
 				velocityLeft = velocityLeft + rotationAcceleration*deltaT;
 		}
 		else if (jumping ==false){
@@ -1395,8 +1394,8 @@ void CameraControl::fpsExploration(){
 	
 		//rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,velocityLeft);
 	}
-	if ((KeyD==true) | (velocityRight > 0.0f)){//D pressed =turn right
-		if((KeyD==true) & (velocityRight<rotationMaxSpeed*deltaT)){
+    if ((KeyD) | (velocityRight > 0.0f)){//D pressed =turn right
+        if((KeyD) & (velocityRight<rotationMaxSpeed*deltaT)){
 				velocityRight = velocityRight + rotationAcceleration*deltaT;
 		}
 		else if (jumping ==false){
@@ -1407,8 +1406,8 @@ void CameraControl::fpsExploration(){
 	
 		//rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,-velocityRight);
 	}
-	if  ((KeyQ==true)  | (velocityUp > 0.0f)){//Q pressed turn up
-		if((KeyQ==true) & (velocityUp<rotationMaxSpeed*deltaT)){
+    if  ((KeyQ)  | (velocityUp > 0.0f)){//Q pressed turn up
+        if((KeyQ) & (velocityUp<rotationMaxSpeed*deltaT)){
 				velocityUp = velocityUp + rotationAcceleration*deltaT;
 		}
 		else if (jumping ==false){
@@ -1417,8 +1416,8 @@ void CameraControl::fpsExploration(){
 		//rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotZ,velocityUp);
 		fpsRotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotZ,velocityUp);
 	}
-	if  ( (KeyE==true) | (velocityDown > 0.0f)){//E pressed => down
-		if((KeyE==true) & (velocityDown<rotationMaxSpeed*deltaT)){
+    if  ( (KeyE) | (velocityDown > 0.0f)){//E pressed => down
+        if((KeyE) & (velocityDown<rotationMaxSpeed*deltaT)){
 				velocityDown = velocityDown + rotationAcceleration*deltaT;
 		}
 		else if (jumping ==false){
@@ -1427,7 +1426,7 @@ void CameraControl::fpsExploration(){
 		//rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotZ,-velocityDown);
 		fpsRotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotZ,-velocityDown);
 	}
-	if(Key2==true){
+    if(Key2){
 		update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
 	}
 }
@@ -1450,7 +1449,7 @@ void CameraControl::updateCameraPosition(mat4 views[], mat4& cameraPictorialMode
         break;
     }
 
-	if(flagAnimatePictorialCamera==true)
+    if(flagAnimatePictorialCamera)
         animatePictorialCamera();
 
     /// Update the view transformation matrix.
@@ -1497,20 +1496,23 @@ void CameraControl::handleCameraControls(int key, int action){
         std::cout << "Exploration mode : FLYING" << std::endl;
 		Key1 =!Key1;
         _explorationMode = FLYING;
+        flagAnimatePictorialCamera = false;
 		break;
     case 304: //2
         std::cout << "Exploration mode : FPS" << std::endl;
         _explorationMode = FPS;
+        flagAnimatePictorialCamera = false;
 		Key2 =!Key2;
 		break;
     case 305: //3
         std::cout << "Exploration mode : PATH" << std::endl;
         _explorationMode = PATH;
+        flagAnimatePictorialCamera = true;
 		break;
-//    case 306: //4
-//        std::cout << "Exploration mode : TRACKBALL" << std::endl;
-//        _explorationMode = TRACKBALL;
-//        trackball(mat4::Identity());
+    case 306: //4
+        std::cout << "Exploration mode : FIX" << std::endl;
+        _explorationMode = FIX;
+        flagAnimatePictorialCamera = false;
     }
 	if(action==1){
 		switch(key){
@@ -1564,9 +1566,9 @@ void CameraControl::handleCameraControls(int key, int action){
 //					KeyENTER = true;
 //				}
 //				break;
-			case 309://7
-				flagAnimatePictorialCamera=!flagAnimatePictorialCamera;
-				break;
+//			case 309://7
+//				flagAnimatePictorialCamera=!flagAnimatePictorialCamera;
+//				break;
             case 294://+
 				Add_Bcurve();
 				break;
