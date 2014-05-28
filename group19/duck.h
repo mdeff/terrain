@@ -32,6 +32,7 @@ private:
     unsigned int _projectionID;
 	unsigned int _transID;
 	unsigned int _lightPositionWorldID;
+	unsigned int _aniMat;
 };
 
 #endif

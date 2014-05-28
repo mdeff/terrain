@@ -43,6 +43,7 @@ void RenderedDuck::init(Vertices* vertices)
     _projectionID = glGetUniformLocation(_programID, "projection");
 	_transID = glGetUniformLocation(_programID, "translation");
 	_lightPositionWorldID = glGetUniformLocation(_programID, "lightPositionWorld");
+	_aniMat = glGetUniformLocation(_programID, "animation");
 }
 
 
@@ -52,9 +53,6 @@ void RenderedDuck::init(Vertices* vertices)
 void RenderedDuck::draw(const mat4& projection, const mat4 views[], const vec3& lightPositionWorld)
 
 {	
-	glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 	 /// Common drawing.
     predraw();
 
@@ -86,13 +84,16 @@ void RenderedDuck::draw(const mat4& projection, const mat4 views[], const vec3& 
 	glUniformMatrix4fv(_transID, 1, GL_FALSE, trans_mat.data());
 		
 
+	/* For Animation: Move circular around a fixed point */
+	//float radius = 
+	static float angle = 0;
+	mat4 ani_mat;
+	
 
     /// Render from camera point of view to 'normal' FBOs.
     glUniformMatrix4fv(_viewID, 1, GL_FALSE, views[0].data());
     glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs["controllerView"]);
     _vertices->draw();
-
-	glDisable(GL_BLEND);
 
 }
 

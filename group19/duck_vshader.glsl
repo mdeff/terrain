@@ -10,6 +10,7 @@ uniform vec3 lightPositionWorld;
 
 // Vertices 3D position in world space.
 layout(location = 0) in vec3 vertexPosition3DWorld;
+layout(location = 1) in vec3 normal_mv;
 
 // Vertex position (mandatory output).
 out gl_PerVertex {
@@ -19,12 +20,13 @@ out gl_PerVertex {
 // 3D texture coordinates.
 // for now. Dont want to use pass through shader
 out vec3 vertexPosition3DWorld_tmp;
+out vec3 normal_mv_tmp;
 
 // Light and view directions.
 out vec3 lightDirWorld, viewDirCamera;
 void main() {
 	
-	float scale = 30.0f;
+	float scale = 35.0f;
 	//hack: no need to rotate the duck. Just swap the element's position
 	vertexPosition3DWorld_tmp = vertexPosition3DWorld.xzy;
     // View matrix transforms from world space to camera space.
@@ -35,4 +37,6 @@ void main() {
 
 	lightDirWorld = lightPositionWorld - vertexPosition3DWorld_tmp;
     viewDirCamera = vec3(vertexPositionCamera);
+
+	normal_mv_tmp = normal_mv;
 }
