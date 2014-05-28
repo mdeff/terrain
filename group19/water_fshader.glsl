@@ -4,21 +4,15 @@
 uniform mat4 projection;
 uniform mat4 view;
 
-// Light properties.
-uniform vec3 Ia, Id, Is;
-
 // Time for water animation.
 uniform float deltaT;
 
 // Textures.
 uniform sampler2D reflectionTex;
 uniform sampler2D waterNormalMap;
-uniform sampler2D riverSurfaceMap;
-
 
 // Light source position in world space.
 uniform vec3 lightPositionWorld;
-
 
 // Vertices 3D position (after heightmap displacement) in world space.
 in vec3 vertexPosition3DWorld;
