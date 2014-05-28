@@ -49,7 +49,7 @@ void Skybox::draw(const mat4& projection, const mat4 views[]) const {
     glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs["cameraView"]);
     _vertices->draw();
 
-    /// Flip the terrain by multiplying the Z coordinate by -1 in world space.
+    /// Flip the world by multiplying the Z coordinate by -1 in world space.
     mat4 flip = mat4::Identity();
     flip(2,2) = -1.0f;
     mat4 viewFlip[] = {views[0]*flip, views[1]*flip};

@@ -319,7 +319,7 @@ void display() {
     lastFrameTime = currentTime;
 
     /// Control the camera position.
-    /// Should come before rendering as it updates the view transformation matrix.
+    /// Should come before rendering as it updates the views transformation matrices.
     mat4 views[Nviews], cameraPictorialModel;
     int selectedControlPoint;
     cameraControl.updateCameraPosition(views, cameraPictorialModel, selectedControlPoint);
@@ -341,8 +341,9 @@ void display() {
     cameraPath.draw(cameraProjection, views, mat4::Identity(), vec3(0,1,0));
     cameraPathControls.draw(cameraProjection, views, lightPositionWorld, selectedControlPoint, deltaT);
 
+    duck.draw(cameraProjection, views, lightPositionWorld);
+
     water.draw(cameraProjection, views, lightViewProjection, lightPositionWorld);
-	duck.draw(cameraProjection, views,  lightPositionWorld);
 
     /// Render the translucent primitives last. Otherwise opaque objects that
     /// may be visible behind get discarded by the depth test.
