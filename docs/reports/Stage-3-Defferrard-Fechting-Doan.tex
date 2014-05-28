@@ -367,6 +367,11 @@ The heightmap code was also refactored to accommodate our new object oriented ar
 
 Another improvement of the heightmap code is that the \texttt{position} vector is now a \texttt{vec2} instead of a \texttt{vec3} as the vertex z position of a quad is 0 anyway. This saves some GPU memory bandwidth.
 
+
+\subsection{External Objection addition}
+We tried to render together an external object (a yellow duck) by loading its 3D mesh. We did some simple transformation to place it in right position and move linearly.
+
+The reflection of the duck is also rendered.
 \section{Results}
 
 
