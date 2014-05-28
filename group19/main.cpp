@@ -68,7 +68,6 @@ RenderedDuck duck(windowWidth, windowHeight);
 Shadowmap shadowmap(textureWidth, textureHeight);
 ParticlesControl particlesControl(nParticlesSide);
 
-RenderedDuck duck(windowWidth, windowHeight);
 Water water(windowWidth, windowHeight);
 
 /// Camera position controller.
