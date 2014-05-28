@@ -25,6 +25,7 @@ static bool Key2 = false;
 static bool KeyENTER = false;
 static bool flagAnimatePictorialCamera=false;
 
+float deltaT;
 const float OneRad = 0.0174f;
 
 void CameraControl::init(VerticesCameraPath* verticesCameraPath, VerticesCameraPath* verticesCameraPathControls, GLuint heightMapTexID) {
@@ -62,9 +63,9 @@ void CameraControl::init(VerticesCameraPath* verticesCameraPath, VerticesCameraP
 
     /// Control point curently modified.
     _selectedControlPoint = 0;
-
+	
+	animatePictorialCamera(1);
 }
-
 
 /// This controls the controller view camera.
 void CameraControl::trackball(const mat4& model) {
@@ -138,7 +139,6 @@ void CameraControl::trackball(const mat4& model) {
     _controllerModelview = view * model;
 
 }
-
 
 /// This controls the camera view camera.
 void CameraControl::update_camera_modelview(float posX,float posY,float posZ,float lookX,float lookY,float lookZ){
@@ -339,16 +339,10 @@ void CameraControl::deCasteljauTest3Points(){
 
 }
 
-void CameraControl::deCasteljauTest4Points(){ // wrong naming => use to follow the curve with the camera... 
+/*void CameraControl::deCasteljauTest4Points(){ // wrong naming => use to follow the curve with the camera... 
 	static unsigned int i = 0;
-	
-	static double lastTime = glfwGetTime();
-    double currentTime = glfwGetTime();
-    float deltaT = float(currentTime - lastTime); //deltaT in sc 
 
-	if(deltaT>0.01){
-		lastTime = currentTime;
-    
+	if(deltaT>0.01){    
         if(i<(_cameraPath.size()/3)-1){
 			//std::cout<<i<<std::endl;
             float posX	= _cameraPath[i*3+0];
@@ -365,15 +359,141 @@ void CameraControl::deCasteljauTest4Points(){ // wrong naming => use to follow t
 			i=0;
 		}
 	}
-}
+}*/
 
-void CameraControl::animatePictorialCamera(unsigned int back){
+void CameraControl::animatePictorialCamera(unsigned int back){ //advance point per point 
+	std::cout<<"init"<<std::endl;
 	static unsigned int i = 0;
 	i-=back;
-	static double lastTime = glfwGetTime();
-
     if(i<(_cameraPath.size()/3)-1){
+		float posX	= _cameraPath[i*3+0];
+        float posY	= _cameraPath[i*3+1];
+        float posZ	= _cameraPath[i*3+2];
+		
+        float lookX = _cameraPath[(i+1)*3+0];
+        float lookY = _cameraPath[(i+1)*3+1];
+        float lookZ = _cameraPath[(i+1)*3+2];
 
+		//update camera position and look at
+		update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
+
+		//update pictorial camera poisition and look at
+		_cameraPictorialModel(0,3) = posX;
+		_cameraPictorialModel(1,3) = posY;
+		_cameraPictorialModel(2,3) = posZ;
+		
+		float dirX= lookX-posX;
+		float dirY= lookY-posY;
+		float dirZ= lookZ-posZ;
+
+		float length = sqrt(dirX*dirX+dirY*dirY+dirZ*dirZ);
+		
+		float dirXnorm = dirX/length;
+		float dirYnorm = dirY/length;
+		float dirZnorm = dirZ/length;
+
+		float angleZ = atan2(dirYnorm,dirXnorm);
+		float angleY = atan2(sqrt(dirYnorm*dirYnorm+dirXnorm*dirXnorm),dirZnorm);
+		
+		mat3 rot = Eigen::AngleAxisf(angleZ, Eigen::Vector3f::UnitZ()).toRotationMatrix() 
+			* Eigen::AngleAxisf(angleY, Eigen::Vector3f::UnitY()).toRotationMatrix();
+		
+		for (int j=0; j<3;j++){
+			for(int k=0; k<3;k++){
+				_cameraPictorialModel(k,j)=rot(k,j);
+			}
+		}
+		i++;
+		
+	}
+	else{
+		i=0;
+	}
+}
+
+void CameraControl::animatePictorialCamera2(unsigned int back){ //advance distance/temps
+
+	const float speed = 0.005f;
+	
+	float distanceToGo = speed*deltaT;
+
+	static int lastBPoint = 0;
+	
+	std::cout<<"init "<<lastBPoint<<std::endl;
+
+	float distX= _cameraPath[(lastBPoint)*3+0]-_cameraPictorialModel(0,3);
+	float distY= _cameraPath[(lastBPoint)*3+1]-_cameraPictorialModel(1,3);
+	float distZ= _cameraPath[(lastBPoint)*3+2]-_cameraPictorialModel(2,3);
+	float length = sqrt(powf(distX,2)+powf(distY,2)+powf(distZ,2));
+
+
+	if(length<distanceToGo){//add next distance
+		/*do{
+			lastBPoint++;
+			if((_cameraPath.size()/3)-1<=lastBPoint){
+				lastBPoint=0;
+				_cameraPictorialModel(0,3) =_cameraPath[0];
+				_cameraPictorialModel(1,3) =_cameraPath[1];
+				_cameraPictorialModel(2,3) =_cameraPath[2];
+				std::cout<<std::endl<<std::endl<<"stop"<<std::endl;
+				return;
+			}
+			distX= _cameraPath[(lastBPoint+1)*3+0]-_cameraPath[lastBPoint*3+0];
+			distY= _cameraPath[(lastBPoint+1)*3+1]-_cameraPath[lastBPoint*3+1];
+			distZ= _cameraPath[(lastBPoint+1)*3+2]-_cameraPath[lastBPoint*3+2];
+			length += sqrt(powf(distX,2)+powf(distY,2)+powf(distZ,2));
+			
+		}while(length<distanceToGo);
+		
+		lastBPoint--;//get the point just befor the distance we look for
+
+		//compute distance to go
+		distX= _cameraPath[(lastBPoint+1)*3+0]-_cameraPath[lastBPoint*3+0];
+		distY= _cameraPath[(lastBPoint+1)*3+1]-_cameraPath[lastBPoint*3+1];
+		distZ= _cameraPath[(lastBPoint+1)*3+2]-_cameraPath[lastBPoint*3+2];
+		length -= sqrt(powf(distX,2)+powf(distY,2)+powf(distZ,2));
+		
+		//compute distance from nearest Bpoint
+		distanceToGo -= length;
+
+		length = sqrt(powf(distX,2)+powf(distY,2)+powf(distZ,2));
+				
+		float coeffX = distX/length;
+		float coeffY = distY/length;
+		float coeffZ = distZ/length;
+				
+		float distanceToGoX = coeffX*distanceToGo;
+		float distanceToGoY = coeffY*distanceToGo;
+		float distanceToGoZ = coeffZ*distanceToGo;
+
+				std::cout<<distanceToGoX<<" "<<distanceToGoY<< " "<<distanceToGoZ<<std::endl;
+
+		_cameraPictorialModel(0,3) = _cameraPath[lastBPoint*3+0]+distanceToGoX;
+		_cameraPictorialModel(1,3) = _cameraPath[lastBPoint*3+1]+distanceToGoY;
+		_cameraPictorialModel(2,3) = _cameraPath[lastBPoint*3+2]+distanceToGoZ;*/
+	}
+	//else{
+		std::cout<<std::endl<<std::endl<<"long"<<std::endl;
+		
+		float coeffX = distX/length;
+		float coeffY = distY/length;
+		float coeffZ = distZ/length;
+
+		float distanceToGoX = distanceToGo/coeffX;
+		float distanceToGoY = distanceToGo/coeffY;
+		float distanceToGoZ = distanceToGo/coeffZ;
+		std::cout<<distanceToGoX<<" "<<distanceToGoY<< " "<<distanceToGoZ<<std::endl;
+
+		_cameraPictorialModel(0,3) = _cameraPictorialModel(0,3)+distanceToGoX;
+		_cameraPictorialModel(1,3) = _cameraPictorialModel(1,3)+distanceToGoY;
+		_cameraPictorialModel(2,3) = _cameraPictorialModel(2,3)+distanceToGoZ;
+	//}
+	
+
+
+	
+	/*
+    if(i<(_cameraPath.size()/3)-1){
 		double currentTime = glfwGetTime();
 		float deltaT = float(currentTime - lastTime); //deltaT in sc 
 		if(deltaT>0.02){
@@ -421,7 +541,7 @@ void CameraControl::animatePictorialCamera(unsigned int back){
 	}
 	else{
 		i=0;
-	}
+	}*/
 }
 
 void CameraControl::InitdeCasteljauSubdivision(){
@@ -530,7 +650,7 @@ void CameraControl::InitSubdivision(){
 	float b0,b1,b2,b3;
 	float l0,l1,l2,l3,r1,r2,r3;
 	for(int i=0; i<iteration;i++){ // iterate to get more set of points
-		for(int j=int(std::pow(2.0,i)-1); j>=0;j--){
+		for(int j=int(pow(2,i)-1); j>=0;j--){
 			for(int k=0;k<3;k++){//iterate for X Y Z
 				b0=res0[j][k];
 				b1=res1[j][k];
@@ -571,10 +691,10 @@ void CameraControl::InitSubdivision(){
 
     
 	//end test time to compute
-	double currentTime = glfwGetTime();
+	/*double currentTime = glfwGetTime();
     float deltaT = float(currentTime - lastTime); //deltaT in sc 
     std::cout<<"subdivision computed in "<<deltaT<<" sc with N = "<< _cameraPath.size()<<" points"<<std::endl;
-	lastTime = currentTime;
+	lastTime = currentTime;*/
 
 	/// Copy the vertices to GPU.
     _verticesCameraPath ->copy(_cameraPath.data(), _cameraPath.size());
@@ -766,7 +886,7 @@ void CameraControl::MultipleBezier() {//init
     }
 	 /// Copy the vertices to GPU.
     _verticesCameraPath ->copy(_cameraPath.data(), _cameraPath.size());
-
+	
 }
 
 void CameraControl::N_MultipleBezier_controlled(unsigned int PointToChange, float deltaX, float deltaY, float deltaZ) {
@@ -869,6 +989,7 @@ void CameraControl::N_MultipleBezier_controlled(unsigned int PointToChange, floa
 	/// Copy the vertices to GPU.
     _verticesCameraPath->copy(_cameraPath.data(), _cameraPath.size());
     _verticesCameraPathControls->copy(_cameraPathControls.data(), _cameraPathControls.size());
+
 	animatePictorialCamera(1);
 }
 
@@ -1082,10 +1203,10 @@ void CameraControl::flyingExploration(){
 	static float recordRotY = 0;
 
 	//use time to set movement speeds
-	static double lastTime = glfwGetTime();
+	/*static double lastTime = glfwGetTime();
     double currentTime = glfwGetTime();
     float deltaT = float(currentTime - lastTime); //deltaT in sc 
-    lastTime = currentTime;
+    lastTime = currentTime;*/
 
     if ((KeyW) | (velocityForward > 0.0f)){//W pressed => go forward
 		if((KeyW==1) & (velocityForward<straightMaxSpeed*deltaT)){
@@ -1281,10 +1402,10 @@ void CameraControl::fpsExploration(){
 	static float initJumpLookZ = 0;
 	static float jumpLevel =0;
 
-	static double lastTime = glfwGetTime();
-    double currentTime = glfwGetTime();
-    float deltaT = float(currentTime - lastTime); //deltaT in sc 
-    lastTime = currentTime;
+	//static double lastTime = glfwGetTime();
+    //double currentTime = glfwGetTime();
+    //float deltaT = float(currentTime - lastTime); //deltaT in sc 
+    //lastTime = currentTime;
 
     if((KeyX) & (jumping==false)){//x => jump
 			jumping = true;
@@ -1452,6 +1573,11 @@ void CameraControl::fpsExploration(){
 }
 
 void CameraControl::updateCameraPosition(mat4 views[], mat4& cameraPictorialModel, int& selectedControlPoint) {
+	
+	static double lastTime = glfwGetTime();
+	double currentTime = glfwGetTime();
+	deltaT = float(currentTime - lastTime); //deltaT in sc 
+	lastTime = currentTime;
 
     /// Modify camera position according to the exploration mode.
     switch(_explorationMode) {
@@ -1583,6 +1709,9 @@ void CameraControl::handleKeyboard(int key, int action){
 				break;
 			case 308: //6
 				bezier_4_points(0,0,0,0);
+				break;
+			case 309:
+				animatePictorialCamera2(0); //test purpose
 				break;
 //			case 294://ENTER => drop control point
 //				if(_explorationMode == FLYING){

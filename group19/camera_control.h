@@ -67,6 +67,7 @@ private:
 	void Subdivision(float b0,float b1, float b2,float b3, float& l0, float& l1, float& l2, float& l3 ,float& r1,float& r2, float& r3 );
     void bezier_4_points(int PointToChange, float deltaX, float deltaY, float deltaZ);
 	void animatePictorialCamera(unsigned int back);
+	void animatePictorialCamera2(unsigned int back);
 	void MultipleBezier();
 	void createBCurve();
 	void MultipleBezier_controlled(unsigned int PointToChange, float deltaX, float deltaY, float deltaZ); 
