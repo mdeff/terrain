@@ -85,7 +85,7 @@ void RenderingContext::set_texture(const GLuint textureIndex, int textureID, con
 
     /// Put the texture index value in the Sampler uniform.
     GLuint uniformID = glGetUniformLocation(_programID, uniformName);
-    glUniform1i( uniformID, textureIndex);
+    glUniform1i(uniformID, textureIndex);
 
     _textures[textureIndex].ID = textureID;
     _textures[textureIndex].target = target;

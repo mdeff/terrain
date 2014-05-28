@@ -17,7 +17,7 @@ ScreenDisplay::ScreenDisplay(unsigned int width, unsigned int height) :
 }
 
 
-void ScreenDisplay::init(Vertices* vertices) {
+void ScreenDisplay::init(Vertices* vertices, GLuint renderedTexIDs[]) {
 
     /// Common initialization.
     preinit(vertices, passthrough_vshader, screen_display_fshader, NULL, NULL);
@@ -26,6 +26,8 @@ void ScreenDisplay::init(Vertices* vertices) {
 //    set_texture(0, renderedTexIDs[0], "controllerViewTex", GL_TEXTURE_2D);
 //    set_texture(1, renderedTexIDs[1], "cameraViewTex", GL_TEXTURE_2D);
 
+    set_texture(0, renderedTexIDs[0], "controllerViewTex", GL_TEXTURE_2D_MULTISAMPLE);
+    set_texture(1, renderedTexIDs[1], "cameraViewTex", GL_TEXTURE_2D_MULTISAMPLE);
 
     /// Set uniform IDs.
 
@@ -41,15 +43,20 @@ void ScreenDisplay::draw() {
 
 
     /// Render to real screen.
-//    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-//    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//    _vertices->draw();
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glDisable(GL_DEPTH_TEST);
+    _vertices->draw();
+    glEnable(GL_DEPTH_TEST);
+
 
     /// Resolve the multi-sampled renderbuffer.
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);   // Make sure no FBO is set as the draw framebuffer
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, framebufferIDs["controllerView"]); // Make sure your multisampled FBO is the read framebuffer
-    glDrawBuffer(GL_BACK);                       // Set the back buffer as the draw buffer
-    glBlitFramebuffer(0, 0, _width, _height, 0, 0, _width, _height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+//    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);   // Make sure no FBO is set as the draw framebuffer
+//    glBindFramebuffer(GL_READ_FRAMEBUFFER, framebufferIDs["controllerView"]); // Make sure your multisampled FBO is the read framebuffer
+//    glDrawBuffer(GL_BACK);                       // Set the back buffer as the draw buffer
+//    glBlitFramebuffer(0, 0, _width, _height, 0, 0, _width, _height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+
 
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebufferIDs["controllerView"]);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

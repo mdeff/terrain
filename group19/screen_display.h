@@ -12,7 +12,7 @@ public:
 
     /// Common methods of all RenderingContext.
     ScreenDisplay(unsigned int width, unsigned int height);
-    void init(Vertices* vertices);
+    void init(Vertices* vertices, unsigned int renderedTexIDs[]);
     void draw();
 
 private:
