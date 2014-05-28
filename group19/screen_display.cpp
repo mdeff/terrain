@@ -26,8 +26,8 @@ void ScreenDisplay::init(Vertices* vertices, GLuint renderedTexIDs[]) {
 //    set_texture(0, renderedTexIDs[0], "controllerViewTex", GL_TEXTURE_2D);
 //    set_texture(1, renderedTexIDs[1], "cameraViewTex", GL_TEXTURE_2D);
 
-    set_texture(0, renderedTexIDs[0], "controllerViewTex", GL_TEXTURE_2D_MULTISAMPLE);
-    set_texture(1, renderedTexIDs[1], "cameraViewTex", GL_TEXTURE_2D_MULTISAMPLE);
+    set_texture(0, renderedTexIDs[0], "mainviewTex", GL_TEXTURE_2D_MULTISAMPLE);
+    set_texture(1, renderedTexIDs[0], "previewTex", GL_TEXTURE_2D_MULTISAMPLE);
 
     /// Set uniform IDs.
 
