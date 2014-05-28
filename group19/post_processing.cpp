@@ -1,5 +1,5 @@
 
-#include "screen_display.h"
+#include "post_processing.h"
 #include "vertices.h"
 
 #include <iostream>
@@ -9,18 +9,18 @@
 #include "opengp.h"
 
 #include "passthrough_vshader.h"
-#include "screen_display_fshader.h"
+#include "post_processing_fshader.h"
 
 
-ScreenDisplay::ScreenDisplay(unsigned int width, unsigned int height) :
+PostProcessing::PostProcessing(unsigned int width, unsigned int height) :
     RenderingContext(width, height) {
 }
 
 
-void ScreenDisplay::init(Vertices* vertices, GLuint renderedTexIDs[]) {
+void PostProcessing::init(Vertices* vertices, GLuint renderedTexIDs[]) {
 
     /// Common initialization.
-    preinit(vertices, passthrough_vshader, screen_display_fshader, NULL, NULL);
+    preinit(vertices, passthrough_vshader, post_processing_fshader, NULL, NULL);
 
     /// Bind the control and camera views to textures 0 and 1.
 //    set_texture(0, renderedTexIDs[0], "controllerViewTex", GL_TEXTURE_2D);
@@ -34,7 +34,7 @@ void ScreenDisplay::init(Vertices* vertices, GLuint renderedTexIDs[]) {
 }
 
 
-void ScreenDisplay::draw() {
+void PostProcessing::draw() {
 
     /// Common drawing. 
     predraw();

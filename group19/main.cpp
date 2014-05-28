@@ -7,7 +7,7 @@
 
 #include "common.h"
 #include "rendering_simple.h"
-#include "screen_display.h"
+#include "post_processing.h"
 #include "heightmap.h"
 #include "shadowmap.h"
 #include "water.h"
@@ -46,7 +46,7 @@ const unsigned int textureHeight(1024);
 const unsigned int nParticlesSide(20);
 
 /// This is the sole rendering context that renders directly to the screen.
-ScreenDisplay screenDisplay(windowWidth, windowHeight);
+PostProcessing postProcessing(windowWidth, windowHeight);
 
 /// Instanciate the rendering contexts that render to the screen.
 Skybox skybox(windowWidth, windowHeight);
@@ -234,7 +234,7 @@ void init() {
     /// to textures and Display arranges the textures on screen.
     GLuint renderedTexIDs[2];
     gen_rendering_framebuffers(framebufferIDs_tmp, renderedTexIDs, 2);
-    screenDisplay.init(verticesQuad, renderedTexIDs);
+    postProcessing.init(verticesQuad, renderedTexIDs);
 
     /// Initialize the rendering contexts.
     GLuint shadowMapTexID = shadowmap.init(verticesGrid, heightMapTexID);
@@ -315,12 +315,13 @@ void display() {
     particlesRender.draw(cameraProjection, cameraView);
 
 
-    /// Finally, fill the real screen.
-    screenDisplay.draw();
+    /// Perform anti-aliasing, assemble the views and fill the real window.
+    postProcessing.draw();
 
 }
 
 
+/// Wrapper (do not accept class method type).
 void trackball(const mat4& model) {
     cameraControl.trackball(model);
 }
