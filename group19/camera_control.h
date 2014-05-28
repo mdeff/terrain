@@ -16,13 +16,14 @@ public:
     /// Camera control interface.
     void init(VerticesCameraPath* verticesCameraPath, VerticesCameraPath* verticesCameraPathControls, unsigned int heightMapTexID);
     void trackball(const mat4& model);
-    void updateCameraPosition(mat4& cameraModelview, mat4& cameraPictorialModel, int& selectedControlPoint);
+    void updateCameraPosition(mat4 views[], mat4& cameraPictorialModel, int& selectedControlPoint);
     void handleCameraControls(int key, int action);
 
 private:
 
     /// Camera view transformation matrix.
     mat4 _cameraModelview;
+    mat4 _controllerModelview;
 
     /// Camera pictorial transformation matrix.
     mat4 _cameraPictorialModel;

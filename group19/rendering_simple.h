@@ -13,7 +13,7 @@ public:
     /// Common methods of all RenderingContext.
     RenderingSimple(unsigned int width, unsigned int height);
     void init(Vertices* vertices);
-    void draw(const mat4& projection, const mat4& view, const mat4& model, const vec3& color) const;
+    void draw(const mat4& projection, const mat4 views[], const mat4& model, const vec3& color) const;
 
 private:
 

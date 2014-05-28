@@ -13,7 +13,7 @@ public:
     /// Common methods of all RenderingContext.
     Skybox(unsigned int width, unsigned int height);
     void init(Vertices* vertices);
-    void draw(const mat4& projection, const mat4& view) const;
+    void draw(const mat4& projection, const mat4 views[]) const;
 
 private:
 

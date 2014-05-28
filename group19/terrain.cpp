@@ -116,7 +116,7 @@ GLuint Terrain::init(Vertices* vertices, GLuint heightMapTexID, GLuint shadowMap
 }
 
 
-void Terrain::draw(const mat4& projection, const mat4& view,
+void Terrain::draw(const mat4& projection, const mat4 views[],
                    const mat4& lightViewProjection, const vec3& lightPositionWorld) const {
 
     /// Common drawing. 
@@ -127,26 +127,25 @@ void Terrain::draw(const mat4& projection, const mat4& view,
     glUniformMatrix4fv(_lightViewProjectionID, 1, GL_FALSE, lightViewProjection.data());
     glUniform3fv(_lightPositionWorldID, 1, lightPositionWorld.data());
 
-    //base value for random seed
-    static float seed = 0;
-    glUniform1f(_seedID, int(seed++)%500);
+    /// Render from camera point of view to 'normal' FBOs.
+    glUniform1f(_clipID, 0.0);
+    glUniformMatrix4fv(_viewID, 1, GL_FALSE, views[0].data());
+    glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs["controllerView"]);
+    _vertices->draw();
+    glUniformMatrix4fv(_viewID, 1, GL_FALSE, views[1].data());
+    glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs["cameraView"]);
+    _vertices->draw();
 
     /// Flip the terrain by multiplying the Z coordinate by -1 in world space.
     mat4 flip = mat4::Identity();
     flip(2,2) = -1.0f;
-    mat4 viewFlip = view * flip;
+    mat4 viewFlip = views[0] * flip;
 
-    /// Render the terrain from camera point of view to the reflection FBO.
+    /// Render from flipped camera point of view to 'reflection' FBOs.
     glUniform1f(_clipID, 1.0);
     glUniformMatrix4fv(_viewID, 1, GL_FALSE, viewFlip.data());
     glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs["waterReflection"]);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     _vertices->draw();
 
-    /// Render the terrain from camera point of view to default framebuffer.
-    glUniform1f(_clipID, 0.0);
-    glUniformMatrix4fv(_viewID, 1, GL_FALSE, view.data());
-    glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs["controllerView"]);
-    _vertices->draw();
 
 }

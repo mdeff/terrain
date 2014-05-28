@@ -25,6 +25,9 @@
 #include "vertices_camera_pictorial.h"
 
 
+/// Number of parallel views.
+GLuint Nviews(2);
+
 /// OpenGL object references (global by definition, part of the OpenGL context).
 std::map<std::string, unsigned int> framebufferIDs;
 std::map<std::string, unsigned int> textureIDs;
@@ -225,8 +228,8 @@ void init() {
 //    delete verticesQuad;
 
     /// Generate OpenGL global objects.
-    GLuint framebufferIDs_tmp[3];
-    glGenFramebuffers(3, framebufferIDs_tmp);
+    GLuint framebufferIDs_tmp[2*Nviews];
+    glGenFramebuffers(2*Nviews, framebufferIDs_tmp);
     framebufferIDs["controllerView"]  = framebufferIDs_tmp[0];
     framebufferIDs["cameraView"]      = framebufferIDs_tmp[1];
     framebufferIDs["waterReflection"] = framebufferIDs_tmp[2];
@@ -237,8 +240,8 @@ void init() {
     /// 2) Camera actual view.
     /// No more direct drawing to the default framebuffer. All drawings go
     /// to textures and Display arranges the textures on screen.
-    GLuint renderedTexIDs[2];
-    gen_rendering_framebuffers(framebufferIDs_tmp, renderedTexIDs, 2);
+    GLuint renderedTexIDs[Nviews];
+    gen_rendering_framebuffers(framebufferIDs_tmp, renderedTexIDs, Nviews);
     postProcessing.init(verticesQuad, renderedTexIDs);
 
     /// Initialize the rendering contexts.
@@ -286,13 +289,11 @@ void display() {
     float deltaT = float(currentTime - lastFrameTime);
     lastFrameTime = currentTime;
 
-//    mat4 views[Nviews];
-
     /// Control the camera position.
     /// Should come before rendering as it updates the view transformation matrix.
-    mat4 cameraView, cameraPictorialModel;
+    mat4 views[Nviews], cameraPictorialModel;
     int selectedControlPoint;
-    cameraControl.updateCameraPosition(cameraView, cameraPictorialModel, selectedControlPoint);
+    cameraControl.updateCameraPosition(views, cameraPictorialModel, selectedControlPoint);
 
     /// Generate the shadowmap.
     /// Should come before rendering as it updates the light transformation matrices.
@@ -303,21 +304,21 @@ void display() {
 
     /// Render opaque primitives on screen.
     /// These are also rendered in a texture for water reflection.
-    terrain.draw(cameraProjection, cameraView, lightViewProjection, lightPositionWorld);
-    skybox.draw(cameraProjection, cameraView);
+    terrain.draw(cameraProjection, views, lightViewProjection, lightPositionWorld);
+    skybox.draw(cameraProjection, views);
 
     /// Render opaque primitives on screen.
-    cameraPictorial.draw(cameraProjection, cameraView, cameraPictorialModel, vec3(1,1,0));
-    cameraPath.draw(cameraProjection, cameraView, mat4::Identity(), vec3(0,1,0));
-    cameraPathControls.draw(cameraProjection, cameraView, lightPositionWorld, selectedControlPoint, deltaT);
+    cameraPictorial.draw(cameraProjection, views, cameraPictorialModel, vec3(1,1,0));
+    cameraPath.draw(cameraProjection, views, mat4::Identity(), vec3(0,1,0));
+    cameraPathControls.draw(cameraProjection, views, lightPositionWorld, selectedControlPoint, deltaT);
 
-    water.draw(cameraProjection, cameraView, lightViewProjection, lightPositionWorld);
+    water.draw(cameraProjection, views, lightViewProjection, lightPositionWorld);
 
     /// Render the translucent primitives last. Otherwise opaque objects that
     /// may be visible behind get discarded by the depth test.
     /// First control particle positions, then render them on screen.
     particlesControl.draw(deltaT);
-    particlesRender.draw(cameraProjection, cameraView);
+    particlesRender.draw(cameraProjection, views);
 
 
     /// Perform anti-aliasing, assemble the views and fill the real window.

@@ -14,7 +14,7 @@ public:
     Water(unsigned int width, unsigned int height);
     //void init(Vertices* vertices, unsigned int heightMapTexID, unsigned int shadowMapTexID);
     void init(Vertices* vertices, unsigned int flippedTerrainTexID);
-    void draw(const mat4& projection, const mat4& view,
+    void draw(const mat4& projection, const mat4 views[],
               const mat4& lightViewProjection, const vec3& lightPositionWorld) const;
 
 private:

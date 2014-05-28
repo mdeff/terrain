@@ -51,6 +51,8 @@ void CameraControl::init(VerticesCameraPath* verticesCameraPath, VerticesCameraP
     _explorationMode = TRACKBALL;
     trackball(mat4::Identity());
 
+    update_camera_modelview(0.5f, -0.5f, 0.8f, 0.0f, 0.0f, 0.0f);
+
     /// HACK to show pictorial camera.
     /// Simple translation along z-axis for now.
     _cameraPictorialModel = mat4::Identity();
@@ -65,8 +67,8 @@ void CameraControl::trackball(const mat4& model) {
 
     /// This camera control applies only in TRACKBALL exploration mode.
     /// Other modes have their own camera control.
-    if(_explorationMode != TRACKBALL)
-        return;
+//    if(_explorationMode != TRACKBALL)
+//        return;
 
     /// View matrix (camera extrinsics) (position in world space).
 
@@ -134,7 +136,7 @@ void CameraControl::trackball(const mat4& model) {
     mat4 view = Eigen::lookAt(camPos, camLookAt, camUp);
 
     /// Assemble the "Model View" matrix.
-    _cameraModelview = view * model;
+    _controllerModelview = view * model;
 
 }
 
@@ -1430,7 +1432,7 @@ void CameraControl::fpsExploration(){
 	}
 }
 
-void CameraControl::updateCameraPosition(mat4& cameraModelview, mat4& cameraPictorialModel, int& selectedControlPoint) {
+void CameraControl::updateCameraPosition(mat4 views[], mat4& cameraPictorialModel, int& selectedControlPoint) {
 
     /// Modify camera position according to the exploration mode.
     switch(_explorationMode) {
@@ -1452,7 +1454,8 @@ void CameraControl::updateCameraPosition(mat4& cameraModelview, mat4& cameraPict
         animatePictorialCamera();
 
     /// Update the view transformation matrix.
-    cameraModelview = _cameraModelview;
+    views[0] = _controllerModelview;
+    views[1] = _cameraModelview;
 
     /// Update the camera pictorial model transformation matrix.
     cameraPictorialModel = _cameraPictorialModel;
@@ -1504,10 +1507,10 @@ void CameraControl::handleCameraControls(int key, int action){
         std::cout << "Exploration mode : PATH" << std::endl;
         _explorationMode = PATH;
 		break;
-    case 306: //4
-        std::cout << "Exploration mode : TRACKBALL" << std::endl;
-        _explorationMode = TRACKBALL;
-        trackball(mat4::Identity());
+//    case 306: //4
+//        std::cout << "Exploration mode : TRACKBALL" << std::endl;
+//        _explorationMode = TRACKBALL;
+//        trackball(mat4::Identity());
     }
 	if(action==1){
 		switch(key){
