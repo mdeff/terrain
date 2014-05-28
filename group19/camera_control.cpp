@@ -23,9 +23,8 @@ static bool Key1 = false;
 static bool Key2 = false;
 static bool KeyENTER = false;
 static bool flagAnimatePictorialCamera=false;
-		
-static double pictorialCameraPos[3];
-static double pictorialCameraLookat[3];
+
+const float OneRad = 0.0174f;
 
 void CameraControl::init(VerticesCameraPath* verticesCameraPath, VerticesCameraPath* verticesCameraPathControls, GLuint heightMapTexID) {
 
@@ -43,6 +42,7 @@ void CameraControl::init(VerticesCameraPath* verticesCameraPath, VerticesCameraP
     /// Generate the camera path.
     //bezier_4_points(0, 0, 0, 0);
 	MultipleBezier();
+	
 	//MultipleBezier_controlled(0,0, 0, 0);
    // InitdeCasteljauSubdivision();
     //InitSubdivision();
@@ -51,6 +51,7 @@ void CameraControl::init(VerticesCameraPath* verticesCameraPath, VerticesCameraP
     _explorationMode = FIX;
     trackball(mat4::Identity());
 
+	
     update_camera_modelview(0.5f, -0.5f, 0.8f, 0.0f, 0.0f, 0.0f);
 
     /// HACK to show pictorial camera.
@@ -139,7 +140,7 @@ void CameraControl::trackball(const mat4& model) {
 
 
 /// This controls the camera view camera.
-void CameraControl::update_camera_modelview(double posX,double posY,double posZ,double lookX,double lookY,double lookZ){
+void CameraControl::update_camera_modelview(float posX,float posY,float posZ,float lookX,float lookY,float lookZ){
 	vec3 camPos(posX,posY,posZ);
 	vec3 camLookAt(lookX, lookY, lookZ);
 	//std::cout<<posX<<" "<<posY<<" "<<posZ<<" "<<lookX<<" "<<lookY<<" "<<lookZ<<" "<<std::endl;
@@ -159,20 +160,20 @@ void CameraControl::update_camera_modelview(double posX,double posY,double posZ,
 */
 }
 
-void CameraControl::rotate2D(double pos1, double pos2, double& look1, double& look2, double angle){
-	double tmp1 = (look1-pos1)*cos(angle) - (look2-pos2)*sin(angle) + pos1;
-	double tmp2 = (look1-pos1)*sin(angle) + (look2-pos2)*cos(angle) + pos2;
+void CameraControl::rotate2D(float pos1, float pos2, float& look1, float& look2, float angle){
+	float tmp1 = (look1-pos1)*cos(angle) - (look2-pos2)*sin(angle) + pos1;
+	float tmp2 = (look1-pos1)*sin(angle) + (look2-pos2)*cos(angle) + pos2;
 	look1=tmp1;
 	look2=tmp2;
 }
 
-void CameraControl::fpsRotateLeftRight(double& posX, double& posY, double& posZ, double& lookX, double& lookY, double& lookZ,double velocity){
+void CameraControl::fpsRotateLeftRight(float& posX, float& posY, float& posZ, float& lookX, float& lookY, float& lookZ,float velocity){
 
-		double tmpX = lookX-posX;
-		double tmpY = lookY-posY;
+		float tmpX = lookX-posX;
+		float tmpY = lookY-posY;
 
 		//3 rotate on Z axis
-		double Angle = 0.0174f*velocity; // more or less 1 degree
+		float Angle = OneRad*velocity; // more or less 1 degree
 		rotate2D(0,0,tmpX,tmpY,Angle);
 			
 		lookX = tmpX+posX;
@@ -181,17 +182,17 @@ void CameraControl::fpsRotateLeftRight(double& posX, double& posY, double& posZ,
 		update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
 }
 
-void CameraControl::fpsRotateUpDown(double& posX, double& posY, double& posZ, double& lookX, double& lookY, double& lookZ,double recordRotZ, double velocity){
+void CameraControl::fpsRotateUpDown(float& posX, float& posY, float& posZ, float& lookX, float& lookY, float& lookZ,float recordRotZ, float velocity){
 		
-		double tmpX =lookX-posX;
-		double tmpY =lookY-posY;
-		double tmpZ =lookZ-posZ;
+		float tmpX =lookX-posX;
+		float tmpY =lookY-posY;
+		float tmpZ =lookZ-posZ;
 		
 		//undo lateral (Z) rotation
 		rotate2D(0,0,tmpX,tmpY,-recordRotZ);
 		
 		//proceed vertical (Y) rotation
-		double Angle = 0.0174f*velocity; // more or less 1 degree
+		float Angle = OneRad*velocity; // more or less 1 degree
 
 		rotate2D(0,0,tmpX,tmpZ, Angle);
 
@@ -205,18 +206,18 @@ void CameraControl::fpsRotateUpDown(double& posX, double& posY, double& posZ, do
 		update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
 }
 
-void CameraControl::rotateLeftRight(double& posX, double& posY, double& posZ, double& lookX, double& lookY, double& lookZ,double& recordRotY,double velocity){
+void CameraControl::rotateLeftRight(float& posX, float& posY, float& posZ, float& lookX, float& lookY, float& lookZ,float& recordRotY,float velocity){
 		
 		//1 move to the origine
-		double tmpX = lookX - posX;
-		double tmpY = lookY - posY;
-		double tmpZ = lookZ - posZ;
+		float tmpX = lookX - posX;
+		float tmpY = lookY - posY;
+		float tmpZ = lookZ - posZ;
 
 		//2 cancel Y rotation
 		rotate2D(0,0,tmpX,tmpZ, -recordRotY);
 
 		//3 rotate on Z axis
-		double Angle = 0.0174f*velocity; // more or less 1 degree
+		float Angle = OneRad*velocity; // more or less 1 degree
 		rotate2D(0,0,tmpX,tmpY,Angle);
 	
 		//4 redo Y rotation
@@ -229,18 +230,18 @@ void CameraControl::rotateLeftRight(double& posX, double& posY, double& posZ, do
 		update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
 }
 
-void CameraControl::rotateUpDown(double& posX, double& posY, double& posZ, double& lookX, double& lookY, double& lookZ,double& recordRotZ,double velocity){
+void CameraControl::rotateUpDown(float& posX, float& posY, float& posZ, float& lookX, float& lookY, float& lookZ,float& recordRotZ,float velocity){
 
 		//1 move to the origine
-		double tmpX = lookX - posX;
-		double tmpY = lookY - posY;
-		double tmpZ = lookZ - posZ;
+		float tmpX = lookX - posX;
+		float tmpY = lookY - posY;
+		float tmpZ = lookZ - posZ;
 
 		//2 undo lateral (Z) rotation
 		rotate2D(0,0,tmpX,tmpY,-recordRotZ);
 
 		//3 rotate on Y axis
-		double Angle = 0.0174f*velocity; // more or less 1 degree
+		float Angle = OneRad*velocity; // more or less 1 degree
 		rotate2D(0,0,tmpX,tmpZ, Angle);
 
 		//4 redo Z rotation
@@ -253,11 +254,11 @@ void CameraControl::rotateUpDown(double& posX, double& posY, double& posZ, doubl
 		update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
 }
 
-void CameraControl::moveAlongAxis(double& posX, double& posY, double& posZ, double& lookX, double& lookY, double& lookZ, double velocity){
+void CameraControl::moveAlongAxis(float& posX, float& posY, float& posZ, float& lookX, float& lookY, float& lookZ, float velocity){
 		
-		double dispX = (posX - lookX)*velocity;
-		double dispY = (posY - lookY)*velocity;
-		double dispZ = (posZ - lookZ)*velocity;
+		float dispX = (posX - lookX)*velocity;
+		float dispY = (posY - lookY)*velocity;
+		float dispZ = (posZ - lookZ)*velocity;
 		
 		posX = posX - dispX; 
 		posY = posY - dispY; 
@@ -270,7 +271,7 @@ void CameraControl::moveAlongAxis(double& posX, double& posY, double& posZ, doub
 		update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
 }
 
-void CameraControl::fpsExplorationForwardBackward(double& posX, double& posY, double& posZ, double& lookX, double& lookY, double& lookZ,double dispX,double dispY){
+void CameraControl::fpsExplorationForwardBackward(float& posX, float& posY, float& posZ, float& lookX, float& lookY, float& lookZ,float dispX,float dispY){
 	posX = posX - dispX; 
 	posY = posY - dispY; 
 	lookX = lookX - dispX; 
@@ -284,13 +285,13 @@ void CameraControl::fpsExplorationForwardBackward(double& posX, double& posY, do
 	int tmpY = int((1+posY)*1024/2);
 	tmpX = tmpX -2;
 	tmpY = tmpY -2;
-	double tmpZ=0;
-	double AmountOfPoints = 0; 
+	float tmpZ=0;
+	float AmountOfPoints = 0; 
 	for(int i=0;i<5;i++){//take in count 24 z values arround to have a smooth move 
 		for(int j=0;j<5;j++){
 			tmpX = tmpX + i;
 			tmpY = tmpY + j;
-			if ((tmpX>0) & (tmpX<1025) & (tmpY>0 &tmpY<1025)){
+			if ((tmpX>0) & (tmpX<1025) & (tmpY>0) & (tmpY<1025)){
                 tmpZ = tmpZ + _heightmapCPU[tmpX+1024*tmpY];
 				AmountOfPoints++;
 			}
@@ -298,37 +299,37 @@ void CameraControl::fpsExplorationForwardBackward(double& posX, double& posY, do
 	}
 	//std::cout<<"AmountOfPoints ="<<AmountOfPoints<<endl;
 	tmpZ=tmpZ/AmountOfPoints;
-	posZ = tmpZ+0.06; //fps person height
+	posZ = float(tmpZ+0.06); //fps person height
 	//lookZ = posZ+0.06;
 	update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
 }
 
 void CameraControl::deCasteljauTest3Points(){
 
-	static double t=0;
+	static float t=0;
 
 	if(t<=1){
 		//set control points
-		double b0X = 1.0f;
-		double b0Y = 1.0f;
-		double b0Z = 0.4f;
+		float b0X = 1.0f;
+		float b0Y = 1.0f;
+		float b0Z = 0.4f;
 
-		double b1X = 1.0f;
-		double b1Y = -1.0f;
-		double b1Z = 0.4f;
+		float b1X = 1.0f;
+		float b1Y = -1.0f;
+		float b1Z = 0.4f;
 
-		double b2X = -1.0f;
-		double b2Y = -1.0f;
-		double b2Z = 0.4f;
+		float b2X = -1.0f;
+		float b2Y = -1.0f;
+		float b2Z = 0.4f;
 
-		double posX = powf((1-t),2) * b0X + 2*t*(1-t) * b1X + powf(t,2) *b2X;
-		double posY = powf((1-t),2) * b0Y + 2*t*(1-t) * b1Y + powf(t,2) *b2Y;
-		double posZ = powf((1-t),2) * b0Z + 2*t*(1-t) * b1Z + powf(t,2) *b2Z;
+		float posX = powf((1-t),2) * b0X + 2*t*(1-t) * b1X + powf(t,2) *b2X;
+		float posY = powf((1-t),2) * b0Y + 2*t*(1-t) * b1Y + powf(t,2) *b2Y;
+		float posZ = powf((1-t),2) * b0Z + 2*t*(1-t) * b1Z + powf(t,2) *b2Z;
 	
-		double lookX = 0.0f;
-		double lookY = 0.0f;
-		double lookZ = 0.3f;
-		t = t+0.001;
+		float lookX = 0.0f;
+		float lookY = 0.0f;
+		float lookZ = 0.3f;
+		t = float(t+0.001);
 		update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
 	}
 	else{
@@ -338,7 +339,7 @@ void CameraControl::deCasteljauTest3Points(){
 }
 
 void CameraControl::deCasteljauTest4Points(){ // wrong naming => use to follow the curve with the camera... 
-	static int i = 0;
+	static unsigned int i = 0;
 	
 	static double lastTime = glfwGetTime();
     double currentTime = glfwGetTime();
@@ -349,13 +350,13 @@ void CameraControl::deCasteljauTest4Points(){ // wrong naming => use to follow t
     
         if(i<(_cameraPath.size()/3)-1){
 			//std::cout<<i<<std::endl;
-            double posX	= _cameraPath[i*3+0];
-            double posY	= _cameraPath[i*3+1];
-            double posZ	= _cameraPath[i*3+2];
+            float posX	= _cameraPath[i*3+0];
+            float posY	= _cameraPath[i*3+1];
+            float posZ	= _cameraPath[i*3+2];
 
-            double lookX = _cameraPath[(i+1)*3+0];
-            double lookY = _cameraPath[(i+1)*3+1];
-            double lookZ = _cameraPath[(i+1)*3+2];
+            float lookX = _cameraPath[(i+1)*3+0];
+            float lookY = _cameraPath[(i+1)*3+1];
+            float lookZ = _cameraPath[(i+1)*3+2];
 			i++;
 			update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
 		}
@@ -365,9 +366,9 @@ void CameraControl::deCasteljauTest4Points(){ // wrong naming => use to follow t
 	}
 }
 
-void CameraControl::animatePictorialCamera(){
-	static int i = 0;
-	
+void CameraControl::animatePictorialCamera(unsigned int back){
+	static unsigned int i = 0;
+	i-=back;
 	static double lastTime = glfwGetTime();
 
     if(i<(_cameraPath.size()/3)-1){
@@ -425,12 +426,12 @@ void CameraControl::animatePictorialCamera(){
 void CameraControl::InitdeCasteljauSubdivision(){
 	//here we use subdivision to create more control point in order to generate bezier curve
 	//control points
-	double b0X = -0.51f, b0Y =  1.09f, b0Z = 0.40f;
-	double b1X =  0.57f, b1Y =  1.26f, b1Z = 0.40f;
-	double b2X =  1.31f, b2Y =  0.92f, b2Z = 0.40f;
-	double b3X =  1.25f, b3Y = -0.41f, b3Z = 0.40f;
+	float b0X = -0.51f, b0Y =  1.09f, b0Z = 0.40f;
+	float b1X =  0.57f, b1Y =  1.26f, b1Z = 0.40f;
+	float b2X =  1.31f, b2Y =  0.92f, b2Z = 0.40f;
+	float b3X =  1.25f, b3Y = -0.41f, b3Z = 0.40f;
 
-	double l0X = b0X, l0Y = b0Y, l0Z = b0Z;
+	float l0X = b0X, l0Y = b0Y, l0Z = b0Z;
 	
 	double l1X = 0.5 * (b0X + b1X);
 	double l1Y = 0.5 * (b0Y + b1Y);
@@ -439,7 +440,7 @@ void CameraControl::InitdeCasteljauSubdivision(){
 	double l2X = 0.25 * (b0X + 2*b1X + b2X); 
 	double l2Y = 0.25 * (b0Y + 2*b1Y + b2Y); 
 	double l2Z = 0.25 * (b0Z + 2*b1Z + b2Z); 
-	
+
 	double l3X = 0.125 * (b0X + 3*b1X + 3*b2X + b3X);
 	double l3Y = 0.125 * (b0Y + 3*b1Y + 3*b2Y + b3Y);
 	double l3Z = 0.125 * (b0Z + 3*b1Z + 3*b2Z + b3Z);
@@ -453,7 +454,7 @@ void CameraControl::InitdeCasteljauSubdivision(){
 	double r2X = 0.5 * (b2X + b3X);
 	double r2Y = 0.5 * (b2Y + b3Y);
 	double r2Z = 0.5 * (b2Z + b3Z);
-	
+
 	double r3X = b3X, r3Y = b3Y, r3Z = b3Z;
 
 	double tmp0X = l0X, tmp0Y=l0Y, tmp0Z=l0Z;
@@ -461,19 +462,19 @@ void CameraControl::InitdeCasteljauSubdivision(){
 	double tmp2X = l2X, tmp2Y=l2Y, tmp2Z=l2Z;
 	double tmp3X = l3X, tmp3Y=l3Y, tmp3Z=l3Z;
 
-	double t=0;
+	float t=0;
 	for (int i=0; i<=500; i++){
 	
 		double posX = powf((1-t),3) * tmp0X + 3*t*powf((1-t),2) * tmp1X + 3*powf(t,2)*(1-t) *tmp2X + powf(t,3)*tmp3X;
 		double posY = powf((1-t),3) * tmp0Y + 3*t*powf((1-t),2) * tmp1Y + 3*powf(t,2)*(1-t) *tmp2Y + powf(t,3)*tmp3Y;
 		double posZ = powf((1-t),3) * tmp0Z + 3*t*powf((1-t),2) * tmp1Z + 3*powf(t,2)*(1-t) *tmp2Z + powf(t,3)*tmp3Z;
 		
-        _cameraPath[i*3+0] = posX;
-        _cameraPath[i*3+1] = posY;
-        _cameraPath[i*3+2] = posZ;
+        _cameraPath[i*3+0] = float(posX);
+        _cameraPath[i*3+1] = float(posY);
+        _cameraPath[i*3+2] = float(posZ);
 		//std::cout<<"1 "<<t<<" "<<posX<<" "<<posY<<std::endl;
 	
-		t = t+0.001;
+		t = float(t+0.001);
 	}
 
 	tmp0X = r0X, tmp0Y=r0Y, tmp0Z=r0Z;
@@ -486,13 +487,13 @@ void CameraControl::InitdeCasteljauSubdivision(){
 		double posY = powf((1-t),3) * tmp0Y + 3*t*powf((1-t),2) * tmp1Y + 3*powf(t,2)*(1-t) *tmp2Y + powf(t,3)*tmp3Y;
 		double posZ = powf((1-t),3) * tmp0Z + 3*t*powf((1-t),2) * tmp1Z + 3*powf(t,2)*(1-t) *tmp2Z + powf(t,3)*tmp3Z;
 		
-        _cameraPath[i*3+0] = posX;
-        _cameraPath[i*3+1] = posY;
-        _cameraPath[i*3+2] = posZ;
+        _cameraPath[i*3+0] = float(posX);
+        _cameraPath[i*3+1] = float(posY);
+        _cameraPath[i*3+2] = float(posZ);
 
 		//std::cout<<"2 "<<t<<" "<<posX<<" "<<posY<<std::endl;
 		
-		t = t+0.001;
+		t = float(t+0.001);
 	}
 }
 
@@ -505,10 +506,10 @@ void CameraControl::InitSubdivision(){
 	//b0[iteration][XYZ]
 	const int iteration = 8;
 	const int nPoints = 256; //2^iteration
-	double res0[nPoints][3]; //[3][2] = {{1,1},{2,2},{3,3}};
-	double res1[nPoints][3];
-	double res2[nPoints][3];
-	double res3[nPoints][3];
+	float res0[nPoints][3]; //[3][2] = {{1,1},{2,2},{3,3}};
+	float res1[nPoints][3];
+	float res2[nPoints][3];
+	float res3[nPoints][3];
 	
 	res0[0][0]=-0.51f; //b0X
 	res1[0][0]=-0.43f; //b1X
@@ -525,10 +526,10 @@ void CameraControl::InitSubdivision(){
 	res2[0][2]= 0.50f; //b2Z
 	res3[0][2]= 0.30f; //b3Z
 
-	double b0,b1,b2,b3;
-	double l0,l1,l2,l3,r1,r2,r3;
+	float b0,b1,b2,b3;
+	float l0,l1,l2,l3,r1,r2,r3;
 	for(int i=0; i<iteration;i++){ // iterate to get more set of points
-		for(int j=powf(2,i)-1; j>=0;j--){
+		for(int j=int(pow(2,i)-1); j>=0;j--){
 			for(int k=0;k<3;k++){//iterate for X Y Z
 				b0=res0[j][k];
 				b1=res1[j][k];
@@ -579,13 +580,13 @@ void CameraControl::InitSubdivision(){
 
 }
 
-void CameraControl::Subdivision(double b0,double b1, double b2,double b3, double& l0, double& l1, double& l2, double& l3 ,double& r1,double& r2, double& r3 ){
+void CameraControl::Subdivision(float b0,float b1, float b2,float b3, float& l0, float& l1, float& l2, float& l3 ,float& r1,float& r2, float& r3 ){
 	l0 = b0;
-	l1 = 0.5 * (b0 + b1);
-	l2 = 0.25 * (b0 + 2*b1 + b2); 
-	l3 = 0.125 * (b0 + 3*b1 + 3*b2 + b3);
-	r1 = 0.25 * (b1 + 2*b2 + b3); 
-	r2 = 0.5 * (b2 + b3);
+	l1 = float(0.5 * (b0 + b1));
+	l2 = float(0.25 * (b0 + 2*b1 + b2)); 
+	l3 = float(0.125 * (b0 + 3*b1 + 3*b2 + b3));
+	r1 = float(0.25 * (b1 + 2*b2 + b3)); 
+	r2 = float(0.5 * (b2 + b3));
 	r3 = b3;
 }
 
@@ -684,7 +685,7 @@ void CameraControl::createBCurve(){
         float b3Z = _cameraPathControls.at(i*12-1);
 
 		/// Generate coordinates.
-		for(int k=0; k<nPoints; ++k) {
+		for(unsigned int k=0; k<nPoints; ++k) {
 			float t = float(k) / float(nPoints);
             _cameraPath.push_back(std::pow((1-t),3)*b0X + 3*t*std::pow((1-t),2)*b1X + 3*std::pow(t,2)*(1-t)*b2X + std::pow(t,3)*b3X);
             _cameraPath.push_back(std::pow((1-t),3)*b0Y + 3*t*std::pow((1-t),2)*b1Y + 3*std::pow(t,2)*(1-t)*b2Y + std::pow(t,3)*b3Y);
@@ -767,8 +768,8 @@ void CameraControl::MultipleBezier() {//init
 
 }
 
-void CameraControl::N_MultipleBezier_controlled(int PointToChange, float deltaX, float deltaY, float deltaZ) {
-
+void CameraControl::N_MultipleBezier_controlled(unsigned int PointToChange, float deltaX, float deltaY, float deltaZ) {
+	
 	if(PointToChange==0){
 		_cameraPathControls.at(PointToChange+0)+= deltaX;
 		_cameraPathControls.at(PointToChange+1)+= deltaY;
@@ -781,9 +782,9 @@ void CameraControl::N_MultipleBezier_controlled(int PointToChange, float deltaX,
         _cameraPathControls.at(PointToChange*3+2) += deltaZ;
 	}
 	else if (PointToChange==2){
-		_cameraPathControls.at(PointToChange*3+0) += deltaX;	//6					
-        _cameraPathControls.at(PointToChange*3+1) += deltaY;	//7 						
-        _cameraPathControls.at(PointToChange*3+2) += deltaZ;	//8							
+		_cameraPathControls.at(PointToChange*3+0) += deltaX;					
+        _cameraPathControls.at(PointToChange*3+1) += deltaY;							
+        _cameraPathControls.at(PointToChange*3+2) += deltaZ;							
 		if(_cameraPathControls.size()>12){							
 			//refresh other control points to respect contstraint								
 			_cameraPathControls.at(PointToChange*3+0+6) = 2*_cameraPathControls.at(PointToChange*3+0+3) - _cameraPathControls.at(PointToChange*3+0);											
@@ -802,7 +803,7 @@ void CameraControl::N_MultipleBezier_controlled(int PointToChange, float deltaX,
 			_cameraPathControls.at(PointToChange*3+2+3) = 2*_cameraPathControls.at(PointToChange*3+2+0) - _cameraPathControls.at(PointToChange*3+2-3);	
 		}
 	}																	
-	else if((PointToChange>1) & ((PointToChange-1)%3) ==0){
+	else if((PointToChange>1) & (((PointToChange-1)%3) ==0)){
 		_cameraPathControls.at(PointToChange*3+0) += deltaX;													
         _cameraPathControls.at(PointToChange*3+1) += deltaY;													
         _cameraPathControls.at(PointToChange*3+2) += deltaZ;
@@ -816,7 +817,7 @@ void CameraControl::N_MultipleBezier_controlled(int PointToChange, float deltaX,
 		//_cameraPathControls.at(7) = - _cameraPathControls.at(13) + 2*_cameraPathControls.at(10);
 		//_cameraPathControls.at(8) = - _cameraPathControls.at(14) + 2*_cameraPathControls.at(11);
 	}
-	else if((PointToChange>1) & ((PointToChange-1)%3) ==1){
+	else if((PointToChange>1) & (((PointToChange-1)%3) ==1)){
 		_cameraPathControls.at(PointToChange*3+0) += deltaX;													
         _cameraPathControls.at(PointToChange*3+1) += deltaY;													
         _cameraPathControls.at(PointToChange*3+2) += deltaZ;
@@ -827,7 +828,7 @@ void CameraControl::N_MultipleBezier_controlled(int PointToChange, float deltaX,
 			_cameraPathControls.at(PointToChange*3+2+6) = 2*_cameraPathControls.at(PointToChange*3+2+3) - _cameraPathControls.at(PointToChange*3+2);											
 		}
 	}
-	else if((PointToChange>1) & ((PointToChange-1)%3) ==2){
+	else if((PointToChange>1) & (((PointToChange-1)%3) ==2)){
 		_cameraPathControls.at(PointToChange*3+0) += deltaX;													
         _cameraPathControls.at(PointToChange*3+1) += deltaY;													
         _cameraPathControls.at(PointToChange*3+2) += deltaZ;
@@ -867,6 +868,7 @@ void CameraControl::N_MultipleBezier_controlled(int PointToChange, float deltaX,
 	/// Copy the vertices to GPU.
     _verticesCameraPath->copy(_cameraPath.data(), _cameraPath.size());
     _verticesCameraPathControls->copy(_cameraPathControls.data(), _cameraPathControls.size());
+	animatePictorialCamera(1);
 }
 
 void CameraControl::Add_Bcurve(){
@@ -877,12 +879,12 @@ void CameraControl::Add_Bcurve(){
 	_cameraPathControls.push_back( 2*_cameraPathControls.at(_cameraPathControls.size()-3) - _cameraPathControls.at(_cameraPathControls.size()-6));											
 	
 	//add control point 2 near control point 1
-	_cameraPathControls.push_back(_cameraPathControls.at(_cameraPathControls.size()-3)+0.1);											
+	_cameraPathControls.push_back(_cameraPathControls.at(_cameraPathControls.size()-3)+float(0.1));											
 	_cameraPathControls.push_back(_cameraPathControls.at(_cameraPathControls.size()-3));											
 	_cameraPathControls.push_back(_cameraPathControls.at(_cameraPathControls.size()-3));											
 	
 	//add control point 3 near control point 2
-	_cameraPathControls.push_back(_cameraPathControls.at(_cameraPathControls.size()-9)+0.4);											
+	_cameraPathControls.push_back(_cameraPathControls.at(_cameraPathControls.size()-9)+float(0.4));											
 	_cameraPathControls.push_back(_cameraPathControls.at(_cameraPathControls.size()-9));											
 	_cameraPathControls.push_back(_cameraPathControls.at(_cameraPathControls.size()-9));	
 
@@ -910,7 +912,7 @@ void CameraControl::Remove_Bcurve(){
 	N_MultipleBezier_controlled(0,0,0,0);
 }
 
-void CameraControl::MultipleBezier_controlled(int PointToChange, float deltaX, float deltaY, float deltaZ) {
+void CameraControl::MultipleBezier_controlled(unsigned int PointToChange, float deltaX, float deltaY, float deltaZ) {
 
 	//// setting first bezier curve
 	static float bA0X = -1.00f,bA0Y =  0.00f,bA0Z =  0.40f;
@@ -1041,39 +1043,42 @@ void CameraControl::MultipleBezier_controlled(int PointToChange, float deltaX, f
 }
 
 void CameraControl::flyingExploration(){
-	static double straightMaxSpeed = 0.5f; 	
-	static double rotationMaxSpeed = 20.0f; 
-	static double straightAcceleration = 0.05f; 	
-	static double rotationAcceleration = 4.0f; 
+	static float straightMaxSpeed = 0.5f; 	
+	static float rotationMaxSpeed = 20.0f; 
+	static float straightAcceleration = 0.05f; 	
+	static float rotationAcceleration = 4.0f; 
 
 	//To set user defined bcurve 
 	static bool ModeSettingControlPoint=false;
 	static int controlPointsCount = 0;
 	//To tmp save the control point
-	static double tmpCtrlPointX;
-	static double tmpCtrlPointY;
-	static double tmpCtrlPointZ;
+	static float tmpCtrlPointX;
+	static float tmpCtrlPointY;
+	static float tmpCtrlPointZ;
 
 	//starting position
-	static double posX =  0.78f;
-	static double posY =  0.42f;
-	static double posZ =  0.30f;
+	static float posX =  -0.92f;
+	static float posY =  -0.72f;
+	static float posZ =  0.20f;
 
-	static double lookX = -0.24f;
-	static double lookY = 0.19f;
-	static double lookZ = 0.13f;
+	static float lookX = 0.05f;
+	static float lookY =-0.32f;
+	static float lookZ = 0.15f;
+	//std::cout << std::endl  << std::endl << posX << " " << lookX << std::endl;
+	//std::cout<< posY << " " << lookY << std::endl;
+	//std::cout<< posZ << " " << lookZ << std::endl;
 
 	//velocity of actions, nothing moves instanteanously
-	static double velocityForward = 0;
-	static double velocityBackward = 0;
-	static double velocityLeft = 0;
-	static double velocityRight = 0;
-	static double velocityUp = 0;
-	static double velocityDown = 0;
+	static float velocityForward = 0;
+	static float velocityBackward = 0;
+	static float velocityLeft = 0;
+	static float velocityRight = 0;
+	static float velocityUp = 0;
+	static float velocityDown = 0;
 
 	//tmp save rotation done 
-	static double recordRotZ = 0;
-	static double recordRotY = 0;
+	static float recordRotZ = 0;
+	static float recordRotY = 0;
 
 	//use time to set movement speeds
 	static double lastTime = glfwGetTime();
@@ -1115,7 +1120,7 @@ void CameraControl::flyingExploration(){
 		rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,velocityLeft);
 
 		//rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,velocityLeft);
-		recordRotZ = fmod((recordRotZ+0.0174f*velocityLeft),6.2831); //save rotation done
+		recordRotZ = fmod((recordRotZ+OneRad*velocityLeft),float(2*M_PI)); //save rotation done
 	}
     if ((KeyD) | (velocityRight > 0.0f)){//D pressed =turn right
         if((KeyD) & (velocityRight<rotationMaxSpeed*deltaT)){
@@ -1127,7 +1132,7 @@ void CameraControl::flyingExploration(){
 	//	rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,recordRotZ,-velocityRight);
 		rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,-velocityRight);
 		//rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,-velocityRight);
-		recordRotZ = fmod((recordRotZ-0.0174f*velocityRight),6.2831); //save rotation done
+		recordRotZ = fmod((recordRotZ-OneRad*velocityRight),float(2*M_PI)); //save rotation done
 	}
     if  ((KeyQ)  | (velocityUp > 0.0f)){//Q pressed turn up
         if((KeyQ) & (velocityUp<rotationMaxSpeed*deltaT)){
@@ -1140,7 +1145,7 @@ void CameraControl::flyingExploration(){
 	//	rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,recordRotZ,velocityUp);
 		rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotZ,velocityUp);
 
-		recordRotY = fmod((recordRotY+0.0174f*velocityUp),6.2831); //save rotation done	
+		recordRotY = fmod((recordRotY+OneRad*velocityUp),float(2*M_PI)); //save rotation done	
 	}
     if  ( (KeyE) | (velocityDown > 0.0f)){//E pressed => down
         if((KeyE) & (velocityDown<rotationMaxSpeed*deltaT)){
@@ -1152,12 +1157,12 @@ void CameraControl::flyingExploration(){
 		//rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotZ,-velocityDown);
 	//	rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,recordRotZ,-velocityDown);
 		rotateUpDown(posX,posY,posZ,lookX,lookY,lookZ,recordRotZ,-velocityDown);
-		recordRotY = fmod((recordRotY-0.0174f*velocityDown),6.2831); //save rotation done
+		recordRotY = fmod((recordRotY-OneRad*velocityDown),float(2*M_PI)); //save rotation done
 	}
     if(Key1){
 		update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
 	}
-    if(KeyENTER & ModeSettingControlPoint==false){
+    if((KeyENTER) & (ModeSettingControlPoint==false)){
 		KeyENTER=false;
 		ModeSettingControlPoint=true;
 		/*if(controlPointsCount<=4){//restart creating path
@@ -1185,12 +1190,12 @@ void CameraControl::flyingExploration(){
 	}	
     if (ModeSettingControlPoint){ // set a control point if necessary
 		//use look at to define the 2nd control point (P1) only for first Bcurve
-        if (controlPointsCount%4==1 & _cameraPathControls.size()%12==3 & controlPointsCount<3 ){
+        if ((controlPointsCount%4==1) & (_cameraPathControls.size()%12==3) & (controlPointsCount<3) ){
             _cameraPathControls.push_back(lookX);
             _cameraPathControls.push_back(lookY);
             _cameraPathControls.push_back(lookZ);
 		}//modify and refresh the look at to define the 2nd control point (P1) only for first Bcurve
-        else if(controlPointsCount%4==1 & _cameraPathControls.size()%12==6 & controlPointsCount<3){
+        else if((controlPointsCount%4==1) & (_cameraPathControls.size()%12==6) & (controlPointsCount<3)){
             _cameraPathControls.pop_back();
             _cameraPathControls.pop_back();
             _cameraPathControls.pop_back();
@@ -1198,7 +1203,7 @@ void CameraControl::flyingExploration(){
             _cameraPathControls.push_back(lookY);
             _cameraPathControls.push_back(lookZ);
 		}//set P2 and P3 using pos for every Bcurve created
-        else if(controlPointsCount%4 ==2  & _cameraPathControls.size()%12==6){
+        else if((controlPointsCount%4 ==2)  & (_cameraPathControls.size()%12==6)){
             _cameraPathControls.push_back(lookX);
             _cameraPathControls.push_back(lookY);
             _cameraPathControls.push_back(lookZ);
@@ -1206,7 +1211,7 @@ void CameraControl::flyingExploration(){
             _cameraPathControls.push_back(posY-0.02f);
             _cameraPathControls.push_back(posZ-0.02f);
 		}//refresh P2 and P3 using pos for every Bcurve created
-        else if(controlPointsCount%4==2 & _cameraPathControls.size()%12==0){
+        else if((controlPointsCount%4==2) & (_cameraPathControls.size()%12==0)){
             _cameraPathControls.pop_back();
             _cameraPathControls.pop_back();
             _cameraPathControls.pop_back();
@@ -1232,7 +1237,7 @@ void CameraControl::flyingExploration(){
 				ModeSettingControlPoint=false;
                 std::cout<<int(_cameraPathControls.size()/12)<<" Bezier curves has been created!"<<std::endl;
 			}
-			if(controlPointsCount%4==0 & controlPointsCount>2){ // compute control P1 for next Bcurve, respecting linearity
+			if((controlPointsCount%4==0) & (controlPointsCount>2)){ // compute control P1 for next Bcurve, respecting linearity
                 tmpCtrlPointX = 2*_cameraPathControls.at(_cameraPathControls.size()-3) - _cameraPathControls.at(_cameraPathControls.size()-6);
                 tmpCtrlPointY = 2*_cameraPathControls.at(_cameraPathControls.size()-2) - _cameraPathControls.at(_cameraPathControls.size()-5);
                 tmpCtrlPointZ = 2*_cameraPathControls.at(_cameraPathControls.size()-1) - _cameraPathControls.at(_cameraPathControls.size()-4);
@@ -1243,33 +1248,37 @@ void CameraControl::flyingExploration(){
 }
 
 void CameraControl::fpsExploration(){
-	
-	static double straightMaxSpeed = 0.5f; 	
-	static double rotationMaxSpeed = 40.0f; 
-	static double straightAcceleration = 0.05f; 	
-	static double rotationAcceleration = 4.0f; 
 
-	static double posX =  0.78f;
-	static double posY =  0.42f;
-	static double posZ =  0.30f;
+	static float straightMaxSpeed = 0.5f; 	
+	static float rotationMaxSpeed = 60.0f; 
+	static float straightAcceleration = 0.05f; 	
+	static float rotationAcceleration = 4.0f; 
 
-	static double lookX = -0.24f;
-	static double lookY = 0.19f;
-	static double lookZ = 0.13f;
+	static float posX = -0.73f;
+	static float posY =  0.51f;
+	static float posZ =  0.08f;
+
+	static float lookX = 0.19f;
+	static float lookY = 0.04f;
+	static float lookZ = 0.01f;
 	
-	static double velocityForward = 0;
-	static double velocityBackward = 0;
-	static double velocityLeft = 0;
-	static double velocityRight = 0;
-	static double velocityUp = 0;
-	static double velocityDown = 0;
+	//std::cout << std::endl  << std::endl << posX << " " << lookX << std::endl;
+	//std::cout<< posY << " " << lookY << std::endl;
+	//std::cout<< posZ << " " << lookZ << std::endl;
+
+	static float velocityForward = 0;
+	static float velocityBackward = 0;
+	static float velocityLeft = 0;
+	static float velocityRight = 0;
+	static float velocityUp = 0;
+	static float velocityDown = 0;
 	
-	static double recordRotZ = 0;
+	static float recordRotZ = 0;
 
 	static bool jumping = false;
-	static double initJumpPosZ = 0;
-	static double initJumpLookZ = 0;
-	static double jumpLevel =0;
+	static float initJumpPosZ = 0;
+	static float initJumpLookZ = 0;
+	static float jumpLevel =0;
 
 	static double lastTime = glfwGetTime();
     double currentTime = glfwGetTime();
@@ -1298,8 +1307,8 @@ void CameraControl::fpsExploration(){
 		int tmpY = int((1+posY)*1024/2);
 		tmpX = tmpX -2;
 		tmpY = tmpY -2;
-		double tmpZ=0;
-		double AmountOfPoints = 0; 
+		float tmpZ=0;
+		float AmountOfPoints = 0; 
 		for(int i=0;i<5;i++){//take in count 24 z values arround to have a smooth move 
 			for(int j=0;j<5;j++){
 				tmpX = tmpX + i;
@@ -1312,7 +1321,7 @@ void CameraControl::fpsExploration(){
 		}
 		//std::cout<<"AmountOfPoints ="<<AmountOfPoints<<endl;
 		tmpZ=tmpZ/AmountOfPoints;
-		double floorLevel = tmpZ+0.06; //fps person height
+		float floorLevel = tmpZ+float(0.06); //fps person height
 
 		if ((jumpLevel >= 90) & (posZ<=floorLevel)){ //reach floor =>jump finished
 			jumping = false;
@@ -1323,8 +1332,8 @@ void CameraControl::fpsExploration(){
 			posZ -= 0.005f; 
 		}
 		else{
-			posZ = initJumpPosZ + 0.1 * sin(0.0174f*jumpLevel);
-			lookZ = initJumpLookZ + 0.1 * sin(0.0174f*jumpLevel);
+			posZ = initJumpPosZ + float(0.1) * sin(OneRad*jumpLevel);
+			lookZ = initJumpLookZ + float(0.1) * sin(OneRad*jumpLevel);
 		}
 
 		update_camera_modelview(posX,posY,posZ,lookX,lookY,lookZ);
@@ -1343,13 +1352,13 @@ void CameraControl::fpsExploration(){
 	
 		//FPS exploration
 		if((posX<=1) & (posX>=-1) & (posY<=1) & (posY>=-1) & (jumping == false)){//stay on the map
-			double dispX = 0.2f*velocityForward*powf(posX-lookX,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posX-lookX)/abs(posX-lookX);
-			double dispY = 0.2f*velocityForward*powf(posY-lookY,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posY-lookY)/abs(posY-lookY);
+			float dispX = 0.2f*velocityForward*powf(posX-lookX,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posX-lookX)/abs(posX-lookX);
+			float dispY = 0.2f*velocityForward*powf(posY-lookY,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posY-lookY)/abs(posY-lookY);
 			fpsExplorationForwardBackward(posX,posY,posZ,lookX,lookY,lookZ,dispX,dispY);
 		}
 		else if((posX<=1) & (posX>=-1) & (posY<=1) & (posY>=-1) & (jumping == true)){//stay on the map jumping forward
-			double dispX = 0.2f*velocityForward*powf(posX-lookX,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posX-lookX)/abs(posX-lookX);
-			double dispY = 0.2f*velocityForward*powf(posY-lookY,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posY-lookY)/abs(posY-lookY);
+			float dispX = 0.2f*velocityForward*powf(posX-lookX,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posX-lookX)/abs(posX-lookX);
+			float dispY = 0.2f*velocityForward*powf(posY-lookY,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posY-lookY)/abs(posY-lookY);
 			posX = posX - dispX; 
 			posY = posY - dispY; 
 			lookX = lookX - dispX; 
@@ -1372,8 +1381,8 @@ void CameraControl::fpsExploration(){
 	
 		//fps exploration
 		if((posX<=1) & (posX>=-1) & (posY<=1) & (posY>=-1)){//stay on the map
-			double dispX = 0.2f*velocityBackward*powf(posX-lookX,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posX-lookX)/abs(posX-lookX);
-			double dispY = 0.2f*velocityBackward*powf(posY-lookY,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posY-lookY)/abs(posY-lookY);
+			float dispX = 0.2f*velocityBackward*powf(posX-lookX,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posX-lookX)/abs(posX-lookX);
+			float dispY = 0.2f*velocityBackward*powf(posY-lookY,2)/(powf(posX-lookX,2)+powf(posY-lookY,2))*(posY-lookY)/abs(posY-lookY);
 			fpsExplorationForwardBackward(posX,posY,posZ,lookX,lookY,lookZ,-dispX,-dispY);
 		}
 	}
@@ -1385,7 +1394,7 @@ void CameraControl::fpsExploration(){
 			velocityLeft = velocityLeft - rotationAcceleration*deltaT;
 		}
 		fpsRotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,velocityLeft);
-		recordRotZ = fmod((recordRotZ+0.0174f*velocityRight),6.2831); //save rotation done
+		recordRotZ = fmod((recordRotZ+OneRad*velocityRight),float(2*M_PI)); //save rotation done
 	
 		//rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,velocityLeft);
 	}
@@ -1397,7 +1406,7 @@ void CameraControl::fpsExploration(){
 			velocityRight = velocityRight - rotationAcceleration*deltaT;
 		}
 		fpsRotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,-velocityRight);
-		recordRotZ = fmod((recordRotZ-0.0174f*velocityRight),6.2831); //save rotation done
+		recordRotZ = fmod((recordRotZ-OneRad*velocityRight),float(2*M_PI)); //save rotation done
 	
 		//rotateLeftRight(posX,posY,posZ,lookX,lookY,lookZ,recordRotY,-velocityRight);
 	}
@@ -1445,7 +1454,7 @@ void CameraControl::updateCameraPosition(mat4 views[], mat4& cameraPictorialMode
     }
 
     if(flagAnimatePictorialCamera)
-        animatePictorialCamera();
+        animatePictorialCamera(0);
 
     /// Update the view transformation matrix.
     views[0] = _controllerModelview;
@@ -1508,7 +1517,7 @@ void CameraControl::handleKeyboard(int key, int action){
 		switch(key){
 			 case 305: //3
 				std::cout << "Exploration mode : PATH" << std::endl;
-				_explorationMode = PATH;
+				//_explorationMode = PATH;
 				flagAnimatePictorialCamera = !flagAnimatePictorialCamera;
 				break;
 			case 90: //Z=> change control point under modification
@@ -1560,9 +1569,6 @@ void CameraControl::handleKeyboard(int key, int action){
 //				if(_explorationMode == FLYING){
 //					KeyENTER = true;
 //				}
-//				break;
-//			case 309://7
-//				flagAnimatePictorialCamera=!flagAnimatePictorialCamera;
 //				break;
             case 294://+
 				Add_Bcurve();
