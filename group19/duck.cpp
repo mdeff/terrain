@@ -21,17 +21,15 @@ void RenderedDuck::init(Vertices* vertices) {
 	/// Common initialization.
     preinit(vertices, duck_vshader, duck_fshader, NULL, "vertexPosition3DWorld", "normal_mv");
 
-    /// Light properties.
+    /// Light properties. (no specular)
 	/// Define light properties and pass them to the shaders.
     vec3 Ia(1.0f, 1.0f, 1.0f);
     vec3 Id(1.0f, 1.0f, 1.0f);
     vec3 Is(1.0f, 1.0f, 1.0f);
     GLuint _IaID = glGetUniformLocation(_programID, "Ia");
     GLuint _IdID = glGetUniformLocation(_programID, "Id");
-    GLuint _IsID = glGetUniformLocation(_programID, "Is");
     glUniform3fv( _IaID, 1, Ia.data());
     glUniform3fv( _IdID, 1, Id.data());
-    glUniform3fv( _IsID, 1, Is.data());
 
     /// Set uniform IDs.
     _viewID = glGetUniformLocation(_programID, "view");
@@ -39,7 +37,7 @@ void RenderedDuck::init(Vertices* vertices) {
 	_transID = glGetUniformLocation(_programID, "translation");
 	_lightPositionWorldID = glGetUniformLocation(_programID, "lightPositionWorld");
 
-	_aniMat = glGetUniformLocation(_programID, "animation");
+	_aniMatID = glGetUniformLocation(_programID, "animation");
 }
 
 
@@ -80,10 +78,14 @@ void RenderedDuck::draw(const mat4& projection, const mat4 views[], const vec3& 
 
 	/* For Animation: Move circular around a fixed point */
 	//float radius = 
-	static float angle = 0;
+	static int step = 0;
 	mat4 ani_mat;
-	
-
+	ani_mat << 1,0,0, 0 ,
+			   0,1,0,float(step%2500)*0.0005,
+			   0,0,1, 0,
+			   0,0,0,1;
+	glUniformMatrix4fv(_aniMatID, 1, GL_FALSE, ani_mat.data());
+	step++;
 
     /// Render from camera point of view to 'normal' FBOs.
     glUniformMatrix4fv(_viewID, 1, GL_FALSE, views[0].data());
@@ -106,6 +108,4 @@ void RenderedDuck::draw(const mat4& projection, const mat4 views[], const vec3& 
     glUniformMatrix4fv(_viewID, 1, GL_FALSE, viewFlip[1].data());
     glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs["cameraViewReflected"]);
     _vertices->draw();
-
-
 }

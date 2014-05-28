@@ -291,9 +291,6 @@ void init() {
     cameraPictorial.init(verticesCameraPictorial);
     cameraPath.init(verticesCameraPath);
     cameraPathControls.init(verticesCameraPathControls);
-
-	duck.init(verticesDuck);
-
     /// Initialize the light position.
     keyboard_callback(50, GLFW_PRESS);
 
