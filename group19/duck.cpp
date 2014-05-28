@@ -49,7 +49,7 @@ void RenderedDuck::init(Vertices* vertices)
 
 
 
-void RenderedDuck::draw(const mat4& projection, const mat4 views[])
+void RenderedDuck::draw(const mat4& projection, const mat4 views[], const vec3& lightPositionWorld)
 
 {	
 	glEnable(GL_BLEND);
@@ -61,7 +61,7 @@ void RenderedDuck::draw(const mat4& projection, const mat4 views[])
     /// Update the content of the uniforms.
     glUniformMatrix4fv( _projectionID, 1, GL_FALSE, projection.data());
 
-	//glUniformMatrix4fv(_lightPositionWorldID, 1,  lightPositionWorld.data());
+	glUniform3fv(_lightPositionWorldID, 1, lightPositionWorld.data());
 
 
     /// Do not clear the framebuffers : done by Terrain.

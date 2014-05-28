@@ -342,7 +342,7 @@ void display() {
     cameraPathControls.draw(cameraProjection, views, lightPositionWorld, selectedControlPoint, deltaT);
 
     water.draw(cameraProjection, views, lightViewProjection, lightPositionWorld);
-	duck.draw(cameraProjection, views);
+	duck.draw(cameraProjection, views,  lightPositionWorld);
 
     /// Render the translucent primitives last. Otherwise opaque objects that
     /// may be visible behind get discarded by the depth test.
