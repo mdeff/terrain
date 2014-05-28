@@ -47,9 +47,6 @@ void RenderedDuck::draw(const mat4& projection, const mat4 views[], const vec3& 
 	 /// Common drawing.
     predraw();
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
     /// Update the content of the uniforms.
     glUniformMatrix4fv( _projectionID, 1, GL_FALSE, projection.data());
 	glUniform3fv(_lightPositionWorldID, 1, lightPositionWorld.data());
@@ -60,20 +57,25 @@ void RenderedDuck::draw(const mat4& projection, const mat4 views[], const vec3& 
                  0,0,0,1;
     glUniformMatrix4fv(_transID, 1, GL_FALSE, trans_mat.data());
 
-    /// Flip the terrain by multiplying the Z coordinate by -1 in world space.
-    //mat4 flip = mat4::Identity();
-    //flip(2,2) = -1.0f;
-    //mat4 viewFlip = view * flip;
-
-    /// Render the terrain from camera point of view to the reflection FBO.
- /*   glUniformMatrix4fv(_viewID, 1, GL_FALSE, viewFlip.data());
-    _vertices->draw();*/
-
     /// Render from camera point of view to 'normal' FBOs.
     glUniformMatrix4fv(_viewID, 1, GL_FALSE, views[0].data());
     glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs["controllerView"]);
     _vertices->draw();
+    glUniformMatrix4fv(_viewID, 1, GL_FALSE, views[1].data());
+    glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs["cameraView"]);
+    _vertices->draw();
 
-	glDisable(GL_BLEND);
+    /// Flip the world by multiplying the Z coordinate by -1 in world space.
+    mat4 flip = mat4::Identity();
+    flip(2,2) = -1.0f;
+    mat4 viewFlip[] = {views[0]*flip, views[1]*flip};
+
+    /// Render from flipped camera point of view to 'reflection' FBOs.
+    glUniformMatrix4fv(_viewID, 1, GL_FALSE, viewFlip[0].data());
+    glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs["controllerViewReflected"]);
+    _vertices->draw();
+    glUniformMatrix4fv(_viewID, 1, GL_FALSE, viewFlip[1].data());
+    glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs["cameraViewReflected"]);
+    _vertices->draw();
 
 }
