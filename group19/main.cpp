@@ -1,4 +1,3 @@
-// Copyright (C) 2014 - LGG EPFL
 
 #include <iostream>
 #include <sstream>
@@ -27,8 +26,6 @@
 #include "duck.h"
 
 
-
-
 /// Number of parallel views.
 const GLuint Nviews = 2;
 
@@ -45,17 +42,13 @@ const unsigned int windowHeight(768);
 const unsigned int textureWidth(1024);
 const unsigned int textureHeight(1024);
 
-/// Unified width and height ?
-//const unsigned int width(1024);
-//const unsigned int height(1024);
-
 /// Number of particles on the side. That makes nParticlesSide^3 particles.
 const unsigned int nParticlesSide(20);
 
 /// This is the sole rendering context that renders directly to the screen.
 PostProcessing postProcessing(windowWidth, windowHeight);
 
-/// Instanciate the rendering contexts that render to the screen.
+/// Instanciate the rendering contexts.
 Skybox skybox(windowWidth, windowHeight);
 Terrain terrain(windowWidth, windowHeight);
 RenderingSimple cameraPictorial(windowWidth, windowHeight);
@@ -63,12 +56,8 @@ RenderingSimple cameraPath(windowWidth, windowHeight);
 CameraPathControls cameraPathControls(windowWidth, windowHeight);
 ParticlesRender particlesRender(windowWidth, windowHeight, nParticlesSide);
 RenderedDuck duck(windowWidth, windowHeight);
-
-/// Instanciate the rendering contexts that render to FBO.
 Shadowmap shadowmap(textureWidth, textureHeight);
 ParticlesControl particlesControl(nParticlesSide);
-
-
 Water water(windowWidth, windowHeight);
 
 /// Camera position controller.
@@ -79,7 +68,6 @@ Vertices* verticesQuad = new VerticesQuad();
 Vertices* verticesGrid = new VerticesGrid();
 Vertices* verticesSkybox = new VerticesSkybox();
 Vertices* verticesDuck = new VerticesDuck();
-
 VerticesCameraPath* verticesCameraPath = new VerticesCameraPath();
 VerticesCameraPath* verticesCameraPathControls = new VerticesCameraPath();
 VerticesCameraPictorial* verticesCameraPictorial = new VerticesCameraPictorial();
@@ -87,11 +75,6 @@ VerticesCameraPictorial* verticesCameraPictorial = new VerticesCameraPictorial()
 /// Matrices that have to be shared between functions.
 static mat4 lightViewProjection;
 static vec3 lightPositionWorld;
-
-//flip the camera for reflection effect
-static mat4 flippedcameraView;
-
-
 
 /// Projection parameters.
 // Horizontal field of view in degrees : amount of "zoom" ("camera lens").
@@ -125,10 +108,8 @@ void GLFWCALL keyboard_callback(int key, int action) {
         /// 49 corressponds to 1, 57 to 9 (keyboard top keys).
         if(key >= 49 && key <= 57) {
 
-            /// Angle from 0° (key 1) to 90° (key 9).
-            float theta = M_PI / 8.0f * float(key-49);
-
-            /// Position from sunrise (-r,0,0) to noon (0,0,r).
+            /// Position from (-r,0,0) (key 1) to (0,0,r) (key 9).
+            float theta = 0.2f + (M_PI-0.4f) / 8.0f * float(key-49);
             lightPositionWorld = vec3(-std::cos(theta)*r, 0.0, std::sin(theta)*r);
 
             /// Light source position (model coordinates).
@@ -155,10 +136,8 @@ void gen_rendering_framebuffers(GLuint framebufferIDs[], GLuint colorTexIDs[], b
     const unsigned int samples = 4;
 
     /// Generate framebuffers and renderbuffers.
-//    GLuint* colorBufIDs = new GLuint[N];
     GLuint* depthBufIDs = new GLuint[N];
     glGenFramebuffers(N, framebufferIDs);
-//    glGenRenderbuffers(N, colorBufIDs);
     glGenTextures(N, colorTexIDs);
     glGenRenderbuffers(N, depthBufIDs);
 
@@ -167,13 +146,6 @@ void gen_rendering_framebuffers(GLuint framebufferIDs[], GLuint colorTexIDs[], b
         glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs[k]);
 
         if(multisampling[k]) {
-
-            /// Multi-sample color buffer.
-//            glBindRenderbuffer(GL_RENDERBUFFER, colorBufIDs[k]);
-//            glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER_EXT, samples, GL_RGBA8, windowWidth, windowHeight);
-//            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, colorBufIDs[k]);
-//            GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0};
-//            glDrawBuffers(1, drawBuffers);
 
             /// Multi-sample color texture (will be sampled by post-processing shader).
             glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, colorTexIDs[k]);
@@ -220,7 +192,6 @@ void gen_rendering_framebuffers(GLuint framebufferIDs[], GLuint colorTexIDs[], b
 
     /// Free heap memory.
     delete[] depthBufIDs;
-//    delete[] colorBufIDs, depthBufIDs;
 
 }
 
@@ -245,14 +216,12 @@ void init() {
     verticesCameraPathControls->generate();
     verticesCameraPictorial->generate();
 	verticesDuck->generate();
+
     /// Generate the heightmap texture.
     Heightmap heightmap(textureWidth, textureHeight);
     GLuint heightMapTexID = heightmap.init(verticesQuad);
 	heightmap.draw();
     heightmap.clean();
-
-//    verticesQuad->clean();
-//    delete verticesQuad;
 
     /// Generate OpenGL global objects.
     bool multisampling[] = {true, true, false, false};
@@ -274,9 +243,9 @@ void init() {
     GLuint shadowMapTexID = shadowmap.init(verticesGrid, heightMapTexID);
     terrain.init(verticesGrid, heightMapTexID, shadowMapTexID);
     skybox.init(verticesSkybox);
-
 	duck.init(verticesDuck);
-    // Grid or quad : interpolation ?
+
+    /// Water on grid or quad : interpolation issues.
     water.init(verticesGrid, renderedTexIDs);
 //    water.init(verticesQuad, flippedTerrainTexID);
 
@@ -291,6 +260,7 @@ void init() {
     cameraPictorial.init(verticesCameraPictorial);
     cameraPath.init(verticesCameraPath);
     cameraPathControls.init(verticesCameraPathControls);
+
     /// Initialize the light position.
     keyboard_callback(50, GLFW_PRESS);
 
@@ -332,18 +302,17 @@ void display() {
     /// These are also rendered in a texture for water reflection.
     terrain.draw(cameraProjection, views, lightViewProjection, lightPositionWorld);
     skybox.draw(cameraProjection, views);
+    duck.draw(cameraProjection, views, lightPositionWorld);
 
     /// Render opaque primitives on screen.
     cameraPictorial.draw(cameraProjection, views, cameraPictorialModel, vec3(1,1,0));
     cameraPath.draw(cameraProjection, views, mat4::Identity(), vec3(0,1,0));
     cameraPathControls.draw(cameraProjection, views, lightPositionWorld, selectedControlPoint, deltaT);
 
-    duck.draw(cameraProjection, views, lightPositionWorld);
-
-    water.draw(cameraProjection, views, lightViewProjection, lightPositionWorld);
-
     /// Render the translucent primitives last. Otherwise opaque objects that
     /// may be visible behind get discarded by the depth test.
+    water.draw(cameraProjection, views, lightViewProjection, lightPositionWorld, deltaT);
+
     /// First control particle positions, then render them on screen.
     particlesControl.draw(deltaT);
     particlesRender.draw(cameraProjection, views);

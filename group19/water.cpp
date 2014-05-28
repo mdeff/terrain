@@ -30,40 +30,22 @@ void Water::init(Vertices* vertices, GLuint renderedTexIDs[]) {
     GLuint uniformID = glGetUniformLocation(_programID, "reflectionTex");
     glUniform1i(uniformID, 0);
 
-    //bind the reflection tex to texture 0
-//    set_texture(0, renderedTexIDs[2], "flippedTerrainTex", GL_TEXTURE_2D);
-
-//    /* Load texture for water surface */
-//    set_texture(1, -1, "waterNormalMap", GL_TEXTURE_2D);
-//    load_texture("../../textures/water_normal_map_2.tga");
-
-//    set_texture(2, -1, "riverSurfaceMap", GL_TEXTURE_2D);
-//    load_texture("../../textures/water_2.tga");
-
-
-    /// Define light properties and pass them to the shaders.
-//    vec3 Ia(1.0f, 1.0f, 1.0f);
-//    vec3 Id(1.0f, 1.0f, 1.0f);
-//    vec3 Is(1.0f, 1.0f, 1.0f);
-//    GLuint _IaID = glGetUniformLocation(_programID, "Ia");
-//    GLuint _IdID = glGetUniformLocation(_programID, "Id");
-//    GLuint _IsID = glGetUniformLocation(_programID, "Is");
-//    glUniform3fv( _IaID, 1, Ia.data());
-//    glUniform3fv( _IdID, 1, Id.data());
-//    glUniform3fv( _IsID, 1, Is.data());
+    /// Water normal map.
+    set_texture(1, -1, "waterNormalMap", GL_TEXTURE_2D);
+    load_texture("../../textures/water_normal_map_2.tga");
 
     /// Set uniform IDs.
     _viewID = glGetUniformLocation(_programID, "view");
     _projectionID = glGetUniformLocation(_programID, "projection");
     _lightViewProjectionID = glGetUniformLocation(_programID, "lightViewProjection");
     _lightPositionWorldID = glGetUniformLocation(_programID, "lightPositionWorld");
-    _timeID = glGetUniformLocation(_programID, "time");
+    _deltaTID = glGetUniformLocation(_programID, "deltaT");
 
 }
 
 
 void Water::draw(const mat4& projection, const mat4 views[],
-                 const mat4& lightViewProjection, const vec3& lightPositionWorld) const {
+                 const mat4& lightViewProjection, const vec3& lightPositionWorld, float deltaT) const {
 
     /// Common drawing.
     predraw();
@@ -72,10 +54,7 @@ void Water::draw(const mat4& projection, const mat4 views[],
     glUniformMatrix4fv(_projectionID, 1, GL_FALSE, projection.data());
     glUniformMatrix4fv(_lightViewProjectionID, 1, GL_FALSE, lightViewProjection.data());
     glUniform3fv(_lightPositionWorldID, 1, lightPositionWorld.data());
-
-    /// Time value which animates water
-//    static float time = 0;
-//    glUniform1f(_timeID, int(time++)%5000);
+    glUniform1f(_deltaTID, deltaT);
 
     /// Blending for water transparency.
     glEnable(GL_BLEND);

@@ -15,7 +15,7 @@ public:
     //void init(Vertices* vertices, unsigned int heightMapTexID, unsigned int shadowMapTexID);
     void init(Vertices* vertices, unsigned int renderedTexIDs[]);
     void draw(const mat4& projection, const mat4 views[],
-              const mat4& lightViewProjection, const vec3& lightPositionWorld) const;
+              const mat4& lightViewProjection, const vec3& lightPositionWorld, float deltaT) const;
 
 private:
 
@@ -24,7 +24,7 @@ private:
     unsigned int _projectionID;
     unsigned int _lightViewProjectionID;
     unsigned int _lightPositionWorldID;
-    unsigned int _timeID;
+    unsigned int _deltaTID;
 
     /// Texture IDs : reflection from 2 view points.
     unsigned int _reflectionTexID[2];

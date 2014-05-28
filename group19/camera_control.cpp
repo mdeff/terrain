@@ -23,7 +23,7 @@ static bool KeySPACE = false;
 static bool Key1 = false;
 static bool Key2 = false;
 static bool KeyENTER = false;
-static bool flagAnimatePictorialCamera=false;
+static bool flagAnimatePictorialCamera = true;
 
 float deltaT;
 const float OneRad = 0.0174f;
