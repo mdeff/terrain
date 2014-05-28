@@ -26,6 +26,9 @@ private:
     unsigned int _lightPositionWorldID;
     unsigned int _timeID;
 
+    /// Texture IDs : reflection from 2 view points.
+    unsigned int _reflectionTexID[2];
+
 };
 
 #endif /* __water_h__ */
