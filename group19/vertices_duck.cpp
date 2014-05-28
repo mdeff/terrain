@@ -5,43 +5,40 @@
 #include "opengp.h"
 
 
-//load vertices list from a mesh, then bind it
+/// Load vertices list from a mesh.
 void VerticesDuck::generate() {
 
-	//load Mesh from path
+    /// Load Mesh from path.
 	read("../../duck/duck.obj");
-	triangulate();
-	//update vertices normal
+    triangulate();
 	update_vertex_normals();
-	cout << "Number of vertices: " << n_vertices() << " num faces: " << n_faces() << endl;
+    std::cout << "Number of vertices: " << n_vertices() << " num faces: " << n_faces() << std::endl;
 
-	/// Vertex Array
+    /// Vertex Array.
     glGenVertexArrays(1, &_vertexArrayID);
     glBindVertexArray(_vertexArrayID);
 
     glGenBuffers(2, _vertexBufferIDs);
 
     /// Vertex buffer for points
-    Surface_mesh::Vertex_property<Point> vpoints = get_vertex_property<Point>("v:point");
+    Surface_mesh::Vertex_property<opengp::Point> vpoints = get_vertex_property<opengp::Point>("v:point");
     glBindBuffer(GL_ARRAY_BUFFER, _vertexBufferIDs[0]);
     glBufferData(GL_ARRAY_BUFFER, n_vertices() * sizeof(vec3), vpoints.data(), GL_STATIC_DRAW);
 
     /// Vertex buffer for normals.
-    Surface_mesh::Vertex_property<Normal> vnormals = get_vertex_property<Normal>("v:normal");
+    Surface_mesh::Vertex_property<opengp::Normal> vnormals = get_vertex_property<opengp::Normal>("v:normal");
     glBindBuffer(GL_ARRAY_BUFFER, _vertexBufferIDs[1]);
     glBufferData(GL_ARRAY_BUFFER, n_vertices() * sizeof(vec3), vnormals.data(), GL_STATIC_DRAW);
 
-    /// Looping around the mesh to index the vertices
-	//std::vector<unsigned int> buf;
+    /// Looping around the mesh to index the vertices.
     unsigned int* indices = new unsigned int[100000]; //buffer holding the index of the mesh
     _nIndices = 0;
-	//copy index of the mesh 
+    // Copy index of the mesh .
     for(Surface_mesh::Face_iterator fit = faces_begin(); fit != faces_end(); ++fit) {
         unsigned int n = valence(*fit);
-		//Loop around one face to get surrounding vertices
+        // Loop around one face to get surrounding vertices.
         Surface_mesh::Vertex_around_face_circulator vit = vertices(*fit);
         for(unsigned int v = 0; v < n; ++v) {
-			//buf.push_back((*vit).idx());
             indices[_nIndices] = (*vit).idx();
             ++vit;
             ++_nIndices;

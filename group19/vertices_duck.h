@@ -9,12 +9,9 @@
 #include <cstdio>
 #include <OpenGP/Surface_mesh.h>
 
-using namespace opengp;
-using namespace std;
+class VerticesDuck : public Vertices, public opengp::Surface_mesh {
 
-class VerticesDuck : public Vertices, public Surface_mesh {
-
-public:    
+public:
 
     /// Generate the vertices.
 	void generate();
