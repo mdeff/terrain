@@ -135,7 +135,9 @@ void GLFWCALL keyboard_callback(int key, int action) {
             lightViewProjection = lightProjection * lightView;
         }
     }
-    cameraControl.handleCameraControls(key, action);
+
+    cameraControl.handleKeyboard(key, action);
+    postProcessing.handleKeyboard(key, action);
 }
 
 

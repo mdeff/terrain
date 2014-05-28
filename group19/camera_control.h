@@ -17,7 +17,7 @@ public:
     void init(VerticesCameraPath* verticesCameraPath, VerticesCameraPath* verticesCameraPathControls, unsigned int heightMapTexID);
     void trackball(const mat4& model);
     void updateCameraPosition(mat4 views[], mat4& cameraPictorialModel, int& selectedControlPoint);
-    void handleCameraControls(int key, int action);
+    void handleKeyboard(int key, int action);
 
 private:
 
