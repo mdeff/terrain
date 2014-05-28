@@ -81,7 +81,7 @@ void RenderedDuck::draw(const mat4& projection, const mat4 views[], const vec3& 
 	static int step = 0;
 	mat4 ani_mat;
 	ani_mat << 1,0,0, 0 ,
-			   0,1,0,float(step%2500)*0.0005,
+			   0,1,0,float(step%1000)*0.0005,
 			   0,0,1, 0,
 			   0,0,0,1;
 	glUniformMatrix4fv(_aniMatID, 1, GL_FALSE, ani_mat.data());
