@@ -16,10 +16,11 @@ class VerticesDuck : public Vertices, public Surface_mesh {
 
 public:    
 
+    /// Generate the vertices.
 	void generate();
 
     /// Bind the vertex attribute to the VBO (retained in VAO state).
-    void bind(unsigned int vertexAttribID) const;
+    void bind(unsigned int vertexAttribIDs[]) const;
 
     /// Draw the scene.
     void draw() const;
@@ -27,9 +28,6 @@ public:
     /// Delete the buffers.
     void clean();
 
-private:
-	unsigned int nIndices; //index of the mesh
-	unsigned int* indices; //buffer holding the index of the mesh
 };
 
 #endif /* __vertices_duck_h__ */

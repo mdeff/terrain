@@ -27,8 +27,8 @@ void VerticesGrid::generate() {
     }
 
     /// Copy the vertices to GPU in a vertex buffer (VBO).
-    glGenBuffers(1, &_vertexBufferID);
-    glBindBuffer(GL_ARRAY_BUFFER, _vertexBufferID);
+    glGenBuffers(1, _vertexBufferIDs);
+    glBindBuffer(GL_ARRAY_BUFFER, _vertexBufferIDs[0]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     /// Indices that form the triangles.
@@ -55,15 +55,15 @@ void VerticesGrid::generate() {
 }
 
 
-void VerticesGrid::bind(GLuint vertexAttribID) const {
+void VerticesGrid::bind(GLuint vertexAttribIDs[]) const {
 
     /// Vertex attribute points to data from the currently binded array buffer.
     /// The binding is part of the binded VAO state.
     glBindVertexArray(_vertexArrayID);
-    glBindBuffer(GL_ARRAY_BUFFER, _vertexBufferID);
-    glEnableVertexAttribArray(vertexAttribID);
+    glBindBuffer(GL_ARRAY_BUFFER, _vertexBufferIDs[0]);
+    glEnableVertexAttribArray(vertexAttribIDs[0]);
     // vec2: 2 floats per vertex for the attribute.
-    glVertexAttribPointer(vertexAttribID, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(vertexAttribIDs[0], 2, GL_FLOAT, GL_FALSE, 0, 0);
 
 }
 
@@ -82,7 +82,7 @@ void VerticesGrid::draw() const {
 
 
 void VerticesGrid::clean() {
-    glDeleteBuffers(1, &_vertexBufferID);
+    glDeleteBuffers(1, _vertexBufferIDs);
     glDeleteBuffers(1, &_elementBufferID);
     glDeleteVertexArrays(1, &_vertexArrayID);
 }

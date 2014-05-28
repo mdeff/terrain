@@ -29,18 +29,16 @@ void RenderingContext::preinit(Vertices* vertices, const char* vshader, const ch
     /// Direct state access (DSA) was only lately implemented by them.
     glUseProgram(_programID);
 
-    /// Bind the vertex attribute ID to vertex data, if they exist.
+    /// Bind the vertex attribute IDs to vertex data, if they exist.
     if(vertices != NULL && vertexAttribName1 != NULL) {
-        GLuint vertexAttribID1 = glGetAttribLocation(_programID, vertexAttribName1);
-        _vertices->bind(vertexAttribID1);
+        GLuint vertexAttribIDs[2];
+        vertexAttribIDs[0] = glGetAttribLocation(_programID, vertexAttribName1);
+        if(vertexAttribName2 != NULL) {
+            vertexAttribIDs[1] = glGetAttribLocation(_programID, vertexAttribName2);
+        }
+        _vertices->bind(vertexAttribIDs);
     }
 
-
-
-	if(vertices != NULL && vertexAttribName2 != NULL) {
-        GLuint vertexAttribID2 = glGetAttribLocation(_programID, vertexAttribName2);
-        _vertices->bind(vertexAttribID2);
-    }
 }
 
 

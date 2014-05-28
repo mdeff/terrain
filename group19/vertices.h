@@ -12,7 +12,7 @@ public:
     virtual void generate() = 0;
 
     /// Bind the vertex attribute to the VBO (retained in VAO state).
-    virtual void bind(unsigned int vertexAttribID) const = 0;
+    virtual void bind(unsigned int vertexAttribIDs[]) const = 0;
 
     /// Draw the scene.
     virtual void draw() const = 0;
@@ -23,10 +23,10 @@ public:
 protected:
 
     unsigned int _nVertices;
-    unsigned int _vertexBufferID;
+    unsigned int _nIndices;
+    unsigned int _vertexBufferIDs[5];
     unsigned int _elementBufferID;
     unsigned int _vertexArrayID;
-	unsigned int _normal_mvID;
 
 };
 

@@ -15,7 +15,7 @@ public:
     void copy(float *vertices, unsigned int nVertices);
 
     /// Bind the vertex attribute to the VBO (retained in VAO state).
-    void bind(unsigned int vertexAttribID) const;
+    void bind(unsigned int vertexAttribIDs[]) const;
 
     /// Draw the scene.
     void draw() const;
