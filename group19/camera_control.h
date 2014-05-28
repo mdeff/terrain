@@ -45,7 +45,7 @@ private:
     float* _heightmapCPU;
 
     /// World exploration mode.
-    enum exploration_mode {FPS, FLYING, PATH, FIX};
+    enum exploration_mode {FPS, FLYING, PATH, TRACKBALL};
     enum exploration_mode _explorationMode;
 
     /// Helper functions.
