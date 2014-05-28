@@ -15,14 +15,14 @@ Water::Water(unsigned int width, unsigned int height) :
 }
 
 
-void Water::init(Vertices* vertices, GLuint flippedTerrainTexID) {
+void Water::init(Vertices* vertices, GLuint renderedTexIDs[]) {
 
     /// Common initialization.
 //    RenderingContext::init(vertices, particles_control_vshader, water_fshader, NULL, "vertexPosition2DWorld", 0);
     preinit(vertices, water_vshader, water_fshader, NULL, "vertexPosition2DWorld");
 
     //bind the reflection tex to texture 0
-    set_texture(0, flippedTerrainTexID, "flippedTerrainTex", GL_TEXTURE_2D);
+    set_texture(0, renderedTexIDs[2], "flippedTerrainTex", GL_TEXTURE_2D);
 
 //    /* Load texture for water surface */
 //    set_texture(1, -1, "waterNormalMap", GL_TEXTURE_2D);

@@ -52,11 +52,14 @@ void Skybox::draw(const mat4& projection, const mat4 views[]) const {
     /// Flip the terrain by multiplying the Z coordinate by -1 in world space.
     mat4 flip = mat4::Identity();
     flip(2,2) = -1.0f;
-    mat4 viewFlip = views[0] * flip;
+    mat4 viewFlip[] = {views[0]*flip, views[1]*flip};
 
     /// Render from flipped camera point of view to 'reflection' FBOs.
-    glUniformMatrix4fv(_viewID, 1, GL_FALSE, viewFlip.data());
-    glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs["waterReflection"]);
+    glUniformMatrix4fv(_viewID, 1, GL_FALSE, viewFlip[0].data());
+    glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs["controllerViewReflected"]);
+    _vertices->draw();
+    glUniformMatrix4fv(_viewID, 1, GL_FALSE, viewFlip[1].data());
+    glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs["cameraViewReflected"]);
     _vertices->draw();
 
 }

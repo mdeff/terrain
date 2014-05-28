@@ -64,55 +64,6 @@ GLuint Terrain::init(Vertices* vertices, GLuint heightMapTexID, GLuint shadowMap
     _lightPositionWorldID = glGetUniformLocation(_programID, "lightPositionWorld");
     _clipID = glGetUniformLocation(_programID, "clip");
 
-    /// The terrain will be rendered a second time from a flipped camera
-    /// point of view to a texture which is attached to a FBO.
-    GLuint flippedTerrainTexID;
-    glGenTextures(1, &flippedTerrainTexID);
-    glBindTexture(GL_TEXTURE_2D, flippedTerrainTexID);
-
-    /// Empty image (no data), three color components, clamped [0,1] 32 bits float.
-    /// Same size as the screen : no need to change the view port, same projection matrix.
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _width, _height, 0, GL_RGB, GL_FLOAT, NULL);
-
-    /// Clamp texture coordinates to the [0,1] range. It is wrapped by default
-    /// (GL_REPEAT), which creates artifacts at the terrain borders.
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    /// Simple linear filtering (needed).
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    // Filtering
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    //// Nice trilinear filtering.
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-//    glGenerateMipmap(GL_TEXTURE_2D);
-
-    /// Attach the created texture to the first color attachment point.
-    /// The texture becomes the fragment shader first output buffer.
-    glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs["waterReflection"]);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, flippedTerrainTexID, 0);
-    GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0};
-    glDrawBuffers(1, drawBuffers);
-
-    /// Create and attach a depth buffer for the FBO.
-    GLuint depthRenderbufferID;
-    glGenRenderbuffers(1, &depthRenderbufferID);
-    glBindRenderbuffer(GL_RENDERBUFFER, depthRenderbufferID);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, _width, _height);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderbufferID);
-
-    /// Check that our framebuffer object (FBO) is complete.
-    if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        std::cerr << "Flipped terrain framebuffer not complete." << std::endl;
-        exit(EXIT_FAILURE);
-    }
-
-    /// Return the flipped terrain texture ID (for the water).
-    return flippedTerrainTexID;
-
 }
 
 
@@ -139,13 +90,15 @@ void Terrain::draw(const mat4& projection, const mat4 views[],
     /// Flip the terrain by multiplying the Z coordinate by -1 in world space.
     mat4 flip = mat4::Identity();
     flip(2,2) = -1.0f;
-    mat4 viewFlip = views[0] * flip;
+    mat4 viewFlip[] = {views[0]*flip, views[1]*flip};
 
     /// Render from flipped camera point of view to 'reflection' FBOs.
     glUniform1f(_clipID, 1.0);
-    glUniformMatrix4fv(_viewID, 1, GL_FALSE, viewFlip.data());
-    glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs["waterReflection"]);
+    glUniformMatrix4fv(_viewID, 1, GL_FALSE, viewFlip[0].data());
+    glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs["controllerViewReflected"]);
     _vertices->draw();
-
+    glUniformMatrix4fv(_viewID, 1, GL_FALSE, viewFlip[1].data());
+    glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs["cameraViewReflected"]);
+    _vertices->draw();
 
 }

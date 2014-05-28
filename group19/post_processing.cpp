@@ -29,6 +29,7 @@ void PostProcessing::init(Vertices* vertices, GLuint renderedTexIDs[]) {
     set_texture(0, renderedTexIDs[0], "mainviewTex", GL_TEXTURE_2D_MULTISAMPLE);
     set_texture(1, renderedTexIDs[1], "previewTex", GL_TEXTURE_2D_MULTISAMPLE);
 
+
     /// Set uniform IDs.
 
 }
@@ -62,7 +63,9 @@ void PostProcessing::draw() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebufferIDs["cameraView"]);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebufferIDs["waterReflection"]);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebufferIDs["controllerViewReflected"]);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebufferIDs["cameraViewReflected"]);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 }

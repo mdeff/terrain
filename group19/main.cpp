@@ -139,7 +139,7 @@ void GLFWCALL keyboard_callback(int key, int action) {
 }
 
 
-void gen_rendering_framebuffers(GLuint framebufferIDs[], GLuint colorTexIDs[], unsigned int N) {
+void gen_rendering_framebuffers(GLuint framebufferIDs[], GLuint colorTexIDs[], bool multisampling[], unsigned int N) {
 
     /// Each FBO will have an attached texture for rendering and a renderbuffer
     /// depth buffer.
@@ -148,9 +148,10 @@ void gen_rendering_framebuffers(GLuint framebufferIDs[], GLuint colorTexIDs[], u
     const unsigned int samples = 4;
 
     /// Generate framebuffers and renderbuffers.
-    GLuint* colorBufIDs = new GLuint[N];
+//    GLuint* colorBufIDs = new GLuint[N];
     GLuint* depthBufIDs = new GLuint[N];
-    glGenRenderbuffers(N, colorBufIDs);
+    glGenFramebuffers(N, framebufferIDs);
+//    glGenRenderbuffers(N, colorBufIDs);
     glGenTextures(N, colorTexIDs);
     glGenRenderbuffers(N, depthBufIDs);
 
@@ -158,47 +159,61 @@ void gen_rendering_framebuffers(GLuint framebufferIDs[], GLuint colorTexIDs[], u
 
         glBindFramebuffer(GL_FRAMEBUFFER, framebufferIDs[k]);
 
-        /// Multi-sample color buffer.
-//        glBindRenderbuffer(GL_RENDERBUFFER, colorBufIDs[k]);
-//        glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER_EXT, samples, GL_RGBA8, windowWidth, windowHeight);
-//        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, colorBufIDs[k]);
-//        GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0};
-//        glDrawBuffers(1, drawBuffers);
+        if(multisampling[k]) {
 
-        /// Multi-sample color texture (will be sampled by post-processing shader).
-        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, colorTexIDs[k]);
-        glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_RGBA8, windowWidth, windowHeight, GL_FALSE);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, colorTexIDs[k], 0);
-        GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0};
-        glDrawBuffers(1, drawBuffers);
+            /// Multi-sample color buffer.
+//            glBindRenderbuffer(GL_RENDERBUFFER, colorBufIDs[k]);
+//            glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER_EXT, samples, GL_RGBA8, windowWidth, windowHeight);
+//            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, colorBufIDs[k]);
+//            GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0};
+//            glDrawBuffers(1, drawBuffers);
 
-//        glBindTexture(GL_TEXTURE_2D, colorTexIDs[k]);
-//        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, windowWidth, windowHeight, 0, GL_RGBA, GL_FLOAT, NULL);
-//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-//        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorTexIDs[k], 0);
-//        GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0};
-//        glDrawBuffers(1, drawBuffers);
+            /// Multi-sample color texture (will be sampled by post-processing shader).
+            glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, colorTexIDs[k]);
+            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_RGBA8, windowWidth, windowHeight, GL_FALSE);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, colorTexIDs[k], 0);
+            GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0};
+            glDrawBuffers(1, drawBuffers);
 
-        /// Multi-sample depth buffer (will never be sampled, more efficient).
-        glBindRenderbuffer(GL_RENDERBUFFER, depthBufIDs[k]);
-        glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_DEPTH_COMPONENT, windowWidth, windowHeight);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBufIDs[k]);
+            /// Multi-sample depth buffer (will never be sampled, more efficient).
+            glBindRenderbuffer(GL_RENDERBUFFER, depthBufIDs[k]);
+            glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_DEPTH_COMPONENT, windowWidth, windowHeight);
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBufIDs[k]);
 
-        /// Create and attach a depth buffer for the FBO.
-//        glBindRenderbuffer(GL_RENDERBUFFER, depthBufIDs[k]);
-//        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, windowWidth, windowHeight);
-//        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBufIDs[k]);
+        } else {
+
+            /// Color texture (will be sampled by water shader).
+            glBindTexture(GL_TEXTURE_2D, colorTexIDs[k]);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, windowWidth, windowHeight, 0, GL_RGBA, GL_FLOAT, NULL);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+//            glGenerateMipmap(GL_TEXTURE_2D);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorTexIDs[k], 0);
+            GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0};
+            glDrawBuffers(1, drawBuffers);
+
+            /// Create and attach a depth buffer for the FBO.
+            glBindRenderbuffer(GL_RENDERBUFFER, depthBufIDs[k]);
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, windowWidth, windowHeight);
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBufIDs[k]);
+
+        }
 
         /// Check that FBO is complete.
         if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
             std::cerr << "Rendering framebuffer " << k << " not complete." << std::endl;
             exit(EXIT_FAILURE);
         }
+
     }
 
     /// Free heap memory.
-    delete[] colorBufIDs, depthBufIDs;
+    delete[] depthBufIDs;
+//    delete[] colorBufIDs, depthBufIDs;
 
 }
 
@@ -232,29 +247,28 @@ void init() {
 //    delete verticesQuad;
 
     /// Generate OpenGL global objects.
-    GLuint framebufferIDs_tmp[2*Nviews];
-    glGenFramebuffers(2*Nviews, framebufferIDs_tmp);
-    framebufferIDs["controllerView"]  = framebufferIDs_tmp[0];
-    framebufferIDs["cameraView"]      = framebufferIDs_tmp[1];
-    framebufferIDs["waterReflection"] = framebufferIDs_tmp[2];
-
+    bool multisampling[] = {true, true, false, false};
+    GLuint framebufferIDs_tmp[2*Nviews], renderedTexIDs[2*Nviews];
+    gen_rendering_framebuffers(framebufferIDs_tmp, renderedTexIDs, multisampling, 2*Nviews);
+    framebufferIDs["controllerView"]          = framebufferIDs_tmp[0];
+    framebufferIDs["cameraView"]              = framebufferIDs_tmp[1];
+    framebufferIDs["controllerViewReflected"] = framebufferIDs_tmp[2];
+    framebufferIDs["cameraViewReflected"]     = framebufferIDs_tmp[3];
 
     /// Two rendering framebuffers and two view matrices.
     /// 1) Overall view for control purpose.
     /// 2) Camera actual view.
     /// No more direct drawing to the default framebuffer. All drawings go
-    /// to textures and Display arranges the textures on screen.
-    GLuint renderedTexIDs[Nviews];
-    gen_rendering_framebuffers(framebufferIDs_tmp, renderedTexIDs, Nviews);
+    /// to textures and PostProcessing arranges the textures on screen.
     postProcessing.init(verticesQuad, renderedTexIDs);
 
     /// Initialize the rendering contexts.
     GLuint shadowMapTexID = shadowmap.init(verticesGrid, heightMapTexID);
-    GLuint flippedTerrainTexID = terrain.init(verticesGrid, heightMapTexID, shadowMapTexID);
+    terrain.init(verticesGrid, heightMapTexID, shadowMapTexID);
     skybox.init(verticesSkybox);
 
     // Grid or quad : interpolation ?
-    water.init(verticesGrid, flippedTerrainTexID);
+    water.init(verticesGrid, renderedTexIDs);
 //    water.init(verticesQuad, flippedTerrainTexID);
 
     /// Pass the particles position textures from control to render.
