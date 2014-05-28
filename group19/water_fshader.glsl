@@ -8,7 +8,7 @@ uniform mat4 view;
 uniform vec3 Ia, Id, Is;
 
 // Time for water animation.
-uniform float time;
+uniform float deltaT;
 
 // Textures.
 uniform sampler2D reflectionTex;
