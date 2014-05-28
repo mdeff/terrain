@@ -48,7 +48,7 @@ void CameraControl::init(VerticesCameraPath* verticesCameraPath, VerticesCameraP
     //InitSubdivision();
 
     /// Initialize the camera position.
-    _explorationMode = TRACKBALL;
+    _explorationMode = FIX;
     trackball(mat4::Identity());
 
     update_camera_modelview(0.5f, -0.5f, 0.8f, 0.0f, 0.0f, 0.0f);
@@ -63,12 +63,10 @@ void CameraControl::init(VerticesCameraPath* verticesCameraPath, VerticesCameraP
 
 }
 
+
+/// This controls the controller view camera.
 void CameraControl::trackball(const mat4& model) {
 
-    /// This camera control applies only in TRACKBALL exploration mode.
-    /// Other modes have their own camera control.
-//    if(_explorationMode != TRACKBALL)
-//        return;
 
     /// View matrix (camera extrinsics) (position in world space).
 
@@ -140,6 +138,8 @@ void CameraControl::trackball(const mat4& model) {
 
 }
 
+
+/// This controls the camera view camera.
 void CameraControl::update_camera_modelview(double posX,double posY,double posZ,double lookX,double lookY,double lookZ){
 	vec3 camPos(posX,posY,posZ);
 	vec3 camLookAt(lookX, lookY, lookZ);
@@ -1450,7 +1450,7 @@ void CameraControl::updateCameraPosition(mat4 views[], mat4& cameraPictorialMode
         break;
     }
 
-	if(flagAnimatePictorialCamera==true)
+    if(flagAnimatePictorialCamera)
         animatePictorialCamera();
 
     /// Update the view transformation matrix.
@@ -1497,20 +1497,23 @@ void CameraControl::handleCameraControls(int key, int action){
         std::cout << "Exploration mode : FLYING" << std::endl;
 		Key1 =!Key1;
         _explorationMode = FLYING;
+        flagAnimatePictorialCamera = false;
 		break;
     case 304: //2
         std::cout << "Exploration mode : FPS" << std::endl;
         _explorationMode = FPS;
+        flagAnimatePictorialCamera = false;
 		Key2 =!Key2;
 		break;
     case 305: //3
         std::cout << "Exploration mode : PATH" << std::endl;
         _explorationMode = PATH;
+        flagAnimatePictorialCamera = true;
 		break;
-//    case 306: //4
-//        std::cout << "Exploration mode : TRACKBALL" << std::endl;
-//        _explorationMode = TRACKBALL;
-//        trackball(mat4::Identity());
+    case 306: //4
+        std::cout << "Exploration mode : TRACKBALL" << std::endl;
+        _explorationMode = FIX;
+        flagAnimatePictorialCamera = false;
     }
 	if(action==1){
 		switch(key){
@@ -1564,9 +1567,9 @@ void CameraControl::handleCameraControls(int key, int action){
 //					KeyENTER = true;
 //				}
 //				break;
-			case 309://7
-				flagAnimatePictorialCamera=!flagAnimatePictorialCamera;
-				break;
+//			case 309://7
+//				flagAnimatePictorialCamera=!flagAnimatePictorialCamera;
+//				break;
             case 294://+
 				Add_Bcurve();
 				break;
