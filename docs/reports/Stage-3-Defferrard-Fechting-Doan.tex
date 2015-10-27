@@ -177,21 +177,25 @@ Window and textures are of size \texttt{nParticles} times 1 pixels.
 
 In our implementation, particles that fall below the water level are reseted to the top and will fall down again, indefinitely. In order to keep the aggregate compact and so as it does not spread out in the space, particles that go too far in x or y direction get moved to the oder side.
 
-discard is used
 
 \subsection{Advanced - Two simultaneous views}
 
-By two simultaneous views, we mean the rendering of the seen from two points of views. In our case, a control view and a camera view (fig.). The control view is used to set the camera path Bézier curve control points and have a global view with an animated pictorial camera. The camera view actually shows what the camera sees.
+By two simultaneous views, we mean the rendering of the seen from two points of views. In our case, a control view and a camera view (fig~\ref{two_views}). The control view is used to set the camera path Bézier curve control points and have a global view with an animated pictorial camera. The camera view actually shows what the camera sees. The keyboad ENTER key can be used to exchange the two views
 
-The keyboad ENTER key can be used to exchange the two views (fig.).
+\begin{figure}
+\centering
+\includegraphics[height=4cm]{img_stage3/two_views}
+\caption{Illustration of our two-view system.}
+\label{two_views}
+\end{figure}
 
 From an implementation point of view, almost each object of the scene (skybox, terrain, water, shadowmap, skybox, particles) should be drawn from two different points of view. They are thus rendered to two FBOs (with attached output texture and depth buffer) instead of the default framebuffer (the screen). The \texttt{Display} class eventually uses the texture to assemble the final screen view.
 
 For performance reason, it is crucial to render the two points of view one after the other as shader program switch is expensive.
-
-        /// The linear filtering is only used for the small preview.
-        /// As it creates too much aliasing, the main image is direclty accessed
-        /// with texelFetch which does bypass the filtering.
+\begin{itemize}
+\item{The linear filtering is only used for the small preview.}
+\item{ As it creates too much aliasing, the main image is direclty accessed with texelFetch which does bypass the filtering.}
+\end{itemize}
 
 To produce hight quality rendering, the two views were rendered to multisampled textures (\texttt{GL\_TEXTURE\_2D\_MULTISAMPLE}), using four samples per pixel. Multisampling, also known as multisample antialiasing (MSAA), is one method for achieving full-screen antialiasing (FSAA). This technique was introduced by \texttt{ARB\_texture\_multisample} In order to improve performance, multi-sampling was disabled for the default framebuffer in the \texttt{glfwCreateWindow} helper function. It makes no sense to do the multi-sampling twice.
 
@@ -367,6 +371,11 @@ The heightmap code was also refactored to accommodate our new object oriented ar
 
 Another improvement of the heightmap code is that the \texttt{position} vector is now a \texttt{vec2} instead of a \texttt{vec3} as the vertex z position of a quad is 0 anyway. This saves some GPU memory bandwidth.
 
+
+\subsection{External Objection addition}
+We tried to render together an external object (a yellow duck) by loading its 3D mesh. We did some simple transformation to place it in right position and move linearly.
+
+The reflection of the duck is also rendered.
 \section{Results}
 
 
