@@ -51,3 +51,9 @@ cmake ..
 make
 ./group19/group19
 ```
+
+## Resources
+
+* [Stage 1 (terrain generation) report](https://deff.ch/terrain_report_1.pdf)
+* [Stage 2 (rendering) report](https://deff.ch/terrain_report_2.pdf)
+* [Stage 3 (interaction & animation) report](https://deff.ch/terrain_report_3.pdf)
