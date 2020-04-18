@@ -1,5 +1,9 @@
 # Terrain
 
+[Michaël Defferrard](https://deff.ch),
+[Pierre Fechting](https://www.linkedin.com/in/pierre-fechting-5108b353),
+[Vu Hiep Doan](https://www.linkedin.com/in/doanvuhiep).
+
 An OpenGL application which generates a terrain geometry and renders the 3D
 scene on the GPU. A camera, pictorially illustrated in the global view, follows
 a configurable Bézier path through the scene. It was realized as a semester
